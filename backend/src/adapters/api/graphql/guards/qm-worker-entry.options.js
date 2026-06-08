@@ -1,0 +1,1 @@
+export const QM_WORKER_ENTRY_OPTIONS = Symbol('QM_WORKER_ENTRY_OPTIONS');
