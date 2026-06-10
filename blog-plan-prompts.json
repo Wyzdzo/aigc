@@ -1,0 +1,277 @@
+{
+  "project": "AIGC Blog",
+  "description": "博客开发每日提示词计划",
+  "totalDays": 35,
+  "weeks": [
+    {
+      "week": 1,
+      "name": "基础设施搭建",
+      "days": [
+        {
+          "day": 1,
+          "title": "数据库迁移",
+          "prompt": "请为博客功能创建数据库迁移文件：\n1. blog_post（文章表）：id, title, slug, content, summary, cover_image, status, view_count, like_count, category_id, created_at, updated_at, deleted_at\n2. blog_category（分类表）：id, name, slug, description, parent_id, sort_order, created_at\n3. blog_tag（标签表）：id, name, slug, created_at\n4. blog_post_tag（关联表）：post_id, tag_id\n5. blog_comment（评论表）：id, post_id, parent_id, nickname, email, avatar, content, status, created_at\n6. blog_link（友链表）：id, title, url, description, logo, sort_order, created_at\n\n遵守规则：\n- 迁移文件放在 src/infrastructure/database/migrations/\n- 时间字段使用 TIMESTAMP(3)\n- 软删除使用 deleted_at",
+          "review": "检查迁移文件是否符合规范，表结构是否正确"
+        },
+        {
+          "day": 2,
+          "title": "后端实体和DTO",
+          "prompt": "创建博客模块的实体类和DTO：\n1. 实体放在 src/modules/blog/entities/\n2. GraphQL DTO放在 src/adapters/api/graphql/blog/dto/\n3. 全局类型定义在 src/types/models/blog.types.ts\n\n遵守规则：\n- 实体只能依赖core和types\n- 实体不能有GraphQL装饰器\n- 不导入ORM实体到adapters和usecases",
+          "review": "检查实体是否纯净，DTO是否在正确位置"
+        },
+        {
+          "day": 3,
+          "title": "后端Service和Resolver",
+          "prompt": "实现博客模块业务逻辑：\n1. BlogService在src/modules/blog/blog.service.ts（CRUD操作）\n2. BlogQueryService在src/modules/blog/blog.query.service.ts（只读查询）\n3. BlogUsecase在src/usecases/blog/blog.usecase.ts（业务编排）\n4. BlogResolver在src/adapters/api/graphql/blog/blog.resolver.ts\n5. 基础查询：posts, post, categories, tags, comments\n6. 基础变更：createPost, updatePost, deletePost, createComment\n\n遵守规则：\n- Resolver只做输入输出转换，不包含业务逻辑\n- QueryService只做查询，不做写操作\n- Service做单一领域操作\n- Usecase做业务编排和事务管理\n- GraphQL装饰器只在adapters层"
+          "review": "检查Resolver是否足够薄，业务逻辑是否在Service层"
+        },
+        {
+          "day": 4,
+          "title": "前端Feature架构",
+          "prompt": "创建博客前端Feature：\n1. src/entities/blog/model.ts（数据模型，纯类型定义）\n2. src/features/blog/application/（业务逻辑）\n3. src/features/blog/infrastructure/graphql/queries.ts（GraphQL查询）\n4. src/features/blog/infrastructure/graphql/mutations.ts（GraphQL变更）\n5. src/features/blog/infrastructure/mock/mock.ts（Mock数据）\n\n遵守规则：\n- features只能依赖entities和shared\n- Mock是infrastructure，不是domain\n- 不把API调用直接放在pages或widgets\n- 跨模块导入只允许走公开API（index.ts）"
+          "review": "检查目录结构是否正确，Mock是否在infrastructure"
+        },
+        {
+          "day": 5,
+          "title": "前端路由和布局",
+          "prompt": "配置博客前端路由和布局：\n1. 在src/app/router/index.tsx添加博客路由\n2. 创建src/app/layout/BlogLayout.tsx\n3. 创建空页面：BlogHomePage, BlogDetailPage, BlogCategoryPage\n\n遵守规则：\n- app/router负责路由注册\n- 页面内容放在src/pages/blog/\n- 全局布局放在src/app/layout/",
+          "review": "检查路由配置是否正确，页面是否在正确位置"
+        },
+        {
+          "day": 6,
+          "title": "Mock数据测试",
+          "prompt": "完善Mock数据并测试：\n1. 创建10篇示例文章\n2. 创建5个分类和10个标签\n3. 创建示例评论数据\n4. 测试前端页面能否正常渲染\n\n遵守规则：\n- Mock数据放在src/features/blog/infrastructure/mock/\n- Mock数据结构与GraphQL返回一致",
+          "review": "检查Mock数据是否完整，前端能否正常渲染"
+        },
+        {
+          "day": 7,
+          "title": "周Review",
+          "prompt": "请review本周代码：\n1. 运行npm run lint和npm run typecheck\n2. 检查分层规范是否被遵守\n3. 检查依赖方向是否正确\n4. 检查是否有重复实现\n5. 编写基础单元测试\n\n重点检查：\n- 后端实体无GraphQL装饰器\n- Mock数据在infrastructure\n- 前端依赖方向正确",
+          "review": "全面检查本周代码，确保符合规则"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "name": "前台核心功能",
+      "days": [
+        {
+          "day": 8,
+          "title": "博客首页",
+          "prompt": "实现博客首页：\n1. 创建src/pages/blog/index.tsx\n2. 文章列表（支持分页）\n3. 置顶文章展示\n4. 博主简介组件\n\n遵守规则：\n- 使用Ant Design的List或Card组件做业务UI\n- Tailwind只用于布局包装（wrapper元素）\n- 不直接在Ant Design组件上使用Tailwind className\n- 数据通过features获取\n- 颜色、圆角、阴影使用Ant Design tokens"
+          "review": "检查首页布局和功能"
+        },
+        {
+          "day": 9,
+          "title": "文章详情页",
+          "prompt": "实现文章详情页：\n1. 创建src/pages/blog/[slug].tsx\n2. 使用react-markdown渲染文章内容\n3. TOC目录导航\n4. 上一篇/下一篇切换\n5. 阅读量统计\n\n遵守规则：\n- Markdown工具放在src/shared/blog/markdown.ts\n- 数据更新通过Apollo Cache",
+          "review": "检查文章详情页功能是否完整"
+        },
+        {
+          "day": 10,
+          "title": "搜索功能",
+          "prompt": "实现文章搜索：\n1. 关键词搜索（标题+内容）\n2. 搜索输入框组件\n3. 搜索结果高亮\n4. 防抖优化\n\n遵守规则：\n- GraphQL查询支持keyword参数\n- 搜索逻辑放在features层",
+          "review": "检查搜索功能是否正常工作"
+        },
+        {
+          "day": 11,
+          "title": "分类和标签筛选",
+          "prompt": "实现分类和标签筛选：\n1. 创建src/widgets/blog/CategoryTree.tsx\n2. 创建src/widgets/blog/TagCloud.tsx\n3. 筛选状态管理\n4. URL参数同步\n\n遵守规则：\n- widgets只能依赖features、entities、shared",
+          "review": "检查分类和标签筛选功能"
+        },
+        {
+          "day": 12,
+          "title": "时间归档",
+          "prompt": "实现时间归档：\n1. 创建src/pages/blog/archives.tsx\n2. 按年月统计文章数量\n3. 归档列表展示\n4. 筛选功能\n\n遵守规则：\n- 后端支持按时间范围查询",
+          "review": "检查时间归档功能"
+        },
+        {
+          "day": 13,
+          "title": "响应式设计",
+          "prompt": "优化前台响应式设计：\n1. 适配移动端布局\n2. 移动端汉堡菜单\n3. 文章列表单列显示\n4. 测试不同屏幕尺寸\n\n遵守规则：\n- 使用Tailwind响应式类",
+          "review": "检查响应式布局是否正常"
+        },
+        {
+          "day": 14,
+          "title": "周Review",
+          "prompt": "请review前台功能：\n1. 测试所有页面路由\n2. 检查响应式布局\n3. 优化加载性能\n4. 编写E2E测试\n\n重点检查：\n- UI Stack规则\n- 组件分层是否合理\n- 是否有过度抽象",
+          "review": "全面检查前台功能"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "name": "互动功能",
+      "days": [
+        {
+          "day": 15,
+          "title": "文章点赞",
+          "prompt": "实现文章点赞功能：\n1. 后端添加likePost mutation\n2. 前端添加点赞按钮组件\n3. 点赞状态管理\n4. 数量更新\n\n遵守规则：\n- 使用Apollo Cache更新状态",
+          "review": "检查点赞功能是否正常"
+        },
+        {
+          "day": 16,
+          "title": "评论系统（基础）",
+          "prompt": "实现基础评论功能：\n1. 创建评论实体和表\n2. 实现评论GraphQL API\n3. 创建评论列表组件\n4. 评论表单\n\n遵守规则：\n- 评论逻辑放在features/blog",
+          "review": "检查基础评论功能"
+        },
+        {
+          "day": 17,
+          "title": "评论嵌套（楼中楼）",
+          "prompt": "实现评论嵌套回复：\n1. 支持多级评论（最多3层）\n2. 回复功能\n3. 嵌套展示优化\n4. 评论排序\n\n遵守规则：\n- 避免N+1查询",
+          "review": "检查评论嵌套功能"
+        },
+        {
+          "day": 18,
+          "title": "留言系统",
+          "prompt": "实现留言功能：\n1. 留言表单（昵称、邮箱、内容）\n2. 头像自动生成（UI Avatars）\n3. 表单验证\n4. 防spam机制\n\n遵守规则：\n- 邮箱用于生成头像，不存储隐私数据",
+          "review": "检查留言功能"
+        },
+        {
+          "day": 19,
+          "title": "评论管理（后台）",
+          "prompt": "实现后台评论管理：\n1. 评论列表展示\n2. 审核功能（通过/驳回）\n3. 删除功能\n4. 批量操作\n\n遵守规则：\n- 后端支持评论状态管理",
+          "review": "检查后台评论管理功能"
+        },
+        {
+          "day": 20,
+          "title": "通知系统",
+          "prompt": "实现评论通知：\n1. 新评论邮件通知\n2. 回复通知\n3. 通知队列（BullMQ）\n4. 通知模板\n\n遵守规则：\n- 使用现有的EmailQueueUsecasesModule",
+          "review": "检查通知系统"
+        },
+        {
+          "day": 21,
+          "title": "周Review",
+          "prompt": "请review互动功能：\n1. 测试评论完整流程\n2. 检查通知系统\n3. 优化性能\n4. 编写集成测试\n\n重点检查：\n- 评论嵌套层级控制\n- Apollo Cache更新策略",
+          "review": "全面检查互动功能"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "name": "独立页面",
+      "days": [
+        {
+          "day": 22,
+          "title": "关于我页面",
+          "prompt": "实现关于我页面：\n1. 创建src/pages/blog/about.tsx\n2. 博主介绍布局\n3. 技能标签展示\n4. 社交链接\n\n遵守规则：\n- 使用Ant Design组件",
+          "review": "检查关于我页面"
+        },
+        {
+          "day": 23,
+          "title": "友链页面",
+          "prompt": "实现友链页面：\n1. 创建src/pages/blog/links.tsx\n2. 友链卡片展示\n3. 友链申请功能\n4. 后台管理\n\n遵守规则：\n- 后端支持友链CRUD",
+          "review": "检查友链页面"
+        },
+        {
+          "day": 24,
+          "title": "后台仪表盘",
+          "prompt": "实现后台仪表盘：\n1. 创建src/pages/admin/index.tsx\n2. 统计数据展示\n3. 图表展示（Recharts）\n4. 快捷操作入口\n\n遵守规则：\n- 使用Recharts图表库",
+          "review": "检查后台仪表盘"
+        },
+        {
+          "day": 25,
+          "title": "文章管理（列表）",
+          "prompt": "实现后台文章管理列表：\n1. 创建src/pages/admin/posts/index.tsx\n2. 文章列表（支持筛选）\n3. 批量操作\n4. 状态切换\n\n遵守规则：\n- 使用Ant Design Table",
+          "review": "检查文章管理列表"
+        },
+        {
+          "day": 26,
+          "title": "文章管理（编辑器）",
+          "prompt": "实现文章编辑器：\n1. 集成Tiptap编辑器\n2. Markdown实时预览\n3. 图片上传\n4. 草稿自动保存\n\n遵守规则：\n- 编辑器组件放在widgets/blog/",
+          "review": "检查文章编辑器"
+        },
+        {
+          "day": 27,
+          "title": "分类标签管理",
+          "prompt": "实现分类标签管理：\n1. 创建分类管理页面\n2. 创建标签管理页面\n3. 拖拽排序\n4. 分类树形展示\n\n遵守规则：\n- 使用Ant Design Tree组件",
+          "review": "检查分类标签管理"
+        },
+        {
+          "day": 28,
+          "title": "周Review",
+          "prompt": "请review独立页面：\n1. 测试所有页面功能\n2. 检查后台管理流程\n3. 优化用户体验\n4. 编写文档\n\n重点检查：\n- 数据流是否清晰\n- 错误处理是否完善",
+          "review": "全面检查独立页面"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "name": "后台完善",
+      "days": [
+        {
+          "day": 29,
+          "title": "文件管理",
+          "prompt": "实现文件管理：\n1. 图片上传功能\n2. 图片库浏览\n3. 图片删除\n4. 图片压缩\n\n遵守规则：\n- 本地存储方案",
+          "review": "检查文件管理功能"
+        },
+        {
+          "day": 30,
+          "title": "系统设置",
+          "prompt": "实现系统设置：\n1. 博主信息设置\n2. 友情链接管理\n3. 修改登录密码\n4. 网站基本信息配置\n\n遵守规则：\n- 表单验证\n- 数据安全",
+          "review": "检查系统设置功能"
+        },
+        {
+          "day": 31,
+          "title": "权限控制",
+          "prompt": "实现后台权限控制：\n1. 管理员认证\n2. 路由守卫\n3. 操作日志\n4. 权限检查\n\n遵守规则：\n- 使用现有的JWT认证机制",
+          "review": "检查权限控制功能"
+        },
+        {
+          "day": 32,
+          "title": "SEO优化",
+          "prompt": "实现SEO优化：\n1. Meta标签管理\n2. Open Graph协议\n3. sitemap.xml生成\n4. URL结构优化\n\n遵守规则：\n- SSR友好",
+          "review": "检查SEO优化"
+        },
+        {
+          "day": 33,
+          "title": "性能优化",
+          "prompt": "进行性能优化：\n1. 图片懒加载\n2. 代码分割\n3. GraphQL查询优化\n4. 缓存策略\n\n遵守规则：\n- 使用React.lazy和Suspense",
+          "review": "检查性能优化"
+        },
+        {
+          "day": 34,
+          "title": "测试完善",
+          "prompt": "完善测试：\n1. 补充单元测试\n2. 编写E2E测试\n3. 测试覆盖率检查\n4. 修复测试发现的问题\n\n目标：核心功能覆盖率80%+",
+          "review": "检查测试覆盖"
+        },
+        {
+          "day": 35,
+          "title": "最终Review",
+          "prompt": "请进行最终全局review：\n1. 全局架构review\n2. 检查所有功能\n3. 编写部署文档\n4. 准备生产环境\n\n重点检查：\n- 分层漂移\n- 重复实现\n- 抽象失控\n- 测试覆盖率",
+          "review": "最终全面检查"
+        }
+      ]
+    }
+  ],
+  "reviewChecklists": {
+    "backend": [
+      "实体类无GraphQL/Swagger装饰器",
+      "DTO在adapters层",
+      "Resolver足够薄",
+      "QueryService只做查询",
+      "错误处理符合GraphQL错误契约",
+      "类型定义在@app-types"
+    ],
+    "frontend": [
+      "依赖方向正确",
+      "Mock在infrastructure",
+      "API调用收束",
+      "UI Stack规则（Ant Design + Tailwind职责分离）",
+      "组件分层合理"
+    ],
+    "general": [
+      "无重复实现",
+      "无分层漂移",
+      "无抽象失控",
+      "测试覆盖充分",
+      "文档完整"
+    ]
+  },
+  "commands": {
+    "lint": "npm run lint",
+    "typecheck": "npm run typecheck",
+    "test": "npm run test:unit",
+    "build": "npm run build"
+  }
+}

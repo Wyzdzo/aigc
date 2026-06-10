@@ -1,0 +1,377 @@
+// src/modules/blog/queries/blog.query.service.spec.ts
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PostStatus, CommentStatus, LinkStatus } from '@app-types/models/blog/blog.types';
+import { BlogQueryService } from './blog.query.service';
+import { BlogCategoryEntity } from '../entities/blog-category.entity';
+import { BlogCommentEntity } from '../entities/blog-comment.entity';
+import { BlogLinkEntity } from '../entities/blog-link.entity';
+import { BlogPostEntity } from '../entities/blog-post.entity';
+import { BlogPostTagEntity } from '../entities/blog-post-tag.entity';
+import { BlogTagEntity } from '../entities/blog-tag.entity';
+
+describe('BlogQueryService', () => {
+  let service: BlogQueryService;
+  let postRepository: Repository<BlogPostEntity>;
+  let categoryRepository: Repository<BlogCategoryEntity>;
+  let tagRepository: Repository<BlogTagEntity>;
+  let postTagRepository: Repository<BlogPostTagEntity>;
+  let commentRepository: Repository<BlogCommentEntity>;
+  let linkRepository: Repository<BlogLinkEntity>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        BlogQueryService,
+        {
+          provide: getRepositoryToken(BlogPostEntity),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(BlogCategoryEntity),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(BlogTagEntity),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(BlogPostTagEntity),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(BlogCommentEntity),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(BlogLinkEntity),
+          useClass: Repository,
+        },
+      ],
+    }).compile();
+
+    service = module.get<BlogQueryService>(BlogQueryService);
+    postRepository = module.get<Repository<BlogPostEntity>>(getRepositoryToken(BlogPostEntity));
+    categoryRepository = module.get<Repository<BlogCategoryEntity>>(getRepositoryToken(BlogCategoryEntity));
+    tagRepository = module.get<Repository<BlogTagEntity>>(getRepositoryToken(BlogTagEntity));
+    postTagRepository = module.get<Repository<BlogPostTagEntity>>(getRepositoryToken(BlogPostTagEntity));
+    commentRepository = module.get<Repository<BlogCommentEntity>>(getRepositoryToken(BlogCommentEntity));
+    linkRepository = module.get<Repository<BlogLinkEntity>>(getRepositoryToken(BlogLinkEntity));
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('getPostById', () => {
+    it('should return post when found', async () => {
+      const mockPost: Partial<BlogPostEntity> = {
+        id: 1,
+        title: 'Test Post',
+        slug: 'test-post',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      };
+
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
+
+      const result = await service.getPostById({ id: 1 });
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe(1);
+      expect(result?.title).toBe('Test Post');
+    });
+
+    it('should return null when post not found', async () => {
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
+
+      const result = await service.getPostById({ id: 999 });
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getPostBySlug', () => {
+    it('should return post by slug', async () => {
+      const mockPost: Partial<BlogPostEntity> = {
+        id: 1,
+        title: 'Test Post',
+        slug: 'test-post',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      };
+
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
+
+      const result = await service.getPostBySlug({ slug: 'test-post' });
+
+      expect(result?.slug).toBe('test-post');
+    });
+
+    it('should return null when slug not found', async () => {
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
+
+      const result = await service.getPostBySlug({ slug: 'not-found' });
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getPosts', () => {
+    it('should return paginated posts', async () => {
+      const mockPosts: Partial<BlogPostEntity>[] = [
+        { id: 1, title: 'Post 1', slug: 'post-1', status: PostStatus.PUBLISHED },
+        { id: 2, title: 'Post 2', slug: 'post-2', status: PostStatus.PUBLISHED },
+      ];
+
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockPosts, 10]),
+      };
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getPosts({
+        options: { page: 1, pageSize: 10 },
+      });
+
+      expect(result.items.length).toBe(2);
+      expect(result.total).toBe(10);
+      expect(queryBuilderMock.skip).toHaveBeenCalledWith(0);
+      expect(queryBuilderMock.take).toHaveBeenCalledWith(10);
+    });
+
+    it('should filter posts by category', async () => {
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      };
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getPosts({
+        options: { categoryId: 1 },
+      });
+
+      expect(queryBuilderMock.where).toHaveBeenCalledWith('post.categoryId = :categoryId', { categoryId: 1 });
+    });
+
+    it('should filter posts by keyword', async () => {
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      };
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getPosts({
+        options: { keyword: 'test' },
+      });
+
+      expect(queryBuilderMock.where).toHaveBeenCalledWith(
+        '(post.title LIKE :keyword OR post.content LIKE :keyword)',
+        { keyword: '%test%' },
+      );
+    });
+
+    it('should filter posts by tag', async () => {
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      };
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getPosts({
+        options: { tagId: 1 },
+      });
+
+      expect(queryBuilderMock.innerJoin).toHaveBeenCalledWith('blog_post_tag', 'pt', 'pt.postId = post.id');
+    });
+  });
+
+  describe('getTopPosts', () => {
+    it('should return top posts', async () => {
+      const mockPosts: Partial<BlogPostEntity>[] = [
+        { id: 1, title: 'Top Post 1', isTop: true, status: PostStatus.PUBLISHED },
+        { id: 2, title: 'Top Post 2', isTop: true, status: PostStatus.PUBLISHED },
+      ];
+
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockPosts),
+      };
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getTopPosts({ limit: 5 });
+
+      expect(result.length).toBe(2);
+      expect(queryBuilderMock.where).toHaveBeenCalledWith('post.isTop = :isTop', { isTop: true });
+      expect(queryBuilderMock.andWhere).toHaveBeenCalledWith('post.status = :status', { status: PostStatus.PUBLISHED });
+    });
+  });
+
+  describe('getPostTags', () => {
+    it('should return tags for a post', async () => {
+      const mockPostTags = [{ postId: 1, tagId: 1 }, { postId: 1, tagId: 2 }];
+      const mockTags = [
+        { id: 1, name: 'Tag 1', slug: 'tag-1' },
+        { id: 2, name: 'Tag 2', slug: 'tag-2' },
+      ];
+
+      jest.spyOn(postTagRepository, 'find').mockResolvedValue(mockPostTags as any);
+      jest.spyOn(tagRepository, 'find').mockResolvedValue(mockTags as any);
+
+      const result = await service.getPostTags({ postId: 1 });
+
+      expect(result.length).toBe(2);
+      expect(result[0].name).toBe('Tag 1');
+    });
+
+    it('should return empty array when no tags', async () => {
+      jest.spyOn(postTagRepository, 'find').mockResolvedValue([]);
+
+      const result = await service.getPostTags({ postId: 1 });
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getAllCategories', () => {
+    it('should return all categories sorted', async () => {
+      const mockCategories = [
+        { id: 1, name: 'Cat 1', sortOrder: 2 },
+        { id: 2, name: 'Cat 2', sortOrder: 1 },
+      ];
+
+      jest.spyOn(categoryRepository, 'find').mockResolvedValue(mockCategories as any);
+
+      const result = await service.getAllCategories({});
+
+      expect(result.length).toBe(2);
+    });
+  });
+
+  describe('getCategoryTree', () => {
+    it('should build category tree', async () => {
+      const mockCategories: BlogCategoryEntity[] = [
+        { id: 1, name: 'Root 1', slug: 'root-1', description: null, parentId: null, sortOrder: 0, createdAt: new Date(), updatedAt: new Date() },
+        { id: 2, name: 'Child 1', slug: 'child-1', description: null, parentId: 1, sortOrder: 0, createdAt: new Date(), updatedAt: new Date() },
+        { id: 3, name: 'Root 2', slug: 'root-2', description: null, parentId: null, sortOrder: 1, createdAt: new Date(), updatedAt: new Date() },
+      ];
+
+      jest.spyOn(categoryRepository, 'find').mockResolvedValue(mockCategories);
+
+      const result = await service.getCategoryTree({});
+
+      expect(result.length).toBe(2);
+      expect(result[0].name).toBe('Root 1');
+      expect((result[0] as any).children?.length).toBe(1);
+      expect((result[0] as any).children?.[0].name).toBe('Child 1');
+    });
+  });
+
+  describe('getAllTags', () => {
+    it('should return all tags', async () => {
+      const mockTags = [
+        { id: 1, name: 'Tag 1', slug: 'tag-1', createdAt: new Date() },
+        { id: 2, name: 'Tag 2', slug: 'tag-2', createdAt: new Date() },
+      ];
+
+      jest.spyOn(tagRepository, 'find').mockResolvedValue(mockTags as any);
+
+      const result = await service.getAllTags({});
+
+      expect(result.length).toBe(2);
+    });
+  });
+
+  describe('getComments', () => {
+    it('should return comments for a post', async () => {
+      const mockComments: Partial<BlogCommentEntity>[] = [
+        { id: 1, postId: 1, content: 'Comment 1', status: CommentStatus.APPROVED },
+        { id: 2, postId: 1, content: 'Comment 2', status: CommentStatus.APPROVED },
+      ];
+
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([mockComments, 10]),
+      };
+
+      jest.spyOn(commentRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getComments({
+        options: { postId: 1, page: 1, pageSize: 20 },
+      });
+
+      expect(result.items.length).toBe(2);
+      expect(result.total).toBe(10);
+    });
+  });
+
+  describe('getCommentCountByPost', () => {
+    it('should return comment count', async () => {
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(5),
+      };
+
+      jest.spyOn(commentRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getCommentCountByPost({ postId: 1 });
+
+      expect(result).toBe(5);
+    });
+  });
+
+  describe('getAllLinks', () => {
+    it('should return active links sorted', async () => {
+      const mockLinks: Partial<BlogLinkEntity>[] = [
+        { id: 1, title: 'Link 1', url: 'https://example.com', status: LinkStatus.ACTIVE, sortOrder: 2 },
+        { id: 2, title: 'Link 2', url: 'https://test.com', status: LinkStatus.ACTIVE, sortOrder: 1 },
+      ];
+
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockLinks),
+      };
+
+      jest.spyOn(linkRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getAllLinks({ status: LinkStatus.ACTIVE });
+
+      expect(result.length).toBe(2);
+    });
+  });
+});
