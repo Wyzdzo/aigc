@@ -1,52 +1,43 @@
 // src/features/blog/application/hooks/useTags.ts
-import { executeGraphQL } from '@/shared/graphql/request';
+import { useQuery } from '@apollo/client/react';
 import { GET_TAGS, GET_POST_TAGS } from '../../infrastructure/graphql/queries';
 import type { BlogTag } from '@/entities/blog';
 
-interface TagsResponse {
+export interface TagsResult {
   tags: BlogTag[];
 }
 
-interface PostTagsResponse {
+export interface PostTagsResult {
   postTags: BlogTag[];
 }
 
 export function useTags() {
-  const fetchTags = async () => {
-    try {
-      const data = await executeGraphQL<TagsResponse, Record<string, never>>(GET_TAGS.loc?.source.body || '', {});
-
-      return data?.tags || [];
-    } catch (error) {
-      console.error('Failed to fetch tags:', error);
-      return [];
-    }
-  };
+  const { data, loading, error, refetch } = useQuery<TagsResult>(GET_TAGS, {
+    fetchPolicy: 'cache-first',
+  });
 
   return {
-    fetchTags,
+    tags: data?.tags || [],
+    loading,
+    error,
+    refetch,
   };
 }
 
-export function usePostTags(postId: number) {
-  const fetchPostTags = async () => {
-    if (!postId) {
-      return [];
-    }
-
-    try {
-      const data = await executeGraphQL<PostTagsResponse, { postId: number }>(GET_POST_TAGS.loc?.source.body || '', {
-        postId,
-      });
-
-      return data?.postTags || [];
-    } catch (error) {
-      console.error('Failed to fetch post tags:', error);
-      return [];
-    }
-  };
+export function usePostTags(postId: number | undefined) {
+  const { data, loading, error, refetch } = useQuery<PostTagsResult, { postId: number }>(
+    GET_POST_TAGS,
+    {
+      variables: { postId: postId ?? 0 },
+      skip: !postId,
+      fetchPolicy: 'cache-first',
+    },
+  );
 
   return {
-    fetchPostTags,
+    tags: data?.postTags || [],
+    loading,
+    error,
+    refetch,
   };
 }

@@ -2,7 +2,7 @@
 
 import { Layout } from 'antd';
 import type { ReactNode } from 'react';
-import { Outlet } from 'react-router';
+import { Link, Outlet, useLocation } from 'react-router';
 
 const { Header, Content, Footer } = Layout;
 
@@ -10,22 +10,42 @@ type BlogLayoutProps = {
   children?: ReactNode;
 };
 
+const navItems = [
+  { label: '首页', path: '/blog' },
+  { label: '分类', path: '/blog/categories' },
+  { label: '标签', path: '/blog/tags' },
+  { label: '关于', path: '/blog/about' },
+];
+
 export function BlogLayout({ children }: BlogLayoutProps = {}) {
+  const location = useLocation();
+
   return (
     <Layout className="min-h-screen">
       <Header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto flex items-center justify-between h-16">
-          <h1 className="text-xl font-bold">AIGC Blog</h1>
+        <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
+          <Link to="/blog" className="text-xl font-bold text-gray-900 hover:text-gray-700">
+            AIGC Blog
+          </Link>
           <nav className="flex gap-6">
-            <a href="/blog" className="text-gray-600 hover:text-gray-900">首页</a>
-            <a href="/blog/categories" className="text-gray-600 hover:text-gray-900">分类</a>
-            <a href="/blog/tags" className="text-gray-600 hover:text-gray-900">标签</a>
-            <a href="/blog/about" className="text-gray-600 hover:text-gray-900">关于</a>
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`${
+                  location.pathname === item.path
+                    ? 'text-gray-900 font-medium'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </Header>
 
-      <Content className="max-w-6xl mx-auto w-full py-8">
+      <Content className="max-w-6xl mx-auto w-full py-8 px-4">
         {children ?? <Outlet />}
       </Content>
 

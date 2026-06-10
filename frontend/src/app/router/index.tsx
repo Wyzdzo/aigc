@@ -16,6 +16,9 @@ import { ProjectStructurePage } from '@/pages/project-structure';
 import { BlogHomePage } from '@/pages/blog';
 import { BlogDetailPage } from '@/pages/blog/[slug]';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
+import { BlogCategoriesPage } from '@/pages/blog/categories';
+import { BlogTagsPage } from '@/pages/blog/tags';
+import { BlogAboutPage } from '@/pages/blog/about';
 import { Error403, Error404, Error500, ErrorRouteCrash } from '@/features/error-feedback';
 
 import { getAppEnv } from '@/shared/env';
@@ -48,6 +51,14 @@ function RouteErrorBoundary() {
     <AppLayout>
       <RouteErrorPage />
     </AppLayout>
+  );
+}
+
+function BlogRouteErrorBoundary() {
+  return (
+    <BlogLayout>
+      <Error404 />
+    </BlogLayout>
   );
 }
 
@@ -108,16 +119,32 @@ const router = createBrowserRouter([
         index: true,
       },
       {
-        element: <BlogDetailPage />,
-        path: ':slug',
+        element: <BlogCategoriesPage />,
+        path: 'categories',
       },
       {
         element: <BlogCategoryPage />,
         path: 'category/:id',
       },
+      {
+        element: <BlogTagsPage />,
+        path: 'tags',
+      },
+      {
+        element: <BlogAboutPage />,
+        path: 'about',
+      },
+      {
+        element: <BlogDetailPage />,
+        path: ':slug',
+      },
+      {
+        element: <Error404 />,
+        path: '*',
+      },
     ],
     element: <BlogLayout />,
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <BlogRouteErrorBoundary />,
     path: '/blog',
   },
 ]);

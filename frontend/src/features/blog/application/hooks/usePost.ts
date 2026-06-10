@@ -1,58 +1,48 @@
 // src/features/blog/application/hooks/usePost.ts
-import { executeGraphQL } from '@/shared/graphql/request';
+import { useQuery } from '@apollo/client/react';
 import { GET_POST_BY_ID, GET_POST_BY_SLUG } from '../../infrastructure/graphql/queries';
 import type { BlogPost } from '@/entities/blog';
 
-interface PostByIdResponse {
-  post: BlogPost;
+export interface PostByIdResult {
+  post: BlogPost | null;
 }
 
-interface PostBySlugResponse {
-  postBySlug: BlogPost;
+export interface PostBySlugResult {
+  postBySlug: BlogPost | null;
 }
 
-export function usePostById(id: number) {
-  const fetchPostById = async () => {
-    if (!id) {
-      return null;
-    }
-
-    try {
-      const data = await executeGraphQL<PostByIdResponse, { id: number }>(GET_POST_BY_ID.loc?.source.body || '', {
-        id,
-      });
-
-      return data?.post || null;
-    } catch (error) {
-      console.error('Failed to fetch post by id:', error);
-      return null;
-    }
-  };
+export function usePostById(id: number | undefined) {
+  const { data, loading, error, refetch } = useQuery<PostByIdResult, { id: number }>(
+    GET_POST_BY_ID,
+    {
+      variables: { id: id ?? 0 },
+      skip: !id,
+      fetchPolicy: 'cache-first',
+    },
+  );
 
   return {
-    fetchPostById,
+    post: data?.post || null,
+    loading,
+    error,
+    refetch,
   };
 }
 
-export function usePostBySlug(slug: string) {
-  const fetchPostBySlug = async () => {
-    if (!slug) {
-      return null;
-    }
-
-    try {
-      const data = await executeGraphQL<PostBySlugResponse, { slug: string }>(GET_POST_BY_SLUG.loc?.source.body || '', {
-        slug,
-      });
-
-      return data?.postBySlug || null;
-    } catch (error) {
-      console.error('Failed to fetch post by slug:', error);
-      return null;
-    }
-  };
+export function usePostBySlug(slug: string | undefined) {
+  const { data, loading, error, refetch } = useQuery<PostBySlugResult, { slug: string }>(
+    GET_POST_BY_SLUG,
+    {
+      variables: { slug: slug ?? '' },
+      skip: !slug,
+      fetchPolicy: 'cache-first',
+    },
+  );
 
   return {
-    fetchPostBySlug,
+    post: data?.postBySlug || null,
+    loading,
+    error,
+    refetch,
   };
 }

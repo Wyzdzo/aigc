@@ -1,9 +1,9 @@
 // src/features/blog/application/hooks/useComments.ts
-import { executeGraphQL } from '@/shared/graphql/request';
+import { useQuery } from '@apollo/client/react';
 import { GET_COMMENTS, GET_COMMENT_STATS } from '../../infrastructure/graphql/queries';
-import type { BlogComment } from '@/entities/blog';
+import type { BlogComment, CommentStatus } from '@/entities/blog';
 
-interface CommentsResponse {
+export interface CommentsResult {
   comments: {
     items: BlogComment[];
     total: number;
@@ -12,7 +12,7 @@ interface CommentsResponse {
   };
 }
 
-interface CommentStatsResponse {
+export interface CommentStatsResult {
   commentStats: {
     total: number;
     pending: number;
@@ -21,81 +21,50 @@ interface CommentStatsResponse {
   };
 }
 
-export function useComments(postId: number, status?: string, page = 1, pageSize = 10) {
-  const fetchComments = async () => {
-    if (!postId) {
-      return {
-        items: [],
-        total: 0,
-        page,
-        pageSize,
-      };
-    }
+export interface CommentsVariables {
+  postId?: number;
+  status?: CommentStatus;
+  page?: number;
+  pageSize?: number;
+}
 
-    try {
-      const data = await executeGraphQL<CommentsResponse, { postId: number; status?: string; page: number; pageSize: number }>(GET_COMMENTS.loc?.source.body || '', {
-        postId,
-        status,
-        page,
-        pageSize,
-      });
+export function useComments(variables: CommentsVariables = {}) {
+  const { postId, status, page = 1, pageSize = 10 } = variables;
 
-      return {
-        items: data?.comments?.items || [],
-        total: data?.comments?.total || 0,
-        page: data?.comments?.page || page,
-        pageSize: data?.comments?.pageSize || pageSize,
-      };
-    } catch (error) {
-      console.error('Failed to fetch comments:', error);
-      return {
-        items: [],
-        total: 0,
-        page,
-        pageSize,
-      };
-    }
-  };
+  const { data, loading, error, refetch } = useQuery<CommentsResult, CommentsVariables>(
+    GET_COMMENTS,
+    {
+      variables: { postId, status, page, pageSize },
+      skip: !postId,
+      fetchPolicy: 'cache-first',
+    },
+  );
 
   return {
-    fetchComments,
+    items: data?.comments?.items || [],
+    total: data?.comments?.total || 0,
+    currentPage: data?.comments?.page || page,
+    pageSize: data?.comments?.pageSize || pageSize,
+    loading,
+    error,
+    refetch,
   };
 }
 
-export function useCommentStats(postId: number) {
-  const fetchCommentStats = async () => {
-    if (!postId) {
-      return {
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-      };
-    }
-
-    try {
-      const data = await executeGraphQL<CommentStatsResponse, { postId: number }>(GET_COMMENT_STATS.loc?.source.body || '', {
-        postId,
-      });
-
-      return data?.commentStats || {
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-      };
-    } catch (error) {
-      console.error('Failed to fetch comment stats:', error);
-      return {
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-      };
-    }
-  };
+export function useCommentStats(postId: number | undefined) {
+  const { data, loading, error, refetch } = useQuery<CommentStatsResult, { postId: number }>(
+    GET_COMMENT_STATS,
+    {
+      variables: { postId: postId ?? 0 },
+      skip: !postId,
+      fetchPolicy: 'cache-first',
+    },
+  );
 
   return {
-    fetchCommentStats,
+    stats: data?.commentStats || { total: 0, pending: 0, approved: 0, rejected: 0 },
+    loading,
+    error,
+    refetch,
   };
 }

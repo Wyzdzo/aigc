@@ -1,46 +1,38 @@
 // src/features/blog/application/hooks/useCategories.ts
-import { executeGraphQL } from '@/shared/graphql/request';
+import { useQuery } from '@apollo/client/react';
 import { GET_CATEGORIES, GET_CATEGORY_TREE } from '../../infrastructure/graphql/queries';
 import type { BlogCategory } from '@/entities/blog';
 
-interface CategoriesResponse {
+export interface CategoriesResult {
   categories: BlogCategory[];
 }
 
-interface CategoryTreeResponse {
+export interface CategoryTreeResult {
   categoryTree: BlogCategory[];
 }
 
 export function useCategories() {
-  const fetchCategories = async () => {
-    try {
-      const data = await executeGraphQL<CategoriesResponse, Record<string, never>>(GET_CATEGORIES.loc?.source.body || '', {});
-
-      return data?.categories || [];
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-      return [];
-    }
-  };
+  const { data, loading, error, refetch } = useQuery<CategoriesResult>(GET_CATEGORIES, {
+    fetchPolicy: 'cache-first',
+  });
 
   return {
-    fetchCategories,
+    categories: data?.categories || [],
+    loading,
+    error,
+    refetch,
   };
 }
 
 export function useCategoryTree() {
-  const fetchCategoryTree = async () => {
-    try {
-      const data = await executeGraphQL<CategoryTreeResponse, Record<string, never>>(GET_CATEGORY_TREE.loc?.source.body || '', {});
-
-      return data?.categoryTree || [];
-    } catch (error) {
-      console.error('Failed to fetch category tree:', error);
-      return [];
-    }
-  };
+  const { data, loading, error, refetch } = useQuery<CategoryTreeResult>(GET_CATEGORY_TREE, {
+    fetchPolicy: 'cache-first',
+  });
 
   return {
-    fetchCategoryTree,
+    categoryTree: data?.categoryTree || [],
+    loading,
+    error,
+    refetch,
   };
 }

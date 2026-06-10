@@ -1,7 +1,7 @@
 // src/modules/blog/blog.service.ts
 import type { PersistenceTransactionContext } from '@app-types/common/transaction.types';
 import { BlogPostModel, PostStatus, CommentStatus } from '@app-types/models/blog/blog.types';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getTypeOrmEntityManager } from '@src/infrastructure/database/transaction/typeorm-persistence-transaction-context';
 import { Repository, In } from 'typeorm';
@@ -102,23 +102,37 @@ export class BlogService {
     id: number;
     data: UpdatePostData;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<BlogPostEntity> {
     const { id, data, transactionContext } = params;
     const repository = this.getPostRepository(transactionContext);
+
+    const existingPost = await repository.findOne({ where: { id } });
+    if (!existingPost) {
+      throw new NotFoundException(`Post with id ${id} not found`);
+    }
 
     await repository.update(id, {
       ...data,
       updatedAt: new Date(),
     });
+
+    return await repository.findOne({ where: { id } })!;
   }
 
   async deletePost(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { id, transactionContext } = params;
     const repository = this.getPostRepository(transactionContext);
+
+    const existingPost = await repository.findOne({ where: { id } });
+    if (!existingPost) {
+      throw new NotFoundException(`Post with id ${id} not found`);
+    }
+
     await repository.softDelete(id);
+    return true;
   }
 
   async incrementViewCount(params: {
@@ -171,19 +185,33 @@ export class BlogService {
     parentId?: number | null;
     sortOrder?: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<BlogCategoryEntity> {
     const { id, transactionContext, ...updateData } = params;
     const repository = this.getCategoryRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
     await repository.update(id, { ...updateData, updatedAt: new Date() });
+    return await repository.findOne({ where: { id } })!;
   }
 
   async deleteCategory(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { id, transactionContext } = params;
     const repository = this.getCategoryRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
     await repository.delete(id);
+    return true;
   }
 
   // ==================== Tag Operations ====================
@@ -203,10 +231,17 @@ export class BlogService {
   async deleteTag(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { id, transactionContext } = params;
     const repository = this.getTagRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Tag with id ${id} not found`);
+    }
+
     await repository.delete(id);
+    return true;
   }
 
   // ==================== Post-Tag Operations ====================
@@ -273,19 +308,33 @@ export class BlogService {
     id: number;
     status: CommentStatus;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<BlogCommentEntity> {
     const { id, status, transactionContext } = params;
     const repository = this.getCommentRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Comment with id ${id} not found`);
+    }
+
     await repository.update(id, { status });
+    return await repository.findOne({ where: { id } })!;
   }
 
   async deleteComment(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { id, transactionContext } = params;
     const repository = this.getCommentRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Comment with id ${id} not found`);
+    }
+
     await repository.delete(id);
+    return true;
   }
 
   async incrementCommentLikeCount(params: {
@@ -329,19 +378,33 @@ export class BlogService {
     logo?: string | null;
     sortOrder?: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<BlogLinkEntity> {
     const { id, transactionContext, ...updateData } = params;
     const repository = this.getLinkRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Link with id ${id} not found`);
+    }
+
     await repository.update(id, { ...updateData, updatedAt: new Date() });
+    return await repository.findOne({ where: { id } })!;
   }
 
   async deleteLink(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { id, transactionContext } = params;
     const repository = this.getLinkRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Link with id ${id} not found`);
+    }
+
     await repository.delete(id);
+    return true;
   }
 
   // ==================== Repository Helpers ====================

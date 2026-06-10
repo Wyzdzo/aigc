@@ -1,9 +1,9 @@
 // src/features/blog/application/hooks/usePosts.ts
-import { executeGraphQL } from '@/shared/graphql/request';
+import { useQuery } from '@apollo/client/react';
 import { GET_POSTS } from '../../infrastructure/graphql/queries';
-import type { BlogPost, BlogPostQueryParams } from '@/entities/blog';
+import type { BlogPost, PostStatus } from '@/entities/blog';
 
-interface PostsResponse {
+export interface PostsQueryResult {
   posts: {
     items: BlogPost[];
     total: number;
@@ -12,40 +12,40 @@ interface PostsResponse {
   };
 }
 
-interface UsePostsParams extends BlogPostQueryParams {}
+export interface PostsQueryVariables {
+  categoryId?: number;
+  tagId?: number;
+  status?: PostStatus;
+  keyword?: string;
+  page?: number;
+  pageSize?: number;
+}
 
-export function usePosts(params: UsePostsParams = {}) {
-  const { categoryId, tagId, status, keyword, page = 1, pageSize = 10 } = params;
+export function usePosts(variables: PostsQueryVariables = {}) {
+  const { categoryId, tagId, status, keyword, page = 1, pageSize = 10 } = variables;
 
-  const fetchPosts = async () => {
-    try {
-      const data = await executeGraphQL<PostsResponse, { categoryId?: number; tagId?: number; status?: string; keyword?: string; page: number; pageSize: number }>(GET_POSTS.loc?.source.body || '', {
+  const { data, loading, error, refetch } = useQuery<PostsQueryResult, PostsQueryVariables>(
+    GET_POSTS,
+    {
+      variables: {
         categoryId,
         tagId,
         status,
         keyword,
         page,
         pageSize,
-      });
-
-      return {
-        posts: data?.posts?.items || [],
-        total: data?.posts?.total || 0,
-        currentPage: data?.posts?.page || page,
-        pageSize: data?.posts?.pageSize || pageSize,
-      };
-    } catch (error) {
-      console.error('Failed to fetch posts:', error);
-      return {
-        posts: [],
-        total: 0,
-        currentPage: page,
-        pageSize,
-      };
-    }
-  };
+      },
+      fetchPolicy: 'cache-first',
+    },
+  );
 
   return {
-    fetchPosts,
+    posts: data?.posts?.items || [],
+    total: data?.posts?.total || 0,
+    currentPage: data?.posts?.page || page,
+    pageSize: data?.posts?.pageSize || pageSize,
+    loading,
+    error,
+    refetch,
   };
 }
