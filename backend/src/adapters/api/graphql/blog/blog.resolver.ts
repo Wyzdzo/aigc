@@ -15,6 +15,9 @@ import { BlogQueryService } from '@src/modules/blog/queries/blog.query.service';
 import { BlogUsecase } from '@src/usecases/blog/blog.usecase';
 import { PostStatus, CommentStatus, LinkStatus } from '@app-types/models/blog/blog.types';
 
+type OrderByType = 'createdAt' | 'viewCount' | 'likeCount';
+type OrderDirectionType = 'ASC' | 'DESC';
+
 @Resolver(() => BlogPostDTO)
 export class BlogResolver {
   constructor(
@@ -37,8 +40,8 @@ export class BlogResolver {
         tagId: args.tagId,
         status: args.status,
         keyword: args.keyword,
-        orderBy: args.orderBy,
-        orderDirection: args.orderDirection,
+        orderBy: args.orderBy as OrderByType,
+        orderDirection: args.orderDirection as OrderDirectionType,
       },
     });
 

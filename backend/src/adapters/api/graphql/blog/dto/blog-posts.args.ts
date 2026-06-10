@@ -21,4 +21,10 @@ export class BlogPostsArgs {
 
   @Field(() => Int, { description: '每页数量', nullable: true, defaultValue: 10 })
   pageSize?: number;
+
+  @Field(() => String, { description: '排序字段', nullable: true })
+  orderBy?: string;
+
+  @Field(() => String, { description: '排序方向', nullable: true })
+  orderDirection?: string;
 }
