@@ -73,6 +73,10 @@ export function initGraphQLSchema(): {
       'OrderDirection',
       'PaginationMode',
       'SortDirection',
+      // Blog enums
+      'PostStatus',
+      'CommentStatus',
+      'LinkStatus',
     ];
 
     // 生成 Schema 指纹
