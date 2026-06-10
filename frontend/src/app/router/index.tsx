@@ -8,11 +8,14 @@ import {
   useRouteError,
 } from 'react-router';
 
-import { AppLayout } from '@/app/layout';
+import { AppLayout, BlogLayout } from '@/app/layout';
 
 import { ErrorPreviewPage } from '@/pages/error-preview';
 import { HomePage } from '@/pages/home';
 import { ProjectStructurePage } from '@/pages/project-structure';
+import { BlogHomePage } from '@/pages/blog';
+import { BlogDetailPage } from '@/pages/blog/[slug]';
+import { BlogCategoryPage } from '@/pages/blog/category/[id]';
 import { Error403, Error404, Error500, ErrorRouteCrash } from '@/features/error-feedback';
 
 import { getAppEnv } from '@/shared/env';
@@ -97,6 +100,25 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <RouteErrorBoundary />,
     path: '/',
+  },
+  {
+    children: [
+      {
+        element: <BlogHomePage />,
+        index: true,
+      },
+      {
+        element: <BlogDetailPage />,
+        path: ':slug',
+      },
+      {
+        element: <BlogCategoryPage />,
+        path: 'category/:id',
+      },
+    ],
+    element: <BlogLayout />,
+    errorElement: <RouteErrorBoundary />,
+    path: '/blog',
   },
 ]);
 
