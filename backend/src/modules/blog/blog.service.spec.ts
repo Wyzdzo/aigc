@@ -189,6 +189,7 @@ describe('BlogService', () => {
 
   describe('updatePost', () => {
     it('should update post fields', async () => {
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue({ id: 1 } as any);
       const updateSpy = jest.spyOn(postRepository, 'update').mockResolvedValue({ affected: 1 } as any);
 
       await service.updatePost({
@@ -205,15 +206,34 @@ describe('BlogService', () => {
         updatedAt: expect.any(Date),
       });
     });
+
+    it('should throw NotFoundException when post does not exist', async () => {
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(service.updatePost({
+        id: 999,
+        data: { title: 'Updated Title' },
+      })).rejects.toThrow('Post with id 999 not found');
+    });
   });
 
   describe('deletePost', () => {
-    it('should soft delete a post', async () => {
+    it('should soft delete a post and return true', async () => {
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue({ id: 1 } as any);
       const softDeleteSpy = jest.spyOn(postRepository, 'softDelete').mockResolvedValue({ affected: 1 } as any);
 
-      await service.deletePost({ id: 1 });
+      const result = await service.deletePost({ id: 1 });
 
       expect(softDeleteSpy).toHaveBeenCalledWith(1);
+      expect(result).toBe(true);
+    });
+
+    it('should return false when post does not exist', async () => {
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
+
+      const result = await service.deletePost({ id: 999 });
+
+      expect(result).toBe(false);
     });
   });
 

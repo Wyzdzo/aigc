@@ -117,15 +117,35 @@ describe('BlogUsecase', () => {
       expect(blogService.clearPostTags).toHaveBeenCalled();
       expect(blogService.addTagsToPost).toHaveBeenCalled();
     });
+
+    it('should return failure when post update fails', async () => {
+      jest.spyOn(blogService, 'updatePost').mockRejectedValue(new Error('Update failed'));
+
+      const result = await usecase.updatePost({
+        id: 1,
+        data: { title: 'Updated Title' },
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Update failed');
+    });
   });
 
   describe('deletePost', () => {
     it('should delete a post', async () => {
-      jest.spyOn(blogService, 'deletePost').mockResolvedValue();
+      jest.spyOn(blogService, 'deletePost').mockResolvedValue(true);
 
       const result = await usecase.deletePost({ id: 1 });
 
       expect(result.success).toBe(true);
+    });
+
+    it('should return failure when post does not exist', async () => {
+      jest.spyOn(blogService, 'deletePost').mockResolvedValue(false);
+
+      const result = await usecase.deletePost({ id: 999 });
+
+      expect(result.success).toBe(false);
     });
   });
 
@@ -164,6 +184,15 @@ describe('BlogUsecase', () => {
 
       expect(result?.id).toBe(1);
       expect(blogService.incrementViewCount).toHaveBeenCalled();
+    });
+
+    it('should return null when post does not exist', async () => {
+      jest.spyOn(blogService, 'incrementViewCount').mockResolvedValue();
+      jest.spyOn(blogQueryService, 'getPostById').mockResolvedValue(null);
+
+      const result = await usecase.viewPost({ id: 999 });
+
+      expect(result).toBeNull();
     });
   });
 
