@@ -23,28 +23,28 @@ import { mockPosts, mockCategories, mockTags, mockComments, mockLinks } from '..
 
 describe('Blog Hooks', () => {
   describe('usePosts', () => {
-    it('should return posts data', async () => {
+    it('should return posts data with pagination', async () => {
       const mockPostsWithoutContent = mockPosts.map(({ content, ...rest }) => rest);
       const mocks = [
         {
           request: {
             query: GET_POSTS,
-            variables: { page: 1, pageSize: 10 },
+            variables: { page: 1, pageSize: 5 },
           },
           result: {
             data: {
               posts: {
-                items: mockPostsWithoutContent,
+                items: mockPostsWithoutContent.slice(0, 5),
                 total: mockPostsWithoutContent.length,
                 page: 1,
-                pageSize: 10,
+                pageSize: 5,
               },
             },
           },
         },
       ];
 
-      const { result } = renderHook(() => usePosts({ page: 1, pageSize: 10 }), {
+      const { result } = renderHook(() => usePosts({ page: 1, pageSize: 5 }), {
         wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
       });
 
@@ -54,11 +54,12 @@ describe('Blog Hooks', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.posts).toEqual(mockPostsWithoutContent);
+      expect(result.current.posts).toHaveLength(5);
       expect(result.current.total).toBe(mockPostsWithoutContent.length);
+      expect(result.current.currentPage).toBe(1);
     });
 
-    it('should handle error', async () => {
+    it('should handle error gracefully', async () => {
       const mocks = [
         {
           request: {
@@ -75,7 +76,75 @@ describe('Blog Hooks', () => {
 
       await waitFor(() => {
         expect(result.current.error).toBeDefined();
+        expect(result.current.posts).toEqual([]);
+        expect(result.current.total).toBe(0);
       });
+    });
+
+    it('should return empty array when no posts found', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: [],
+                total: 0,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => usePosts({ page: 1, pageSize: 10 }), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.posts).toEqual([]);
+      expect(result.current.total).toBe(0);
+    });
+
+    it('should support category filtering', async () => {
+      const mockPostsWithoutContent = mockPosts
+        .filter(p => p.categoryId === 1)
+        .map(({ content, ...rest }) => rest);
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { page: 1, pageSize: 10, categoryId: 1 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPostsWithoutContent,
+                total: mockPostsWithoutContent.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => usePosts({ page: 1, pageSize: 10, categoryId: 1 }), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.posts).toHaveLength(mockPostsWithoutContent.length);
     });
   });
 
@@ -111,6 +180,51 @@ describe('Blog Hooks', () => {
 
       expect(result.current.post).toBeNull();
       expect(result.current.loading).toBe(false);
+    });
+
+    it('should return null when post not found', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POST_BY_ID,
+            variables: { id: 999 },
+          },
+          result: {
+            data: { post: null },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => usePostById(999), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.post).toBeNull();
+    });
+
+    it('should handle error when fetching post', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POST_BY_ID,
+            variables: { id: 1 },
+          },
+          error: new Error('Database error'),
+        },
+      ];
+
+      const { result } = renderHook(() => usePostById(1), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeDefined();
+        expect(result.current.post).toBeNull();
+      });
     });
   });
 
@@ -218,7 +332,8 @@ describe('Blog Hooks', () => {
   });
 
   describe('useComments', () => {
-    it('should return comments', async () => {
+    it('should return comments with pagination', async () => {
+      const postComments = mockComments.filter(c => c.postId === 1);
       const mocks = [
         {
           request: {
@@ -228,8 +343,8 @@ describe('Blog Hooks', () => {
           result: {
             data: {
               comments: {
-                items: mockComments,
-                total: mockComments.length,
+                items: postComments,
+                total: postComments.length,
                 page: 1,
                 pageSize: 10,
               },
@@ -246,7 +361,61 @@ describe('Blog Hooks', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.items).toEqual(mockComments);
+      expect(result.current.items).toHaveLength(postComments.length);
+      expect(result.current.total).toBe(postComments.length);
+    });
+
+    it('should return empty when no comments found', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 999, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              comments: {
+                items: [],
+                total: 0,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useComments({ postId: 999, page: 1, pageSize: 10 }), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.items).toEqual([]);
+      expect(result.current.total).toBe(0);
+    });
+
+    it('should handle error when fetching comments', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { result } = renderHook(() => useComments({ postId: 1, page: 1, pageSize: 10 }), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeDefined();
+        expect(result.current.items).toEqual([]);
+      });
     });
   });
 
