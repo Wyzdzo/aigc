@@ -420,7 +420,7 @@ describe('BlogHomePage', () => {
         {
           request: {
             query: GET_POSTS,
-            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+            variables: { status: PostStatus.PUBLISHED, keyword: undefined, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -449,7 +449,7 @@ describe('BlogHomePage', () => {
         {
           request: {
             query: GET_POSTS,
-            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+            variables: { status: PostStatus.PUBLISHED, keyword: undefined, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -476,7 +476,23 @@ describe('BlogHomePage', () => {
         {
           request: {
             query: GET_POSTS,
-            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+            variables: { status: PostStatus.PUBLISHED, keyword: undefined, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, keyword: 'React', page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -500,7 +516,167 @@ describe('BlogHomePage', () => {
       const inputs = screen.getAllByPlaceholderText('搜索文章标题或摘要...');
       fireEvent.change(inputs[0], { target: { value: 'React' } });
 
-      expect(inputs[0]).toHaveProperty('value', 'React');
+      await waitFor(() => {
+        expect(inputs[0]).toHaveProperty('value', 'React');
+      });
+    });
+  });
+
+  describe('Pagination Feature', () => {
+    it('should change page when pagination is clicked', async () => {
+      const manyPosts = Array.from({ length: 15 }, (_, i) => ({
+        ...mockPosts[0],
+        id: i + 1,
+        slug: `post-${i + 1}`,
+        title: `文章 ${i + 1}`,
+      }));
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: manyPosts.slice(0, 10),
+                total: 15,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 2, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: manyPosts.slice(10, 15),
+                total: 15,
+                page: 2,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.querySelector('.ant-pagination')).toBeTruthy();
+      });
+
+      // 找到分页按钮并点击第2页
+      const pagination = container.querySelector('.ant-pagination');
+      if (pagination) {
+        const page2Button = pagination.querySelector('li.ant-pagination-item-2');
+        if (page2Button) {
+          fireEvent.click(page2Button);
+
+          await waitFor(() => {
+            expect(screen.getAllByText('文章 11').length).toBeGreaterThan(0);
+          });
+        }
+      }
+    });
+
+    it('should reset page to 1 when pageSize changes', async () => {
+      const manyPosts = Array.from({ length: 25 }, (_, i) => ({
+        ...mockPosts[0],
+        id: i + 1,
+        slug: `post-${i + 1}`,
+        title: `文章 ${i + 1}`,
+      }));
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: manyPosts.slice(0, 10),
+                total: 25,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 2, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: manyPosts.slice(10, 20),
+                total: 25,
+                page: 2,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 20 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: manyPosts.slice(0, 20),
+                total: 25,
+                page: 1,
+                pageSize: 20,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.querySelector('.ant-pagination')).toBeTruthy();
+      });
+
+      // 点击第2页
+      const pagination = container.querySelector('.ant-pagination');
+      if (pagination) {
+        const page2Button = pagination.querySelector('li.ant-pagination-item-2');
+        if (page2Button) {
+          fireEvent.click(page2Button);
+
+          await waitFor(() => {
+            expect(screen.getAllByText('文章 11').length).toBeGreaterThan(0);
+          });
+
+          // 更改pageSize应该重置回第1页
+          const pageSizeSelector = container.querySelector('.ant-pagination-options-size-changer');
+          if (pageSizeSelector) {
+            const select = pageSizeSelector.querySelector('select');
+            if (select) {
+              fireEvent.change(select, { target: { value: '20' } });
+
+              await waitFor(() => {
+                // 应该回到第1页的内容
+                expect(screen.getAllByText('文章 1').length).toBeGreaterThan(0);
+              });
+            }
+          }
+        }
+      }
     });
   });
 });

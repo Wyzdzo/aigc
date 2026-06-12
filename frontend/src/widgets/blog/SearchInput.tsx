@@ -2,7 +2,7 @@
 
 import { Input, Button } from 'antd';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
 const { Search } = Input;
 
@@ -60,7 +60,6 @@ export function SearchInput({
   showClear = true,
   loading = false,
 }: SearchInputProps) {
-  const [keyword, setKeyword] = useState(value);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
@@ -85,7 +84,6 @@ export function SearchInput({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
-      setKeyword(newValue);
 
       // 空值立即触发搜索（清空结果）
       if (newValue === '') {
@@ -117,7 +115,6 @@ export function SearchInput({
    * 清空按钮点击
    */
   const handleClear = useCallback(() => {
-    setKeyword('');
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -128,7 +125,7 @@ export function SearchInput({
   return (
     <div className="flex gap-2">
       <Search
-        value={keyword}
+        value={value}
         onChange={handleChange}
         onSearch={handleSearch}
         placeholder={placeholder}
@@ -137,7 +134,7 @@ export function SearchInput({
         enterButton={<SearchOutlined />}
         style={{ borderRadius: 8 }}
       />
-      {keyword && showClear && (
+      {value && showClear && (
         <Button
           icon={<CloseOutlined />}
           onClick={handleClear}

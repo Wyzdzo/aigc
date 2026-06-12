@@ -17,10 +17,26 @@ export interface MarkdownProps {
  * 自定义 Markdown 组件
  */
 const components: Components = {
-  h1: ({ children }) => <h1 className="text-3xl font-bold mt-8 mb-4">{children}</h1>,
-  h2: ({ children }) => <h2 className="text-2xl font-bold mt-6 mb-3">{children}</h2>,
-  h3: ({ children }) => <h3 className="text-xl font-bold mt-4 mb-2">{children}</h3>,
-  h4: ({ children }) => <h4 className="text-lg font-bold mt-3 mb-2">{children}</h4>,
+  h1: ({ children }) => {
+    const text = typeof children === 'string' ? children : '';
+    const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '');
+    return <h1 id={id} className="text-3xl font-bold mt-8 mb-4">{children}</h1>;
+  },
+  h2: ({ children }) => {
+    const text = typeof children === 'string' ? children : '';
+    const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '');
+    return <h2 id={id} className="text-2xl font-bold mt-6 mb-3">{children}</h2>;
+  },
+  h3: ({ children }) => {
+    const text = typeof children === 'string' ? children : '';
+    const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '');
+    return <h3 id={id} className="text-xl font-bold mt-4 mb-2">{children}</h3>;
+  },
+  h4: ({ children }) => {
+    const text = typeof children === 'string' ? children : '';
+    const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '');
+    return <h4 id={id} className="text-lg font-bold mt-3 mb-2">{children}</h4>;
+  },
   p: ({ children }) => <p className="my-4 leading-relaxed">{children}</p>,
   ul: ({ children }) => <ul className="list-disc list-inside my-4 space-y-2">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal list-inside my-4 space-y-2">{children}</ol>,
@@ -42,11 +58,7 @@ const components: Components = {
       );
     }
 
-    return (
-      <code className={`${className} block my-4 p-4 rounded-lg bg-gray-900 text-gray-100 overflow-x-auto`}>
-        {children}
-      </code>
-    );
+    return <code className={`${className} block my-4 p-4 rounded-lg bg-gray-900 text-gray-100 overflow-x-auto`}>{children}</code>;
   },
   pre: ({ children }) => <pre className="my-4 rounded-lg overflow-hidden">{children}</pre>,
   a: ({ href, children }) => (
@@ -54,9 +66,7 @@ const components: Components = {
       {children}
     </a>
   ),
-  img: ({ src, alt }) => (
-    <img src={src} alt={alt} className="my-4 max-w-full rounded-lg" />
-  ),
+  img: ({ src, alt }) => <img src={src} alt={alt} className="my-4 max-w-full rounded-lg" />,
   table: ({ children }) => (
     <div className="my-4 overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-300">{children}</table>

@@ -3,9 +3,9 @@
 import { Card, Typography, Space, Tag, Divider, Spin, Empty, Breadcrumb, Anchor } from 'antd';
 import { EyeOutlined, LikeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Link, useParams } from 'react-router';
+import { useMemo } from 'react';
 import { usePostBySlug } from '@/features/blog';
 import { Markdown, extractToc, type TocItem } from '@/shared/blog/markdown';
-import { useEffect, useState } from 'react';
 
 const { Title } = Typography;
 
@@ -25,20 +25,9 @@ function formatDate(date: Date): string {
  */
 function TocNavigation({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null;
-
-  const itemsConfig = items.map((item) => ({
-    key: item.id,
-    href: `#${item.id}`,
-    title: item.text,
-  }));
-
+  const itemsConfig = items.map((item) => ({ key: item.id, href: `#${item.id}`, title: item.text }));
   return (
-    <Card
-      size="small"
-      title="目录"
-      style={{ marginBottom: 16 }}
-      styles={{ body: { padding: '12px 16px' } }}
-    >
+    <Card size="small" title="目录" style={{ marginBottom: 16 }} styles={{ body: { padding: '12px 16px' } }}>
       <Anchor items={itemsConfig} targetOffset={100} />
     </Card>
   );
@@ -82,10 +71,7 @@ function ArticleNavigation({
   next?: { slug: string; title: string } | null;
 }) {
   if (!prev && !next) return null;
-
-  return (
-    <Divider>文章导航</Divider>
-  );
+  return <Divider>文章导航</Divider>;
 }
 
 /**
@@ -94,22 +80,23 @@ function ArticleNavigation({
 export function BlogDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { post, loading, error } = usePostBySlug(slug);
-  const [toc, setToc] = useState<TocItem[]>([]);
-  const [viewCount, setViewCount] = useState(0);
 
-  // 提取目录
-  useEffect(() => {
+  const toc = useMemo(() => {
     if (post?.content) {
-      setToc(extractToc(post.content));
+      return extractToc(post.content);
     }
+    return [];
   }, [post?.content]);
 
-  // 阅读量统计（模拟）
-  useEffect(() => {
-    if (post) {
-      setViewCount(post.viewCount + 1);
-    }
-  }, [post]);
+  if (!slug) {
+    return (
+      <Empty description="无效的文章链接" style={{ marginTop: 100 }}>
+        <Link to="/blog">
+          <span>返回首页</span>
+        </Link>
+      </Empty>
+    );
+  }
 
   if (loading) {
     return (
@@ -121,10 +108,7 @@ export function BlogDetailPage() {
 
   if (error || !post) {
     return (
-      <Empty
-        description="文章不存在或加载失败"
-        style={{ marginTop: 100 }}
-      >
+      <Empty description="文章不存在或加载失败" style={{ marginTop: 100 }}>
         <Link to="/blog">
           <span>返回首页</span>
         </Link>
@@ -159,7 +143,7 @@ export function BlogDetailPage() {
           <Space size="middle" style={{ marginBottom: 24 }}>
             {post.isTop && <Tag color="gold">置顶</Tag>}
             <ArticleMeta
-              viewCount={viewCount}
+              viewCount={post.viewCount}
               likeCount={post.likeCount}
               createdAt={post.createdAt}
             />

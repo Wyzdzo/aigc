@@ -3,8 +3,9 @@
 import { Card, List, Avatar, Typography, Space, Tag, Pagination, Spin, Empty } from 'antd';
 import { EyeOutlined, LikeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Link } from 'react-router';
-import { usePosts, useSearch } from '@/features/blog';
-import { PostStatus } from '@/entities/blog';
+import { useState } from 'react';
+import { usePosts } from '@/features/blog';
+import { PostStatus, type BlogPost } from '@/entities/blog';
 import { SearchInput, SearchHighlight } from '@/widgets/blog';
 
 const { Title, Paragraph } = Typography;
@@ -58,7 +59,7 @@ function AuthorCard() {
 /**
  * 置顶文章卡片
  */
-function FeaturedPostCard({ post }: { post: NonNullable<ReturnType<typeof usePosts>['posts']>[0] }) {
+function FeaturedPostCard({ post }: { post: BlogPost }) {
   return (
     <Link to={`/blog/${post.slug}`}>
       <Card
@@ -109,7 +110,7 @@ function PostListItem({
   post,
   keyword,
 }: {
-  post: NonNullable<ReturnType<typeof usePosts>['posts']>[0];
+  post: BlogPost;
   keyword?: string;
 }) {
   return (
@@ -155,13 +156,15 @@ function PostListItem({
  * 博客首页
  */
 export function BlogHomePage() {
-  const { keyword, setKeyword, clearSearch, isSearching, setIsSearching } = useSearch();
+  const [keyword, setKeyword] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const { posts, total, currentPage, pageSize, loading, error } = usePosts({
+  const { posts, total, loading, error } = usePosts({
     status: PostStatus.PUBLISHED,
     keyword: keyword || undefined,
-    page: 1,
-    pageSize: 10,
+    page: currentPage,
+    pageSize,
   });
 
   // 分离置顶文章和非置顶文章
@@ -173,22 +176,27 @@ export function BlogHomePage() {
    */
   const handleSearch = (searchKeyword: string) => {
     setKeyword(searchKeyword);
-    setIsSearching(true);
+    setCurrentPage(1);
   };
 
   /**
    * 清空搜索
    */
   const handleClear = () => {
-    clearSearch();
+    setKeyword('');
+    setCurrentPage(1);
   };
 
   /**
    * 分页切换
    */
   const handlePageChange = (page: number, newPageSize: number) => {
-    // TODO: 实现分页切换逻辑
-    console.log('Page change:', page, newPageSize);
+    if (newPageSize !== pageSize) {
+      setPageSize(newPageSize);
+      setCurrentPage(1);
+    } else {
+      setCurrentPage(page);
+    }
   };
 
   if (error) {
@@ -214,7 +222,7 @@ export function BlogHomePage() {
           value={keyword}
           onSearch={handleSearch}
           onClear={handleClear}
-          loading={loading && isSearching}
+          loading={loading}
           placeholder="搜索文章标题或摘要..."
         />
         {keyword && !loading && (
