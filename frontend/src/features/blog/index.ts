@@ -10,6 +10,7 @@ export * from './application/hooks/useCategories';
 export * from './application/hooks/useTags';
 export * from './application/hooks/useComments';
 export * from './application/hooks/useLinks';
+export * from './application/hooks/useSearch';
 
 // Infrastructure - GraphQL (for testing)
 export { GET_POSTS, GET_POST_BY_SLUG } from './infrastructure/graphql/queries';

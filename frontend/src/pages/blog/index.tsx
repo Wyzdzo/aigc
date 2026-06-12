@@ -3,8 +3,9 @@
 import { Card, List, Avatar, Typography, Space, Tag, Pagination, Spin, Empty } from 'antd';
 import { EyeOutlined, LikeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Link } from 'react-router';
-import { usePosts } from '@/features/blog';
+import { usePosts, useSearch } from '@/features/blog';
 import { PostStatus } from '@/entities/blog';
+import { SearchInput, SearchHighlight } from '@/widgets/blog';
 
 const { Title, Paragraph } = Typography;
 
@@ -104,7 +105,13 @@ function FeaturedPostCard({ post }: { post: NonNullable<ReturnType<typeof usePos
 /**
  * 文章列表项
  */
-function PostListItem({ post }: { post: NonNullable<ReturnType<typeof usePosts>['posts']>[0] }) {
+function PostListItem({
+  post,
+  keyword,
+}: {
+  post: NonNullable<ReturnType<typeof usePosts>['posts']>[0];
+  keyword?: string;
+}) {
   return (
     <List.Item
       style={{ padding: '16px 0' }}
@@ -120,7 +127,9 @@ function PostListItem({ post }: { post: NonNullable<ReturnType<typeof usePosts>[
       <List.Item.Meta
         title={
           <Link to={`/blog/${post.slug}`}>
-            <Title level={5} style={{ marginBottom: 0 }}>{post.title}</Title>
+            <Title level={5} style={{ marginBottom: 0 }}>
+              <SearchHighlight text={post.title} keyword={keyword ?? ''} />
+            </Title>
           </Link>
         }
         description={
@@ -130,7 +139,7 @@ function PostListItem({ post }: { post: NonNullable<ReturnType<typeof usePosts>[
               ellipsis={{ rows: 2 }}
               style={{ marginBottom: 8 }}
             >
-              {post.summary}
+              <SearchHighlight text={post.summary ?? ''} keyword={keyword ?? ''} />
             </Paragraph>
             <Space size="middle">
               <CalendarOutlined /> {formatDate(post.createdAt)}
@@ -146,8 +155,11 @@ function PostListItem({ post }: { post: NonNullable<ReturnType<typeof usePosts>[
  * 博客首页
  */
 export function BlogHomePage() {
+  const { keyword, setKeyword, clearSearch, isSearching, setIsSearching } = useSearch();
+
   const { posts, total, currentPage, pageSize, loading, error } = usePosts({
     status: PostStatus.PUBLISHED,
+    keyword: keyword || undefined,
     page: 1,
     pageSize: 10,
   });
@@ -156,6 +168,24 @@ export function BlogHomePage() {
   const featuredPost = posts.find((post) => post.isTop);
   const regularPosts = posts.filter((post) => !post.isTop);
 
+  /**
+   * 搜索处理
+   */
+  const handleSearch = (searchKeyword: string) => {
+    setKeyword(searchKeyword);
+    setIsSearching(true);
+  };
+
+  /**
+   * 清空搜索
+   */
+  const handleClear = () => {
+    clearSearch();
+  };
+
+  /**
+   * 分页切换
+   */
   const handlePageChange = (page: number, newPageSize: number) => {
     // TODO: 实现分页切换逻辑
     console.log('Page change:', page, newPageSize);
@@ -175,6 +205,25 @@ export function BlogHomePage() {
       {/* 博主简介 */}
       <AuthorCard />
 
+      {/* 搜索框 */}
+      <Card
+        style={{ marginBottom: 24, borderRadius: 8 }}
+        styles={{ body: { padding: 16 } }}
+      >
+        <SearchInput
+          value={keyword}
+          onSearch={handleSearch}
+          onClear={handleClear}
+          loading={loading && isSearching}
+          placeholder="搜索文章标题或摘要..."
+        />
+        {keyword && !loading && (
+          <div style={{ marginTop: 8, color: '#9ca3af' }}>
+            找到 {total} 篇相关文章
+          </div>
+        )}
+      </Card>
+
       {/* 加载状态 */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: 40 }}>
@@ -182,8 +231,8 @@ export function BlogHomePage() {
         </div>
       ) : (
         <>
-          {/* 置顶文章 */}
-          {featuredPost && (
+          {/* 置顶文章（搜索时隐藏） */}
+          {!keyword && featuredPost && (
             <FeaturedPostCard post={featuredPost} />
           )}
 
@@ -194,8 +243,8 @@ export function BlogHomePage() {
           >
             <List
               dataSource={regularPosts}
-              renderItem={(post) => <PostListItem post={post} />}
-              locale={{ emptyText: '暂无文章' }}
+              renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
+              locale={{ emptyText: keyword ? '未找到相关文章' : '暂无文章' }}
             />
 
             {/* 分页 */}

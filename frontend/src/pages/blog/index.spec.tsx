@@ -1,7 +1,7 @@
 // src/pages/blog/index.spec.tsx
 
 import { describe, expect, it, beforeAll, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { MockedProvider } from '@apollo/client/testing/react';
 import { BlogHomePage } from './index';
@@ -411,6 +411,96 @@ describe('BlogHomePage', () => {
       // 检查日期格式化 - 使用正则匹配
       expect(screen.getAllByText(/2024年1月15日/).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/2024年1月10日/).length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Search Feature', () => {
+    it('should render search input', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.querySelector('.ant-input-search')).toBeTruthy();
+      });
+
+      expect(screen.getAllByPlaceholderText('搜索文章标题或摘要...').length).toBeGreaterThan(0);
+    });
+
+    it('should render search card', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.querySelectorAll('.ant-card').length).toBeGreaterThan(1);
+      });
+    });
+
+    it('should allow search input change', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.querySelector('.ant-input-search')).toBeTruthy();
+      });
+
+      const inputs = screen.getAllByPlaceholderText('搜索文章标题或摘要...');
+      fireEvent.change(inputs[0], { target: { value: 'React' } });
+
+      expect(inputs[0]).toHaveProperty('value', 'React');
     });
   });
 });
