@@ -2,11 +2,12 @@
 
 import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { message } from 'antd';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { GET_POST_BY_SLUG } from '@/features/blog';
+import { GET_POST_BY_SLUG, LIKE_POST } from '@/features/blog';
 
 import { BlogDetailPage } from './[slug]';
 
@@ -412,6 +413,123 @@ describe('BlogDetailPage', () => {
 
       await waitFor(() => {
         expect(container.querySelector('.ant-tag')).toBeNull();
+      });
+    });
+  });
+
+  describe('Like Button', () => {
+    beforeAll(() => {
+      vi.spyOn(message, 'success').mockReturnValue({} as ReturnType<typeof message.success>);
+      vi.spyOn(message, 'info').mockReturnValue({} as ReturnType<typeof message.info>);
+      vi.spyOn(message, 'error').mockReturnValue({} as ReturnType<typeof message.error>);
+    });
+
+    afterAll(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should render like button with initial count', async () => {
+      const mocks = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        const likeButton = container.querySelector('button:has(.anticon-like)');
+        expect(likeButton).toBeTruthy();
+      });
+
+      const likeButton = container.querySelector('button:has(.anticon-like)');
+      expect(likeButton?.textContent).toContain('56');
+    });
+
+    it('should call likePost mutation when like button is clicked', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: LIKE_POST,
+            variables: { id: mockPostWithToc.id },
+          },
+          result: {
+            data: {
+              likePost: {
+                ...mockPostWithToc,
+                likeCount: mockPostWithToc.likeCount + 1,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        const likeButton = container.querySelector('button:has(.anticon-like)');
+        expect(likeButton).toBeTruthy();
+      });
+
+      const likeButton = container.querySelector('button:has(.anticon-like)');
+      if (likeButton) {
+        fireEvent.click(likeButton);
+      }
+
+      await waitFor(() => {
+        expect(message.success).toHaveBeenCalledWith('点赞成功');
+      });
+    });
+
+    it('should show error message when like mutation fails', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: LIKE_POST,
+            variables: { id: mockPostWithToc.id },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        const likeButton = container.querySelector('button:has(.anticon-like)');
+        expect(likeButton).toBeTruthy();
+      });
+
+      const likeButton = container.querySelector('button:has(.anticon-like)');
+      if (likeButton) {
+        fireEvent.click(likeButton);
+      }
+
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith('点赞失败，请稍后重试');
       });
     });
   });

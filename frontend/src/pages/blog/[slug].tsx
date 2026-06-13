@@ -1,11 +1,24 @@
 // src/pages/blog/[slug].tsx
 
-import { useEffect,useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined, MenuOutlined } from '@ant-design/icons';
-import { Anchor, Breadcrumb, Button,Card, Divider, Drawer, Empty, Space, Spin, Tag, Typography } from 'antd';
+import {
+  Anchor,
+  Breadcrumb,
+  Button,
+  Card,
+  Divider,
+  Drawer,
+  Empty,
+  Space,
+  Spin,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { Link, useParams } from 'react-router';
 
-import { usePostBySlug } from '@/features/blog';
+import { useLikePost, usePostBySlug } from '@/features/blog';
 
 import { Markdown } from '@/shared/blog/markdown';
 import { extractToc, type TocItem } from '@/shared/lib/markdownUtils';
@@ -41,23 +54,34 @@ function TocNavigation({ items }: { items: TocItem[] }) {
  * 文章元信息组件
  */
 function ArticleMeta({
+  postId,
   viewCount,
   likeCount,
   createdAt,
 }: {
+  postId: number;
   viewCount: number;
   likeCount: number;
   createdAt: Date;
 }) {
+  const { likePost, loading: likeLoading } = useLikePost();
+
   return (
     <div className="text-gray-400">
       <Space size="middle">
         <span>
           <EyeOutlined /> {viewCount}
         </span>
-        <span>
-          <LikeOutlined /> {likeCount}
-        </span>
+        <Tooltip title="点赞">
+          <button
+            type="button"
+            className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none p-0"
+            onClick={() => likePost(postId)}
+            disabled={likeLoading}
+          >
+            <LikeOutlined /> {likeCount}
+          </button>
+        </Tooltip>
         <span>
           <CalendarOutlined /> {formatDate(createdAt)}
         </span>
@@ -180,6 +204,7 @@ export function BlogDetailPage() {
             <Space size="middle" style={{ marginBottom: 24, flexWrap: 'wrap' }}>
               {post.isTop && <Tag color="gold">置顶</Tag>}
               <ArticleMeta
+                postId={post.id}
                 viewCount={post.viewCount}
                 likeCount={post.likeCount}
                 createdAt={post.createdAt}

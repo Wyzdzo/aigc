@@ -1,12 +1,12 @@
 // src/pages/blog/index.tsx
 
-import { useEffect,useState } from 'react';
-import { CalendarOutlined, EyeOutlined, FilterOutlined,LikeOutlined } from '@ant-design/icons';
-import { Avatar, Button,Card, Drawer, Empty, List, Space, Spin, Tag, Typography } from 'antd';
+import { useEffect, useState } from 'react';
+import { CalendarOutlined, EyeOutlined, FilterOutlined, LikeOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { Link } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
-import { usePosts } from '@/features/blog';
+import { useLikePost, usePosts } from '@/features/blog';
 
 import { type BlogPost,PostStatus } from '@/entities/blog';
 
@@ -119,6 +119,8 @@ function PostListItem({
   post: BlogPost;
   keyword?: string;
 }) {
+  const { likePost, loading: likeLoading } = useLikePost();
+
   return (
     <List.Item
       style={{ padding: '16px 0' }}
@@ -126,9 +128,21 @@ function PostListItem({
         <span key="views">
           <EyeOutlined /> {post.viewCount}
         </span>,
-        <span key="likes">
-          <LikeOutlined /> {post.likeCount}
-        </span>,
+        <Tooltip title="点赞">
+          <button
+            type="button"
+            key="likes"
+            className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none p-0"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              likePost(post.id);
+            }}
+            disabled={likeLoading}
+          >
+            <LikeOutlined /> {post.likeCount}
+          </button>
+        </Tooltip>,
       ]}
     >
       <List.Item.Meta
