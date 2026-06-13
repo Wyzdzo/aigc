@@ -6,7 +6,7 @@ import { Link } from 'react-router';
 import { useState } from 'react';
 import { usePosts } from '@/features/blog';
 import { PostStatus, type BlogPost } from '@/entities/blog';
-import { SearchInput, SearchHighlight } from '@/widgets/blog';
+import { SearchInput, SearchHighlight, CategoryTree, TagCloud } from '@/widgets/blog';
 
 const { Title, Paragraph } = Typography;
 
@@ -157,12 +157,16 @@ function PostListItem({
  */
 export function BlogHomePage() {
   const [keyword, setKeyword] = useState('');
+  const [categoryId, setCategoryId] = useState<number | undefined>();
+  const [tagId, setTagId] = useState<number | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const { posts, total, loading, error } = usePosts({
     status: PostStatus.PUBLISHED,
     keyword: keyword || undefined,
+    categoryId,
+    tagId,
     page: currentPage,
     pageSize,
   });
@@ -188,6 +192,32 @@ export function BlogHomePage() {
   };
 
   /**
+   * 分类筛选
+   */
+  const handleCategoryChange = (newCategoryId: number | undefined) => {
+    setCategoryId(newCategoryId);
+    setCurrentPage(1);
+  };
+
+  /**
+   * 标签筛选
+   */
+  const handleTagChange = (newTagId: number | undefined) => {
+    setTagId(newTagId);
+    setCurrentPage(1);
+  };
+
+  /**
+   * 清除所有筛选
+   */
+  const handleClearFilters = () => {
+    setCategoryId(undefined);
+    setTagId(undefined);
+    setKeyword('');
+    setCurrentPage(1);
+  };
+
+  /**
    * 分页切换
    */
   const handlePageChange = (page: number, newPageSize: number) => {
@@ -199,6 +229,9 @@ export function BlogHomePage() {
     }
   };
 
+  // 检查是否有任何筛选条件
+  const hasFilters = keyword || categoryId || tagId;
+
   if (error) {
     return (
       <Empty
@@ -209,69 +242,104 @@ export function BlogHomePage() {
   }
 
   return (
-    <div>
-      {/* 博主简介 */}
-      <AuthorCard />
+    <div style={{ display: 'flex', gap: 24 }}>
+      {/* 侧边栏 */}
+      <aside style={{ width: 260, flexShrink: 0 }}>
+        {/* 分类树 */}
+        <Card
+          style={{ marginBottom: 24, borderRadius: 8 }}
+          styles={{ body: { padding: 16 } }}
+        >
+          <CategoryTree
+            selectedId={categoryId}
+            onChange={handleCategoryChange}
+          />
+        </Card>
 
-      {/* 搜索框 */}
-      <Card
-        style={{ marginBottom: 24, borderRadius: 8 }}
-        styles={{ body: { padding: 16 } }}
-      >
-        <SearchInput
-          value={keyword}
-          onSearch={handleSearch}
-          onClear={handleClear}
-          loading={loading}
-          placeholder="搜索文章标题或摘要..."
-        />
-        {keyword && !loading && (
-          <div style={{ marginTop: 8, color: '#9ca3af' }}>
-            找到 {total} 篇相关文章
-          </div>
-        )}
-      </Card>
+        {/* 标签云 */}
+        <Card
+          style={{ borderRadius: 8 }}
+          styles={{ body: { padding: 16 } }}
+        >
+          <TagCloud selectedId={tagId} onChange={handleTagChange} />
+        </Card>
+      </aside>
 
-      {/* 加载状态 */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 40 }}>
-          <Spin size="large" />
-        </div>
-      ) : (
-        <>
-          {/* 置顶文章（搜索时隐藏） */}
-          {!keyword && featuredPost && (
-            <FeaturedPostCard post={featuredPost} />
+      {/* 主内容区 */}
+      <main style={{ flex: 1 }}>
+        {/* 博主简介 */}
+        <AuthorCard />
+
+        {/* 搜索框 */}
+        <Card
+          style={{ marginBottom: 24, borderRadius: 8 }}
+          styles={{ body: { padding: 16 } }}
+        >
+          <SearchInput
+            value={keyword}
+            onSearch={handleSearch}
+            onClear={handleClear}
+            loading={loading}
+            placeholder="搜索文章标题或摘要..."
+          />
+          {hasFilters && !loading && (
+            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ color: '#9ca3af' }}>
+                {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
+              </span>
+              <Tag
+                closable
+                onClose={handleClearFilters}
+                color="blue"
+                style={{ cursor: 'pointer' }}
+              >
+                清除筛选
+              </Tag>
+            </div>
           )}
+        </Card>
 
-          {/* 文章列表 */}
-          <Card
-            style={{ borderRadius: 8 }}
-            styles={{ body: { padding: '0 24px' } }}
-          >
-            <List
-              dataSource={regularPosts}
-              renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
-              locale={{ emptyText: keyword ? '未找到相关文章' : '暂无文章' }}
-            />
-
-            {/* 分页 */}
-            {total > pageSize && (
-              <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <Pagination
-                  current={currentPage}
-                  pageSize={pageSize}
-                  total={total}
-                  onChange={handlePageChange}
-                  showSizeChanger
-                  showQuickJumper
-                  showTotal={(total) => `共 ${total} 篇文章`}
-                />
-              </div>
+        {/* 加载状态 */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
+            {/* 置顶文章（有筛选时隐藏） */}
+            {!hasFilters && featuredPost && (
+              <FeaturedPostCard post={featuredPost} />
             )}
-          </Card>
-        </>
-      )}
+
+            {/* 文章列表 */}
+            <Card
+              style={{ borderRadius: 8 }}
+              styles={{ body: { padding: '0 24px' } }}
+            >
+              <List
+                dataSource={regularPosts}
+                renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
+                locale={{ emptyText: hasFilters ? '未找到相关文章' : '暂无文章' }}
+              />
+
+              {/* 分页 */}
+              {total > pageSize && (
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={total}
+                    onChange={handlePageChange}
+                    showSizeChanger
+                    showQuickJumper
+                    showTotal={(total) => `共 ${total} 篇文章`}
+                  />
+                </div>
+              )}
+            </Card>
+          </>
+        )}
+      </main>
     </div>
   );
 }

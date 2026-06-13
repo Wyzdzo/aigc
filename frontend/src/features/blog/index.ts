@@ -13,4 +13,4 @@ export * from './application/hooks/useLinks';
 export * from './application/hooks/useSearch';
 
 // Infrastructure - GraphQL (for testing)
-export { GET_POSTS, GET_POST_BY_SLUG } from './infrastructure/graphql/queries';
+export { GET_POSTS, GET_POST_BY_SLUG, GET_TAGS, GET_CATEGORY_TREE } from './infrastructure/graphql/queries';
