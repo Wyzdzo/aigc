@@ -6,7 +6,7 @@ import { message } from 'antd';
 import type { BlogPost } from '@/entities/blog';
 
 import { LIKE_POST } from '../../infrastructure/graphql/mutations';
-import { GET_POST_BY_ID, GET_POSTS } from '../../infrastructure/graphql/queries';
+import { GET_POST_BY_ID, GET_POST_BY_SLUG, GET_POSTS } from '../../infrastructure/graphql/queries';
 
 interface LikePostResult {
   likePost: BlogPost;
@@ -40,11 +40,14 @@ export function useLikePost() {
           update: (cache, { data }) => {
             if (!data?.likePost) return;
 
-            // 更新 GET_POST_BY_ID 缓存
+            // 获取文章 slug 用于更新其他缓存
             const existingPostById = cache.readQuery<{ post: BlogPost | null }, { id: number }>({
               query: GET_POST_BY_ID,
               variables: { id: postId },
             });
+            const slug = existingPostById?.post?.slug ?? data.likePost.slug;
+
+            // 更新 GET_POST_BY_ID 缓存
             if (existingPostById?.post) {
               cache.writeQuery({
                 query: GET_POST_BY_ID,
@@ -56,6 +59,26 @@ export function useLikePost() {
                   },
                 },
               });
+            }
+
+            // 更新 GET_POST_BY_SLUG 缓存（文章详情页）
+            if (slug) {
+              const existingPostBySlug = cache.readQuery<{ postBySlug: BlogPost | null }, { slug: string }>({
+                query: GET_POST_BY_SLUG,
+                variables: { slug },
+              });
+              if (existingPostBySlug?.postBySlug) {
+                cache.writeQuery({
+                  query: GET_POST_BY_SLUG,
+                  variables: { slug },
+                  data: {
+                    postBySlug: {
+                      ...existingPostBySlug.postBySlug,
+                      likeCount: data.likePost.likeCount,
+                    },
+                  },
+                });
+              }
             }
 
             // 更新 GET_POSTS 缓存（文章列表）

@@ -6,7 +6,7 @@ import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, T
 import { Link } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
-import { useLikePost, usePosts } from '@/features/blog';
+import { useCategoryTree, useLikePost, usePosts, useTags } from '@/features/blog';
 
 import { type BlogPost,PostStatus } from '@/entities/blog';
 
@@ -29,6 +29,14 @@ function formatDate(date: Date): string {
  * 博主简介卡片
  */
 function AuthorCard() {
+  const { posts } = usePosts({ status: PostStatus.PUBLISHED });
+  const { categoryTree } = useCategoryTree();
+  const { tags } = useTags();
+
+  const postCount = posts.length;
+  const categoryCount = categoryTree.length;
+  const tagCount = tags.length;
+
   return (
     <Card
       style={{
@@ -50,9 +58,9 @@ function AuthorCard() {
             分享工作中的技术积累和最佳实践，希望与大家一起成长。
           </Paragraph>
           <Space size="middle">
-            <span>文章 10</span>
-            <span>分类 5</span>
-            <span>标签 10</span>
+            <span>文章 {postCount}</span>
+            <span>分类 {categoryCount}</span>
+            <span>标签 {tagCount}</span>
           </Space>
         </div>
       </Space>
