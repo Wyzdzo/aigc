@@ -3,10 +3,10 @@
   "description": "博客开发每日提示词计划",
   "totalDays": 35,
   "currentProgress": {
-    "completedDays": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-    "currentDay": 17,
+    "completedDays": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+    "currentDay": 18,
     "lastUpdated": "2026-06-13",
-    "note": "Day 17 评论嵌套（楼中楼）已完成，单元测试已补充"
+    "note": "Day 18 留言系统已完成，单元测试已补充"
   },
   "weeks": [
     {
