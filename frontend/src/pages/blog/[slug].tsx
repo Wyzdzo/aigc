@@ -18,7 +18,8 @@ import {
 } from 'antd';
 import { Link, useParams } from 'react-router';
 
-import { useLikePost, usePostBySlug } from '@/features/blog';
+import { CommentForm, CommentList } from '@/widgets/blog';
+import { useComments,useLikePost, usePostBySlug } from '@/features/blog';
 
 import { Markdown } from '@/shared/blog/markdown';
 import { extractToc, type TocItem } from '@/shared/lib/markdownUtils';
@@ -112,6 +113,7 @@ export function BlogDetailPage() {
   const { post, loading, error } = usePostBySlug(slug);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { items: comments, total, loading: commentsLoading, refetch } = useComments({ postId: post?.id });
 
   // 检测是否为移动端
   useEffect(() => {
@@ -235,6 +237,23 @@ export function BlogDetailPage() {
 
           {/* 文章导航 */}
           <ArticleNavigation prev={null} next={null} />
+
+          {/* 评论区域 */}
+          <Card style={{ borderRadius: 8, marginTop: 24 }} styles={{ body: { padding: isMobile ? 16 : 24 } }}>
+            <Title level={isMobile ? 4 : 3} style={{ marginBottom: 16 }}>
+              评论 ({total})
+            </Title>
+            <div style={{ marginBottom: 24 }}>
+              <CommentForm postId={post.id} />
+            </div>
+            <Divider style={{ margin: '16px 0' }} />
+            <CommentList
+              comments={comments}
+              loading={commentsLoading}
+              postId={post.id}
+              onReply={() => refetch()}
+            />
+          </Card>
         </div>
 
         {/* 桌面端侧边栏 */}

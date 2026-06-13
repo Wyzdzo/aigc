@@ -7,7 +7,7 @@ import { message } from 'antd';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { GET_POST_BY_SLUG, LIKE_POST } from '@/features/blog';
+import { CommentStatus, GET_COMMENTS, GET_POST_BY_SLUG, LIKE_POST } from '@/features/blog';
 
 import { BlogDetailPage } from './[slug]';
 
@@ -108,6 +108,63 @@ Suspense 在 React 18 中得到了显著改进。
   categoryId: 1,
   createdAt: new Date('2024-01-15'),
   updatedAt: new Date('2024-01-15'),
+};
+
+/**
+ * Mock 评论数据
+ */
+const mockComments = [
+  {
+    id: 1,
+    postId: 1,
+    parentId: null,
+    nickname: '张三',
+    email: 'zhangsan@example.com',
+    avatar: 'https://ui-avatars.com/api/?name=张三&background=random',
+    content: '文章写得很棒，学到了很多！',
+    status: CommentStatus.APPROVED,
+    likeCount: 12,
+    createdAt: new Date('2024-01-16'),
+    updatedAt: new Date('2024-01-16'),
+  },
+  {
+    id: 2,
+    postId: 1,
+    parentId: 1,
+    nickname: '李四',
+    email: 'lisi@example.com',
+    avatar: 'https://ui-avatars.com/api/?name=李四&background=random',
+    content: '同意楼上的观点，React 18 的并发渲染确实很强大。',
+    status: CommentStatus.APPROVED,
+    likeCount: 5,
+    createdAt: new Date('2024-01-16'),
+    updatedAt: new Date('2024-01-16'),
+  },
+  {
+    id: 3,
+    postId: 1,
+    parentId: null,
+    nickname: '王五',
+    email: 'wangwu@example.com',
+    avatar: null,
+    content: '写得不错，期待更多类似的内容。',
+    status: CommentStatus.APPROVED,
+    likeCount: 3,
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date('2024-01-15'),
+  },
+];
+
+/**
+ * Mock 评论列表响应
+ */
+const mockCommentsResponse = {
+  comments: {
+    items: mockComments,
+    total: 3,
+    page: 1,
+    pageSize: 10,
+  },
 };
 
 /**
@@ -530,6 +587,168 @@ describe('BlogDetailPage', () => {
 
       await waitFor(() => {
         expect(message.error).toHaveBeenCalledWith('点赞失败，请稍后重试');
+      });
+    });
+  });
+
+  describe('Comment Section', () => {
+    it('should render comment section with form', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: mockCommentsResponse,
+          },
+        },
+      ];
+
+      render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/评论/).length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should render comment count in section title', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: mockCommentsResponse,
+          },
+        },
+      ];
+
+      render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(screen.getAllByText('评论 (3)').length).toBeGreaterThan(0);
+      });
+    });
+
+    it('should render comment form with nickname and content fields', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: mockCommentsResponse,
+          },
+        },
+      ];
+
+      const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        const nicknameInput = container.querySelector('input[placeholder="昵称"]');
+        const contentTextarea = container.querySelector('textarea[placeholder="写下你的评论..."]');
+        expect(nicknameInput).toBeTruthy();
+        expect(contentTextarea).toBeTruthy();
+      });
+    });
+
+    it('should render nested comments with reply indicators', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: mockCommentsResponse,
+          },
+        },
+      ];
+
+      render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 验证根评论显示
+        expect(screen.getAllByText('张三').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('王五').length).toBeGreaterThan(0);
+      });
+
+      // 验证回复评论（嵌套评论）也显示
+      expect(screen.getAllByText('李四').length).toBeGreaterThan(0);
+    });
+
+    it('should show empty state when no comments', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              comments: {
+                items: [],
+                total: 0,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/暂无评论/).length).toBeGreaterThan(0);
       });
     });
   });
