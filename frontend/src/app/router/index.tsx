@@ -15,6 +15,7 @@ import { BlogAboutPage } from '@/pages/blog/about';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
+import { BlogGuestbookPage } from '@/pages/blog/guestbook';
 import { BlogHomePage } from '@/pages/blog/index';
 import { BlogTagsPage } from '@/pages/blog/tags';
 import { ErrorPreviewPage } from '@/pages/error-preview';
@@ -134,6 +135,10 @@ const router = createBrowserRouter([
       {
         element: <BlogTagsPage />,
         path: 'tags',
+      },
+      {
+        element: <BlogGuestbookPage />,
+        path: 'guestbook',
       },
       {
         element: <BlogAboutPage />,
