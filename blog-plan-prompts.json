@@ -2,6 +2,12 @@
   "project": "AIGC Blog",
   "description": "博客开发每日提示词计划",
   "totalDays": 35,
+  "currentProgress": {
+    "completedDays": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+    "currentDay": 17,
+    "lastUpdated": "2026-06-13",
+    "note": "Day 17 评论嵌套（楼中楼）已完成，单元测试已补充"
+  },
   "weeks": [
     {
       "week": 1,
@@ -22,13 +28,13 @@
         {
           "day": 3,
           "title": "后端Service和Resolver",
-          "prompt": "实现博客模块业务逻辑：\n1. BlogService在src/modules/blog/blog.service.ts（CRUD操作）\n2. BlogQueryService在src/modules/blog/blog.query.service.ts（只读查询）\n3. BlogUsecase在src/usecases/blog/blog.usecase.ts（业务编排）\n4. BlogResolver在src/adapters/api/graphql/blog/blog.resolver.ts\n5. 基础查询：posts, post, categories, tags, comments\n6. 基础变更：createPost, updatePost, deletePost, createComment\n\n遵守规则：\n- Resolver只做输入输出转换，不包含业务逻辑\n- QueryService只做查询，不做写操作\n- Service做单一领域操作\n- Usecase做业务编排和事务管理\n- GraphQL装饰器只在adapters层"
+          "prompt": "实现博客模块业务逻辑：\n1. BlogService在src/modules/blog/blog.service.ts（CRUD操作）\n2. BlogQueryService在src/modules/blog/blog.query.service.ts（只读查询）\n3. BlogUsecase在src/usecases/blog/blog.usecase.ts（业务编排）\n4. BlogResolver在src/adapters/api/graphql/blog/blog.resolver.ts\n5. 基础查询：posts, post, categories, tags, comments\n6. 基础变更：createPost, updatePost, deletePost, createComment\n\n遵守规则：\n- Resolver只做输入输出转换，不包含业务逻辑\n- QueryService只做查询，不做写操作\n- Service做单一领域操作\n- Usecase做业务编排和事务管理\n- GraphQL装饰器只在adapters层",
           "review": "检查Resolver是否足够薄，业务逻辑是否在Service层"
         },
         {
           "day": 4,
           "title": "前端Feature架构",
-          "prompt": "创建博客前端Feature：\n1. src/entities/blog/model.ts（数据模型，纯类型定义）\n2. src/features/blog/application/（业务逻辑）\n3. src/features/blog/infrastructure/graphql/queries.ts（GraphQL查询）\n4. src/features/blog/infrastructure/graphql/mutations.ts（GraphQL变更）\n5. src/features/blog/infrastructure/mock/mock.ts（Mock数据）\n\n遵守规则：\n- features只能依赖entities和shared\n- Mock是infrastructure，不是domain\n- 不把API调用直接放在pages或widgets\n- 跨模块导入只允许走公开API（index.ts）"
+          "prompt": "创建博客前端Feature：\n1. src/entities/blog/model.ts（数据模型，纯类型定义）\n2. src/features/blog/application/（业务逻辑）\n3. src/features/blog/infrastructure/graphql/queries.ts（GraphQL查询）\n4. src/features/blog/infrastructure/graphql/mutations.ts（GraphQL变更）\n5. src/features/blog/infrastructure/mock/mock.ts（Mock数据）\n\n遵守规则：\n- features只能依赖entities和shared\n- Mock是infrastructure，不是domain\n- 不把API调用直接放在pages或widgets\n- 跨模块导入只允许走公开API（index.ts）",
           "review": "检查目录结构是否正确，Mock是否在infrastructure"
         },
         {
@@ -58,7 +64,7 @@
         {
           "day": 8,
           "title": "博客首页",
-          "prompt": "实现博客首页：\n1. 创建src/pages/blog/index.tsx\n2. 文章列表（支持分页）\n3. 置顶文章展示\n4. 博主简介组件\n\n遵守规则：\n- 使用Ant Design的List或Card组件做业务UI\n- Tailwind只用于布局包装（wrapper元素）\n- 不直接在Ant Design组件上使用Tailwind className\n- 数据通过features获取\n- 颜色、圆角、阴影使用Ant Design tokens"
+          "prompt": "实现博客首页：\n1. 创建src/pages/blog/index.tsx\n2. 文章列表（支持分页）\n3. 置顶文章展示\n4. 博主简介组件\n\n遵守规则：\n- 使用Ant Design的List或Card组件做业务UI\n- Tailwind只用于布局包装（wrapper元素）\n- 不直接在Ant Design组件上使用Tailwind className\n- 数据通过features获取\n- 颜色、圆角、阴影使用Ant Design tokens",
           "review": "检查首页布局和功能"
         },
         {
