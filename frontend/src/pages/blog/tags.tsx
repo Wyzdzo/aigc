@@ -1,6 +1,7 @@
 // src/pages/blog/tags.tsx
 
 import { useTags } from '@/features/blog';
+
 import type { BlogTag } from '@/entities/blog';
 
 export function BlogTagsPage() {

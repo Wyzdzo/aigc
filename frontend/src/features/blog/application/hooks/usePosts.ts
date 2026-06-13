@@ -1,7 +1,9 @@
 // src/features/blog/application/hooks/usePosts.ts
 import { useQuery } from '@apollo/client/react';
-import { GET_POSTS } from '../../infrastructure/graphql/queries';
+
 import type { BlogPost, PostStatus } from '@/entities/blog';
+
+import { GET_POSTS } from '../../infrastructure/graphql/queries';
 
 export interface PostsQueryResult {
   posts: {

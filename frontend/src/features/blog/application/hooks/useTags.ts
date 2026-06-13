@@ -1,7 +1,9 @@
 // src/features/blog/application/hooks/useTags.ts
 import { useQuery } from '@apollo/client/react';
-import { GET_TAGS, GET_POST_TAGS } from '../../infrastructure/graphql/queries';
+
 import type { BlogTag } from '@/entities/blog';
+
+import { GET_POST_TAGS,GET_TAGS } from '../../infrastructure/graphql/queries';
 
 export interface TagsResult {
   tags: BlogTag[];

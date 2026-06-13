@@ -1,7 +1,9 @@
 // src/features/blog/application/hooks/useLinks.ts
 import { useQuery } from '@apollo/client/react';
-import { GET_LINKS, GET_ACTIVE_LINKS } from '../../infrastructure/graphql/queries';
+
 import type { BlogLink } from '@/entities/blog';
+
+import { GET_ACTIVE_LINKS,GET_LINKS } from '../../infrastructure/graphql/queries';
 
 export interface LinksResult {
   links: BlogLink[];

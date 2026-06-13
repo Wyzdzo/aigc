@@ -1,7 +1,8 @@
 // src/shared/ui/LazyImage.spec.tsx
 
-import { describe, expect, it, vi, beforeAll } from 'vitest';
 import { render } from '@testing-library/react';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { LazyImage } from './LazyImage';
 
 // Mock IntersectionObserver - 立即触发回调
@@ -41,23 +42,9 @@ describe('LazyImage', () => {
     it('should render with placeholder initially', () => {
       const { container } = render(<LazyImage src={testImageUrl} alt={testAltText} />);
 
-      const placeholder = container.firstChild;
+      const placeholder = container.firstChild as HTMLElement;
       expect(placeholder).toBeTruthy();
-      expect((placeholder as HTMLElement).style.background).toBe('rgb(245, 245, 245)');
-    });
-
-    it('should use custom placeholder color', () => {
-      const customColor = '#e0e0e0';
-      const { container } = render(
-        <LazyImage
-          src={testImageUrl}
-          alt={testAltText}
-          placeholderColor={customColor}
-        />
-      );
-
-      const placeholder = container.firstChild;
-      expect(placeholder).toBeTruthy();
+      expect(placeholder.classList.contains('bg-gray-100')).toBe(true);
     });
 
     it('should accept className prop', () => {

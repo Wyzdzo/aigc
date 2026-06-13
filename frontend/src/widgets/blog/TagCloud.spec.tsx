@@ -1,11 +1,13 @@
 // src/widgets/blog/TagCloud.spec.tsx
 
-import { describe, expect, it, vi, beforeAll } from 'vitest';
+import { MockedProvider } from '@apollo/client/testing/react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { MockedProvider } from '@apollo/client/testing/react';
-import { TagCloud } from './TagCloud';
+import { beforeAll,describe, expect, it, vi } from 'vitest';
+
 import { GET_TAGS } from '@/features/blog';
+
+import { TagCloud } from './TagCloud';
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {

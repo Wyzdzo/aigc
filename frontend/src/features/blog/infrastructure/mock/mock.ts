@@ -1,5 +1,5 @@
 // src/features/blog/infrastructure/mock/mock.ts
-import type { BlogPost, BlogCategory, BlogTag, BlogComment, BlogLink } from '@/entities/blog';
+import type { BlogCategory, BlogComment, BlogLink,BlogPost, BlogTag } from '@/entities/blog';
 import { CommentStatus, LinkStatus, PostStatus } from '@/entities/blog';
 
 /**

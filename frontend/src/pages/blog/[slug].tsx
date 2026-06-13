@@ -1,11 +1,14 @@
 // src/pages/blog/[slug].tsx
 
-import { Card, Typography, Space, Tag, Divider, Spin, Empty, Breadcrumb, Anchor, Drawer, Button } from 'antd';
-import { EyeOutlined, LikeOutlined, CalendarOutlined, MenuOutlined } from '@ant-design/icons';
+import { useEffect,useMemo, useState } from 'react';
+import { CalendarOutlined, EyeOutlined, LikeOutlined, MenuOutlined } from '@ant-design/icons';
+import { Anchor, Breadcrumb, Button,Card, Divider, Drawer, Empty, Space, Spin, Tag, Typography } from 'antd';
 import { Link, useParams } from 'react-router';
-import { useMemo, useState, useEffect } from 'react';
+
 import { usePostBySlug } from '@/features/blog';
-import { Markdown, extractToc, type TocItem } from '@/shared/blog/markdown';
+
+import { Markdown } from '@/shared/blog/markdown';
+import { extractToc, type TocItem } from '@/shared/lib/markdownUtils';
 import { LazyImage } from '@/shared/ui/LazyImage';
 
 const { Title } = Typography;
@@ -47,17 +50,19 @@ function ArticleMeta({
   createdAt: Date;
 }) {
   return (
-    <Space size="middle" style={{ color: '#9ca3af' }}>
-      <span>
-        <EyeOutlined /> {viewCount}
-      </span>
-      <span>
-        <LikeOutlined /> {likeCount}
-      </span>
-      <span>
-        <CalendarOutlined /> {formatDate(createdAt)}
-      </span>
-    </Space>
+    <div className="text-gray-400">
+      <Space size="middle">
+        <span>
+          <EyeOutlined /> {viewCount}
+        </span>
+        <span>
+          <LikeOutlined /> {likeCount}
+        </span>
+        <span>
+          <CalendarOutlined /> {formatDate(createdAt)}
+        </span>
+      </Space>
+    </div>
   );
 }
 
@@ -96,8 +101,9 @@ export function BlogDetailPage() {
   }, []);
 
   const toc = useMemo(() => {
-    if (post?.content) {
-      return extractToc(post.content);
+    const content = post?.content;
+    if (content) {
+      return extractToc(content);
     }
     return [];
   }, [post?.content]);
@@ -134,7 +140,7 @@ export function BlogDetailPage() {
     <>
       {/* 移动端目录按钮 */}
       {isMobile && toc.length > 0 && (
-        <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 100 }}>
+        <div className="fixed-z" style={{ bottom: '1.25rem', right: '1.25rem' }}>
           <Button
             type="primary"
             shape="circle"

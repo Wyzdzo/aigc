@@ -1,11 +1,14 @@
 // src/pages/blog/[slug].spec.tsx
 
-import { describe, expect, it, beforeAll, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { Route, Routes, MemoryRouter } from 'react-router';
+import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { BlogDetailPage } from './[slug]';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { GET_POST_BY_SLUG } from '@/features/blog';
+
+import { BlogDetailPage } from './[slug]';
 
 // Mock matchMedia
 beforeAll(() => {
@@ -62,7 +65,7 @@ window.IntersectionObserver = IntersectionObserverMock as unknown as typeof Inte
 /**
  * 创建测试包装器
  */
-function createWrapper(mocks: any[], slug = 'react-18-new-features') {
+function createWrapper(mocks: MockedResponse[], slug = 'react-18-new-features') {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <MockedProvider mocks={mocks}>

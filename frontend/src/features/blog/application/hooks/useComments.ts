@@ -1,7 +1,9 @@
 // src/features/blog/application/hooks/useComments.ts
 import { useQuery } from '@apollo/client/react';
-import { GET_COMMENTS, GET_COMMENT_STATS } from '../../infrastructure/graphql/queries';
+
 import type { BlogComment, CommentStatus } from '@/entities/blog';
+
+import { GET_COMMENT_STATS,GET_COMMENTS } from '../../infrastructure/graphql/queries';
 
 export interface CommentsResult {
   comments: {

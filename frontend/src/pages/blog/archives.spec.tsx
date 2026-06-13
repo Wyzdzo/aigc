@@ -1,12 +1,15 @@
 // src/pages/blog/archives.spec.tsx
 
-import { describe, expect, it, vi, beforeAll } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { ArchivesPage } from './archives';
+import { beforeAll,describe, expect, it, vi } from 'vitest';
+
 import { GET_POSTS } from '@/features/blog';
+
 import { PostStatus } from '@/entities/blog';
+
+import { ArchivesPage } from './archives';
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {

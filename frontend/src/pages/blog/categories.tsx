@@ -1,6 +1,7 @@
 // src/pages/blog/categories.tsx
 
 import { useCategories } from '@/features/blog';
+
 import type { BlogCategory } from '@/entities/blog';
 
 export function BlogCategoriesPage() {

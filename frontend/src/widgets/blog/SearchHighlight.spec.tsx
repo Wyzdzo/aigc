@@ -1,7 +1,8 @@
 // src/widgets/blog/SearchHighlight.spec.tsx
 
-import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
 import { SearchHighlight } from './SearchHighlight';
 
 describe('SearchHighlight', () => {

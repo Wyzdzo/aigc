@@ -1,11 +1,13 @@
 // src/widgets/blog/CategoryTree.spec.tsx
 
-import { describe, expect, it, vi, beforeAll } from 'vitest';
+import { MockedProvider } from '@apollo/client/testing/react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { MockedProvider } from '@apollo/client/testing/react';
-import { CategoryTree } from './CategoryTree';
+import { beforeAll,describe, expect, it, vi } from 'vitest';
+
 import { GET_CATEGORY_TREE } from '@/features/blog';
+
+import { CategoryTree } from './CategoryTree';
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {

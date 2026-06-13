@@ -55,6 +55,8 @@
   --color-ai-shadow: color-mix(in srgb, var(--color-ai-accent) 58%, var(--ant-color-text));
   --color-ai-shadow-strong: color-mix(in srgb, var(--color-ai-accent) 70%, var(--ant-color-text));
   --z-index-main-base: 0;
+  --z-index-sticky: 100;
+  --z-index-fixed: 1000;
   --z-index-sidecar-container: 1100;
   --shell-header-height: 64px;
   --error-block-min-height: 60vh;
@@ -72,6 +74,10 @@
   --error-block-title-letter-spacing: 0.4em;
   --error-block-description-max-width: 26.25rem;
 }
+
+/* Utility classes for z-index */
+.sticky-z { position: sticky; top: 0; z-index: var(--z-index-sticky); }
+.fixed-z { position: fixed; z-index: var(--z-index-fixed); }
 
 .dark {
   --color-ai-accent: #d97955;

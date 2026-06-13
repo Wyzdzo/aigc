@@ -384,4 +384,34 @@ export default defineConfig([
       'local/no-inline-zindex': 'error',
     },
   },
+  {
+    files: ['src/app/router/**/*.tsx', 'src/app/router/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/app/*/*',
+                '@/widgets/*/*',
+                '@/features/*/*',
+                '@/entities/*/*',
+                '@/labs/*/*',
+                '@/sandbox/*/*',
+                '**/app/*/*',
+                '**/widgets/*/*',
+                '**/features/*/*',
+                '**/entities/*/*',
+                '**/labs/*/*',
+                '**/sandbox/*/*',
+              ],
+              message:
+                'Cross-module imports must use a module public API such as "@/entities/user". 如认为确需例外，请先人工评审；不要用深层 import 绕过规则。',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);

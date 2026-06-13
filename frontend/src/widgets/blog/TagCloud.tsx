@@ -1,7 +1,9 @@
 // src/widgets/blog/TagCloud.tsx
 
 import { Tag } from 'antd';
+
 import { useTags } from '@/features/blog';
+
 import type { BlogTag } from '@/entities/blog';
 
 export interface TagCloudProps {

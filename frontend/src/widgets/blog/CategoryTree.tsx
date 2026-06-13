@@ -1,10 +1,12 @@
 // src/widgets/blog/CategoryTree.tsx
 
+import { FolderOpenOutlined,FolderOutlined } from '@ant-design/icons';
 import { Tree } from 'antd';
-import { FolderOutlined, FolderOpenOutlined } from '@ant-design/icons';
-import { useCategoryTree } from '@/features/blog';
-import type { BlogCategory } from '@/entities/blog';
 import type React from 'react';
+
+import { useCategoryTree } from '@/features/blog';
+
+import type { BlogCategory } from '@/entities/blog';
 
 export interface CategoryTreeProps {
   selectedId?: number;

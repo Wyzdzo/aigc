@@ -1,12 +1,15 @@
 // src/pages/blog/index.tsx
 
-import { Card, List, Avatar, Typography, Space, Tag, Spin, Empty, Drawer, Button } from 'antd';
-import { EyeOutlined, LikeOutlined, CalendarOutlined, FilterOutlined } from '@ant-design/icons';
+import { useEffect,useState } from 'react';
+import { CalendarOutlined, EyeOutlined, FilterOutlined,LikeOutlined } from '@ant-design/icons';
+import { Avatar, Button,Card, Drawer, Empty, List, Space, Spin, Tag, Typography } from 'antd';
 import { Link } from 'react-router';
-import { useState, useEffect } from 'react';
+
+import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
 import { usePosts } from '@/features/blog';
-import { PostStatus, type BlogPost } from '@/entities/blog';
-import { SearchInput, SearchHighlight, CategoryTree, TagCloud } from '@/widgets/blog';
+
+import { type BlogPost,PostStatus } from '@/entities/blog';
+
 import { LazyImage } from '@/shared/ui/LazyImage';
 
 const { Title, Paragraph } = Typography;
@@ -87,17 +90,19 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
           <Paragraph type="secondary" ellipsis={{ rows: 2 }}>
             {post.summary}
           </Paragraph>
-          <Space size="middle" style={{ color: '#9ca3af' }}>
-            <span>
-              <EyeOutlined /> {post.viewCount}
-            </span>
-            <span>
-              <LikeOutlined /> {post.likeCount}
-            </span>
-            <span>
-              <CalendarOutlined /> {formatDate(post.createdAt)}
-            </span>
-          </Space>
+          <div className="text-gray-400">
+            <Space size="middle">
+              <span>
+                <EyeOutlined /> {post.viewCount}
+              </span>
+              <span>
+                <LikeOutlined /> {post.likeCount}
+              </span>
+              <span>
+                <CalendarOutlined /> {formatDate(post.createdAt)}
+              </span>
+            </Space>
+          </div>
         </Card>
       </Card>
     </Link>
@@ -194,7 +199,7 @@ function SidebarContent({
         styles={{ body: { padding: 16 } }}
       >
         <Link to="/blog/archives" style={{ display: 'block', textAlign: 'center' }}>
-          <CalendarOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
+          <CalendarOutlined className="text-2xl text-blue-500 mb-2" />
           <Title level={5} style={{ marginBottom: 0 }}>时间归档</Title>
         </Link>
       </Card>
@@ -314,7 +319,7 @@ export function BlogHomePage() {
     <>
       {/* 移动端筛选按钮 */}
       {isMobile && (
-        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+        <div className="sticky-z bg-white py-3 border-b">
           <div style={{ maxWidth: '100%', margin: '0 auto', padding: '0 16px', display: 'flex', gap: 12 }}>
             <Button
               type="primary"
@@ -380,7 +385,7 @@ export function BlogHomePage() {
             />
             {hasFilters && !loading && (
               <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ color: '#9ca3af' }}>
+                <span className="text-gray-400">
                   {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
                 </span>
                 <Tag

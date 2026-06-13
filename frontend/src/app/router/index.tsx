@@ -10,16 +10,16 @@ import {
 
 import { AppLayout, BlogLayout } from '@/app/layout';
 
+import { BlogDetailPage } from '@/pages/blog/[slug]';
+import { BlogAboutPage } from '@/pages/blog/about';
+import { ArchivesPage } from '@/pages/blog/archives';
+import { BlogCategoriesPage } from '@/pages/blog/categories';
+import { BlogCategoryPage } from '@/pages/blog/category/[id]';
+import { BlogHomePage } from '@/pages/blog/index';
+import { BlogTagsPage } from '@/pages/blog/tags';
 import { ErrorPreviewPage } from '@/pages/error-preview';
 import { HomePage } from '@/pages/home';
 import { ProjectStructurePage } from '@/pages/project-structure';
-import { BlogHomePage } from '@/pages/blog';
-import { BlogDetailPage } from '@/pages/blog/[slug]';
-import { BlogCategoryPage } from '@/pages/blog/category/[id]';
-import { BlogCategoriesPage } from '@/pages/blog/categories';
-import { BlogTagsPage } from '@/pages/blog/tags';
-import { BlogAboutPage } from '@/pages/blog/about';
-import { ArchivesPage } from '@/pages/blog/archives';
 import { Error403, Error404, Error500, ErrorRouteCrash } from '@/features/error-feedback';
 
 import { getAppEnv } from '@/shared/env';

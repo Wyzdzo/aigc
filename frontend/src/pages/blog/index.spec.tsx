@@ -1,13 +1,17 @@
 // src/pages/blog/index.spec.tsx
 
-import { describe, expect, it, beforeAll, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { BlogHomePage } from './index';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { GET_POSTS } from '@/features/blog';
+
 import type { BlogPost } from '@/entities/blog';
 import { PostStatus } from '@/entities/blog';
-import { GET_POSTS } from '@/features/blog';
+
+import { BlogHomePage } from './index';
 
 // Mock window globals for Ant Design and rc-components
 beforeAll(() => {
@@ -94,7 +98,7 @@ const mockPosts: BlogPost[] = [
   },
 ];
 
-const createWrapper = (mocks: readonly any[]) => {
+const createWrapper = (mocks: readonly MockedResponse[]) => {
   return ({ children }: { children: React.ReactNode }) => (
     <MemoryRouter>
       <MockedProvider mocks={mocks}>{children}</MockedProvider>

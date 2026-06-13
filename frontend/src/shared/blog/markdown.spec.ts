@@ -1,7 +1,8 @@
 // src/shared/blog/markdown.spec.ts
 
 import { describe, expect, it } from 'vitest';
-import { extractToc, addHeadingIds } from './markdown';
+
+import { addHeadingIds, extractToc } from '@/shared/lib/markdownUtils';
 
 describe('markdown utilities', () => {
   describe('extractToc', () => {

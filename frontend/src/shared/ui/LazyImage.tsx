@@ -1,16 +1,15 @@
 // src/shared/ui/LazyImage.tsx
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
   style?: React.CSSProperties;
-  placeholderColor?: string;
 }
 
-export function LazyImage({ src, alt, className, style, placeholderColor = '#f5f5f5' }: LazyImageProps) {
+export function LazyImage({ src, alt, className, style }: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
@@ -53,47 +52,18 @@ export function LazyImage({ src, alt, className, style, placeholderColor = '#f5f
   return (
     <div
       ref={imgRef}
-      className={className}
-      style={{
-        ...style,
-        background: isLoaded ? undefined : placeholderColor,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
+      className={`relative overflow-hidden ${isLoaded ? '' : 'bg-gray-100'} ${className ?? ''}`}
+      style={style}
     >
       {isLoaded ? (
         <img
           src={src}
           alt={alt}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'opacity 0.3s ease-in-out',
-            opacity: isLoaded ? 1 : 0,
-          }}
+          className="w-full h-full object-cover opacity-100 transition-opacity duration-300"
         />
       ) : (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 40,
-            height: 40,
-            border: '2px solid #d9d9d9',
-            borderTopColor: '#1890ff',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }}
-        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
       )}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

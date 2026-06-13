@@ -1,30 +1,32 @@
 // src/features/blog/application/hooks/hooks.spec.ts
-import { describe, expect, it } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing/react';
 import { renderHook, waitFor } from '@testing-library/react';
-import { usePosts } from './usePosts';
-import { usePostById, usePostBySlug } from './usePost';
-import { useCategories } from './useCategories';
-import { useTags, usePostTags } from './useTags';
-import { useComments, useCommentStats } from './useComments';
-import { useLinks } from './useLinks';
+import { describe, expect, it } from 'vitest';
+
 import {
-  GET_POSTS,
+  GET_CATEGORIES,
+  GET_COMMENT_STATS,
+  GET_COMMENTS,
+  GET_LINKS,
   GET_POST_BY_ID,
   GET_POST_BY_SLUG,
-  GET_CATEGORIES,
-  GET_TAGS,
   GET_POST_TAGS,
-  GET_COMMENTS,
-  GET_COMMENT_STATS,
-  GET_LINKS,
+  GET_POSTS,
+  GET_TAGS,
 } from '../../infrastructure/graphql/queries';
-import { mockPosts, mockCategories, mockTags, mockComments, mockLinks } from '../../infrastructure/mock/mock';
+import { mockCategories, mockComments, mockLinks,mockPosts, mockTags } from '../../infrastructure/mock/mock';
+
+import { useCategories } from './useCategories';
+import { useComments, useCommentStats } from './useComments';
+import { useLinks } from './useLinks';
+import { usePostById, usePostBySlug } from './usePost';
+import { usePosts } from './usePosts';
+import { usePostTags,useTags } from './useTags';
 
 describe('Blog Hooks', () => {
   describe('usePosts', () => {
     it('should return posts data with pagination', async () => {
-      const mockPostsWithoutContent = mockPosts.map(({ content, ...rest }) => rest);
+      const mockPostsWithoutContent = mockPosts.map(({ ...rest }) => rest);
       const mocks = [
         {
           request: {
@@ -116,7 +118,7 @@ describe('Blog Hooks', () => {
     it('should support category filtering', async () => {
       const mockPostsWithoutContent = mockPosts
         .filter(p => p.categoryId === 1)
-        .map(({ content, ...rest }) => rest);
+        .map(({ ...rest }) => rest);
       const mocks = [
         {
           request: {

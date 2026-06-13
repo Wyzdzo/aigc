@@ -1,6 +1,6 @@
 // src/pages/blog/archives.tsx
 
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect,useMemo, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined } from '@ant-design/icons';
 import { Badge, Card, Collapse, Empty, List, Space, Spin, Typography } from 'antd';
 import { Link } from 'react-router';
@@ -174,7 +174,7 @@ export function ArchivesPage() {
                 <Title level={isMobile ? 5 : 4} style={{ margin: 0 }}>
                   {archive.year}年{formatMonth(archive.month)}
                 </Title>
-                <Badge count={archive.count} style={{ backgroundColor: '#1890ff' }} />
+                <span className="inline-block"><Badge count={archive.count} color="blue" /></span>
               </div>
             ),
             children: (
@@ -191,7 +191,7 @@ export function ArchivesPage() {
                       {/* 文章标题 */}
                       <Link
                         to={`/blog/${post.slug}`}
-                        style={{ flex: 1, color: '#262626', textDecoration: 'none', minWidth: '120px' }}
+                        className="flex-1 text-gray-800 no-underline min-w-[120px]"
                       >
                         <Text strong>{post.title}</Text>
                       </Link>

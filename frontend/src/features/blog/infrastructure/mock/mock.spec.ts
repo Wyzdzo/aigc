@@ -1,7 +1,9 @@
 // src/features/blog/infrastructure/mock/mock.spec.ts
 import { describe, expect, it } from 'vitest';
-import { mockPosts, mockCategories, mockTags, mockComments, mockLinks, mockPostTags } from './mock';
-import { PostStatus, CommentStatus, LinkStatus } from '@/entities/blog';
+
+import { CommentStatus, LinkStatus,PostStatus } from '@/entities/blog';
+
+import { mockCategories, mockComments, mockLinks, mockPosts, mockPostTags,mockTags } from './mock';
 
 describe('Mock Data Integrity', () => {
   describe('mockPosts', () => {

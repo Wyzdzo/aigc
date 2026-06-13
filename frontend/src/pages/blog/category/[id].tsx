@@ -10,11 +10,15 @@ export function BlogCategoryPage() {
   const { id } = params;
 
   return (
-    <Layout className="min-h-screen">
-      <Content className="p-8">
-        <h1>分类页面 - ID: {id}</h1>
-        <p>该分类下的文章列表</p>
-      </Content>
-    </Layout>
+    <div className="min-h-screen">
+      <Layout>
+        <Content>
+          <div className="p-8">
+            <h1>分类页面 - ID: {id}</h1>
+            <p>该分类下的文章列表</p>
+          </div>
+        </Content>
+      </Layout>
+    </div>
   );
 }

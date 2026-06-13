@@ -1,7 +1,9 @@
 // src/features/blog/application/hooks/usePost.ts
 import { useQuery } from '@apollo/client/react';
-import { GET_POST_BY_ID, GET_POST_BY_SLUG } from '../../infrastructure/graphql/queries';
+
 import type { BlogPost } from '@/entities/blog';
+
+import { GET_POST_BY_ID, GET_POST_BY_SLUG } from '../../infrastructure/graphql/queries';
 
 export interface PostByIdResult {
   post: BlogPost | null;
