@@ -258,10 +258,21 @@ export function BlogHomePage() {
 
         {/* 标签云 */}
         <Card
-          style={{ borderRadius: 8 }}
+          style={{ marginBottom: 24, borderRadius: 8 }}
           styles={{ body: { padding: 16 } }}
         >
           <TagCloud selectedId={tagId} onChange={handleTagChange} />
+        </Card>
+
+        {/* 归档链接 */}
+        <Card
+          style={{ borderRadius: 8 }}
+          styles={{ body: { padding: 16 } }}
+        >
+          <Link to="/blog/archives" style={{ display: 'block', textAlign: 'center' }}>
+            <CalendarOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
+            <Title level={5} style={{ marginBottom: 0 }}>时间归档</Title>
+          </Link>
         </Card>
       </aside>
 

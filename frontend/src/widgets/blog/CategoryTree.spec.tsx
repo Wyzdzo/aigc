@@ -94,7 +94,7 @@ const mocks = [
 function createWrapper(mockData = mocks) {
   return ({ children }: { children: React.ReactNode }) => (
     <MemoryRouter>
-      <MockedProvider mocks={mockData} addTypename={false}>
+      <MockedProvider mocks={mockData}>
         {children}
       </MockedProvider>
     </MemoryRouter>

@@ -19,6 +19,7 @@ import { BlogCategoryPage } from '@/pages/blog/category/[id]';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogTagsPage } from '@/pages/blog/tags';
 import { BlogAboutPage } from '@/pages/blog/about';
+import { ArchivesPage } from '@/pages/blog/archives';
 import { Error403, Error404, Error500, ErrorRouteCrash } from '@/features/error-feedback';
 
 import { getAppEnv } from '@/shared/env';
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
       {
         element: <BlogHomePage />,
         index: true,
+      },
+      {
+        element: <ArchivesPage />,
+        path: 'archives',
       },
       {
         element: <BlogCategoriesPage />,
