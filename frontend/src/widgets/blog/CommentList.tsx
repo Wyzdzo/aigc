@@ -126,6 +126,13 @@ export function CommentList({ comments, loading, postId, onReply }: CommentListP
     return { rootComments: roots, childCommentsMap: children };
   }, [comments]);
 
+  // 获取没有对应父评论的子评论（孤儿评论）
+  const orphanComments = useMemo(() => {
+    return comments.filter(
+      (comment) => comment.parentId !== null && !comments.some((c) => c.id === comment.parentId)
+    );
+  }, [comments]);
+
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: 40 }}>
@@ -164,6 +171,15 @@ export function CommentList({ comments, loading, postId, onReply }: CommentListP
           );
         }}
       />
+      {orphanComments.length > 0 && (
+        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--color-border)' }}>
+          {orphanComments.map((comment) => (
+            <div key={comment.id} style={{ marginBottom: 12 }}>
+              <CommentItem comment={comment} postId={postId} isChild />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
