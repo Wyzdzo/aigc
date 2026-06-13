@@ -1,11 +1,12 @@
 // src/pages/blog/[slug].tsx
 
-import { Card, Typography, Space, Tag, Divider, Spin, Empty, Breadcrumb, Anchor } from 'antd';
-import { EyeOutlined, LikeOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Typography, Space, Tag, Divider, Spin, Empty, Breadcrumb, Anchor, Drawer, Button } from 'antd';
+import { EyeOutlined, LikeOutlined, CalendarOutlined, MenuOutlined } from '@ant-design/icons';
 import { Link, useParams } from 'react-router';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { usePostBySlug } from '@/features/blog';
 import { Markdown, extractToc, type TocItem } from '@/shared/blog/markdown';
+import { LazyImage } from '@/shared/ui/LazyImage';
 
 const { Title } = Typography;
 
@@ -80,6 +81,19 @@ function ArticleNavigation({
 export function BlogDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { post, loading, error } = usePostBySlug(slug);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const toc = useMemo(() => {
     if (post?.content) {
@@ -117,71 +131,102 @@ export function BlogDetailPage() {
   }
 
   return (
-    <div className="flex gap-6">
-      {/* 主内容区 */}
-      <div className="flex-1 min-w-0">
-        {/* 面包屑导航 */}
-        <Breadcrumb
-          style={{ marginBottom: 16 }}
-          items={[
-            { title: <Link to="/blog">首页</Link> },
-            { title: post.title },
-          ]}
-        />
+    <>
+      {/* 移动端目录按钮 */}
+      {isMobile && toc.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 100 }}>
+          <Button
+            type="primary"
+            shape="circle"
+            icon={<MenuOutlined />}
+            onClick={() => setIsDrawerOpen(true)}
+            size="large"
+          />
+        </div>
+      )}
 
-        {/* 文章卡片 */}
-        <Card
-          style={{ borderRadius: 8 }}
-          styles={{ body: { padding: 32 } }}
-        >
-          {/* 标题 */}
-          <Title level={2} style={{ marginBottom: 16 }}>
-            {post.title}
-          </Title>
+      <div className="flex gap-6">
+        {/* 主内容区 */}
+        <div className="flex-1 min-w-0">
+          {/* 面包屑导航 */}
+          <Breadcrumb
+            style={{ marginBottom: 16 }}
+            items={[
+              { title: <Link to="/blog">首页</Link> },
+              { title: post.title },
+            ]}
+          />
 
-          {/* 标签和统计 */}
-          <Space size="middle" style={{ marginBottom: 24 }}>
-            {post.isTop && <Tag color="gold">置顶</Tag>}
-            <ArticleMeta
-              viewCount={post.viewCount}
-              likeCount={post.likeCount}
-              createdAt={post.createdAt}
-            />
-          </Space>
+          {/* 文章卡片 */}
+          <Card
+            style={{ borderRadius: 8 }}
+            styles={{ body: { padding: isMobile ? 16 : 32 } }}
+          >
+            {/* 标题 */}
+            <Title
+              level={isMobile ? 3 : 2}
+              style={{ marginBottom: 16, fontSize: isMobile ? '20px' : undefined }}
+            >
+              {post.title}
+            </Title>
 
-          <Divider style={{ margin: '16px 0' }} />
+            {/* 标签和统计 */}
+            <Space size="middle" style={{ marginBottom: 24, flexWrap: 'wrap' }}>
+              {post.isTop && <Tag color="gold">置顶</Tag>}
+              <ArticleMeta
+                viewCount={post.viewCount}
+                likeCount={post.likeCount}
+                createdAt={post.createdAt}
+              />
+            </Space>
 
-          {/* 文章封面图 */}
-          {post.coverImage && (
-            <img
-              src={post.coverImage}
-              alt={post.title}
-              style={{
-                width: '100%',
-                maxHeight: 400,
-                objectFit: 'cover',
-                borderRadius: 8,
-                marginBottom: 24,
-              }}
-            />
-          )}
+            <Divider style={{ margin: '16px 0' }} />
 
-          {/* 文章内容 */}
-          <Markdown content={post.content} />
-        </Card>
+            {/* 文章封面图 */}
+            {post.coverImage && (
+              <div style={{ marginBottom: 24, borderRadius: 8, overflow: 'hidden' }}>
+                <LazyImage
+                  src={post.coverImage}
+                  alt={post.title}
+                  style={{
+                    width: '100%',
+                    maxHeight: isMobile ? 200 : 400,
+                  }}
+                />
+              </div>
+            )}
 
-        {/* 文章导航 */}
-        <ArticleNavigation prev={null} next={null} />
-      </div>
+            {/* 文章内容 */}
+            <div style={{ fontSize: isMobile ? '15px' : '16px', lineHeight: '1.8' }}>
+              <Markdown content={post.content} />
+            </div>
+          </Card>
 
-      {/* 侧边栏 */}
-      <div className="w-64 flex-shrink-0 hidden lg:block">
-        {/* 目录 */}
-        <div style={{ position: 'sticky', top: 80 }}>
-          <TocNavigation items={toc} />
+          {/* 文章导航 */}
+          <ArticleNavigation prev={null} next={null} />
+        </div>
+
+        {/* 桌面端侧边栏 */}
+        <div className="w-64 flex-shrink-0 hidden lg:block">
+          {/* 目录 */}
+          <div style={{ position: 'sticky', top: 80 }}>
+            <TocNavigation items={toc} />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* 移动端目录抽屉 */}
+      <Drawer
+        title="目录"
+        placement="right"
+        onClose={() => setIsDrawerOpen(false)}
+        open={isDrawerOpen}
+        width={280}
+        style={{ display: isMobile ? 'block' : 'none' }}
+      >
+        <TocNavigation items={toc} />
+      </Drawer>
+    </>
   );
 }
 

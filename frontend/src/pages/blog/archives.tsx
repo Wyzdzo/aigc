@@ -1,6 +1,6 @@
 // src/pages/blog/archives.tsx
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined } from '@ant-design/icons';
 import { Badge, Card, Collapse, Empty, List, Space, Spin, Typography } from 'antd';
 import { Link } from 'react-router';
@@ -95,6 +95,19 @@ function formatDate(date: Date): string {
  * 归档页面
  */
 export function ArchivesPage() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // 获取所有已发布的文章（pageSize 设置为足够大以获取所有文章）
   const { posts, loading, error } = usePosts({
     status: PostStatus.PUBLISHED,
@@ -134,13 +147,13 @@ export function ArchivesPage() {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 0' }}>
+    <div style={{ maxWidth: isMobile ? '100%' : 800, margin: '0 auto', padding: '24px 0' }}>
       {/* 页面标题 */}
       <Card
         style={{ marginBottom: 24, borderRadius: 8 }}
-        styles={{ body: { padding: 24 } }}
+        styles={{ body: { padding: isMobile ? 16 : 24 } }}
       >
-        <Title level={2} style={{ marginBottom: 8 }}>
+        <Title level={isMobile ? 3 : 2} style={{ marginBottom: 8 }}>
           <CalendarOutlined style={{ marginRight: 8 }} />
           时间归档
         </Title>
@@ -157,8 +170,8 @@ export function ArchivesPage() {
           items={archives.map((archive, index) => ({
             key: String(index),
             label: (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Title level={4} style={{ margin: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <Title level={isMobile ? 5 : 4} style={{ margin: 0 }}>
                   {archive.year}年{formatMonth(archive.month)}
                 </Title>
                 <Badge count={archive.count} style={{ backgroundColor: '#1890ff' }} />
@@ -169,7 +182,7 @@ export function ArchivesPage() {
                 dataSource={archive.posts}
                 renderItem={(post) => (
                   <List.Item style={{ padding: '12px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 16, width: '100%', flexWrap: 'wrap' }}>
                       {/* 日期 */}
                       <Text type="secondary" style={{ minWidth: 60 }}>
                         {formatDate(post.createdAt)}
@@ -178,7 +191,7 @@ export function ArchivesPage() {
                       {/* 文章标题 */}
                       <Link
                         to={`/blog/${post.slug}`}
-                        style={{ flex: 1, color: '#262626', textDecoration: 'none' }}
+                        style={{ flex: 1, color: '#262626', textDecoration: 'none', minWidth: '120px' }}
                       >
                         <Text strong>{post.title}</Text>
                       </Link>

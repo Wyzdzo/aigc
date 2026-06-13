@@ -67,6 +67,16 @@ const errorMocks = [
       variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 1000 },
     },
     error: new Error('Network error'),
+    result: {
+      data: {
+        posts: {
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: 1000,
+        },
+      },
+    },
   },
 ];
 

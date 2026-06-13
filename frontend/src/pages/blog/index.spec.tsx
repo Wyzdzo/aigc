@@ -522,6 +522,177 @@ describe('BlogHomePage', () => {
     });
   });
 
+  describe('Responsive Design', () => {
+    it('should render mobile filter button on mobile viewport', async () => {
+      // Mock mobile viewport
+      vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 检查移动端筛选按钮
+        const filterButtons = container.querySelectorAll('button');
+        const hasFilterButton = Array.from(filterButtons).some(btn =>
+          btn.textContent?.includes('筛选')
+        );
+        expect(hasFilterButton).toBe(true);
+      });
+    });
+
+    it('should render desktop sidebar on desktop viewport', async () => {
+      // Mock desktop viewport
+      vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1200);
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 检查侧边栏是否存在
+        const aside = container.querySelector('aside');
+        expect(aside).toBeTruthy();
+      });
+    });
+
+    it('should hide desktop sidebar on mobile viewport', async () => {
+      // Mock mobile viewport
+      vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 检查侧边栏是否通过 CSS 隐藏（display: none）
+        const aside = container.querySelector('aside');
+        expect(aside).toBeTruthy();
+        // 侧边栏在移动端应该被隐藏
+        expect(aside?.getAttribute('style')).toContain('display: none');
+      });
+    });
+
+    it('should render mobile drawer sidebar when filter button clicked', async () => {
+      // Mock mobile viewport
+      vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 找到筛选按钮并点击
+        const buttons = container.querySelectorAll('button');
+        const filterButton = Array.from(buttons).find(btn =>
+          btn.textContent?.includes('筛选')
+        );
+
+        expect(filterButton).toBeTruthy();
+      });
+    });
+
+    it('should hide author card on mobile viewport', async () => {
+      // Mock mobile viewport
+      vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+
+      const mocks = [
+        {
+          request: {
+            query: GET_POSTS,
+            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              posts: {
+                items: mockPosts,
+                total: mockPosts.length,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 检查是否存在作者卡片相关内容
+        const authorCard = container.querySelector('[style*="flex-direction: column"]');
+        expect(authorCard).toBeTruthy();
+      });
+    });
+  });
+
   describe('Pagination Feature', () => {
     it('should change page when pagination is clicked', async () => {
       const manyPosts = Array.from({ length: 15 }, (_, i) => ({

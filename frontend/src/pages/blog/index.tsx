@@ -1,12 +1,13 @@
 // src/pages/blog/index.tsx
 
-import { Card, List, Avatar, Typography, Space, Tag, Pagination, Spin, Empty } from 'antd';
-import { EyeOutlined, LikeOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, List, Avatar, Typography, Space, Tag, Spin, Empty, Drawer, Button } from 'antd';
+import { EyeOutlined, LikeOutlined, CalendarOutlined, FilterOutlined } from '@ant-design/icons';
 import { Link } from 'react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePosts } from '@/features/blog';
 import { PostStatus, type BlogPost } from '@/entities/blog';
 import { SearchInput, SearchHighlight, CategoryTree, TagCloud } from '@/widgets/blog';
+import { LazyImage } from '@/shared/ui/LazyImage';
 
 const { Title, Paragraph } = Typography;
 
@@ -70,16 +71,16 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
           overflow: 'hidden',
         }}
         styles={{ body: { padding: 0 } }}
-        cover={
-          post.coverImage ? (
-            <img
-              alt={post.title}
-              src={post.coverImage}
-              style={{ height: 200, objectFit: 'cover' }}
-            />
-          ) : undefined
-        }
       >
+        {post.coverImage && (
+          <div style={{ height: 200 }}>
+            <LazyImage
+              src={post.coverImage}
+              alt={post.title}
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
+        )}
         <Card style={{ borderRadius: 0 }} styles={{ body: { padding: 20 } }}>
           <Tag color="gold" style={{ marginBottom: 12 }}>置顶</Tag>
           <Title level={4} style={{ marginBottom: 8 }}>{post.title}</Title>
@@ -153,6 +154,55 @@ function PostListItem({
 }
 
 /**
+ * 侧边栏内容组件
+ */
+function SidebarContent({
+  categoryId,
+  tagId,
+  onCategoryChange,
+  onTagChange,
+}: {
+  categoryId: number | undefined;
+  tagId: number | undefined;
+  onCategoryChange: (id: number | undefined) => void;
+  onTagChange: (id: number | undefined) => void;
+}) {
+  return (
+    <>
+      {/* 分类树 */}
+      <Card
+        style={{ marginBottom: 24, borderRadius: 8 }}
+        styles={{ body: { padding: 16 } }}
+      >
+        <CategoryTree
+          selectedId={categoryId}
+          onChange={onCategoryChange}
+        />
+      </Card>
+
+      {/* 标签云 */}
+      <Card
+        style={{ marginBottom: 24, borderRadius: 8 }}
+        styles={{ body: { padding: 16 } }}
+      >
+        <TagCloud selectedId={tagId} onChange={onTagChange} />
+      </Card>
+
+      {/* 归档链接 */}
+      <Card
+        style={{ borderRadius: 8 }}
+        styles={{ body: { padding: 16 } }}
+      >
+        <Link to="/blog/archives" style={{ display: 'block', textAlign: 'center' }}>
+          <CalendarOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
+          <Title level={5} style={{ marginBottom: 0 }}>时间归档</Title>
+        </Link>
+      </Card>
+    </>
+  );
+}
+
+/**
  * 博客首页
  */
 export function BlogHomePage() {
@@ -161,6 +211,19 @@ export function BlogHomePage() {
   const [tagId, setTagId] = useState<number | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const { posts, total, loading, error } = usePosts({
     status: PostStatus.PUBLISHED,
@@ -197,6 +260,9 @@ export function BlogHomePage() {
   const handleCategoryChange = (newCategoryId: number | undefined) => {
     setCategoryId(newCategoryId);
     setCurrentPage(1);
+    if (isMobile) {
+      setIsDrawerOpen(false);
+    }
   };
 
   /**
@@ -205,6 +271,9 @@ export function BlogHomePage() {
   const handleTagChange = (newTagId: number | undefined) => {
     setTagId(newTagId);
     setCurrentPage(1);
+    if (isMobile) {
+      setIsDrawerOpen(false);
+    }
   };
 
   /**
@@ -242,117 +311,128 @@ export function BlogHomePage() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 24 }}>
-      {/* 侧边栏 */}
-      <aside style={{ width: 260, flexShrink: 0 }}>
-        {/* 分类树 */}
-        <Card
-          style={{ marginBottom: 24, borderRadius: 8 }}
-          styles={{ body: { padding: 16 } }}
-        >
-          <CategoryTree
-            selectedId={categoryId}
-            onChange={handleCategoryChange}
-          />
-        </Card>
-
-        {/* 标签云 */}
-        <Card
-          style={{ marginBottom: 24, borderRadius: 8 }}
-          styles={{ body: { padding: 16 } }}
-        >
-          <TagCloud selectedId={tagId} onChange={handleTagChange} />
-        </Card>
-
-        {/* 归档链接 */}
-        <Card
-          style={{ borderRadius: 8 }}
-          styles={{ body: { padding: 16 } }}
-        >
-          <Link to="/blog/archives" style={{ display: 'block', textAlign: 'center' }}>
-            <CalendarOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
-            <Title level={5} style={{ marginBottom: 0 }}>时间归档</Title>
-          </Link>
-        </Card>
-      </aside>
-
-      {/* 主内容区 */}
-      <main style={{ flex: 1 }}>
-        {/* 博主简介 */}
-        <AuthorCard />
-
-        {/* 搜索框 */}
-        <Card
-          style={{ marginBottom: 24, borderRadius: 8 }}
-          styles={{ body: { padding: 16 } }}
-        >
-          <SearchInput
-            value={keyword}
-            onSearch={handleSearch}
-            onClear={handleClear}
-            loading={loading}
-            placeholder="搜索文章标题或摘要..."
-          />
-          {hasFilters && !loading && (
-            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ color: '#9ca3af' }}>
-                {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
-              </span>
-              <Tag
-                closable
-                onClose={handleClearFilters}
-                color="blue"
-                style={{ cursor: 'pointer' }}
-              >
-                清除筛选
-              </Tag>
-            </div>
-          )}
-        </Card>
-
-        {/* 加载状态 */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            <Spin size="large" />
-          </div>
-        ) : (
-          <>
-            {/* 置顶文章（有筛选时隐藏） */}
-            {!hasFilters && featuredPost && (
-              <FeaturedPostCard post={featuredPost} />
-            )}
-
-            {/* 文章列表 */}
-            <Card
-              style={{ borderRadius: 8 }}
-              styles={{ body: { padding: '0 24px' } }}
+    <>
+      {/* 移动端筛选按钮 */}
+      {isMobile && (
+        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'white', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ maxWidth: '100%', margin: '0 auto', padding: '0 16px', display: 'flex', gap: 12 }}>
+            <Button
+              type="primary"
+              icon={<FilterOutlined />}
+              onClick={() => setIsDrawerOpen(true)}
+              style={{ flex: 1 }}
             >
-              <List
-                dataSource={regularPosts}
-                renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
-                locale={{ emptyText: hasFilters ? '未找到相关文章' : '暂无文章' }}
-              />
+              筛选
+            </Button>
+            {hasFilters && (
+              <Button danger onClick={handleClearFilters}>
+                清除筛选
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
-              {/* 分页 */}
-              {total > pageSize && (
-                <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                  <Pagination
-                    current={currentPage}
-                    pageSize={pageSize}
-                    total={total}
-                    onChange={handlePageChange}
-                    showSizeChanger
-                    showQuickJumper
-                    showTotal={(total) => `共 ${total} 篇文章`}
-                  />
-                </div>
+      <div style={{ display: 'flex', gap: 24 }}>
+        {/* 桌面端侧边栏 */}
+        <aside style={{ width: 260, flexShrink: 0, display: isMobile ? 'none' : 'block' }}>
+          <SidebarContent
+            categoryId={categoryId}
+            tagId={tagId}
+            onCategoryChange={handleCategoryChange}
+            onTagChange={handleTagChange}
+          />
+        </aside>
+
+        {/* 移动端抽屉侧边栏 */}
+        <Drawer
+          title="筛选"
+          placement="left"
+          onClose={() => setIsDrawerOpen(false)}
+          open={isDrawerOpen}
+          width={280}
+          style={{ display: isMobile ? 'block' : 'none' }}
+        >
+          <SidebarContent
+            categoryId={categoryId}
+            tagId={tagId}
+            onCategoryChange={handleCategoryChange}
+            onTagChange={handleTagChange}
+          />
+        </Drawer>
+
+        {/* 主内容区 */}
+        <main style={{ flex: 1 }}>
+          {/* 博主简介（仅桌面端显示） */}
+          {!isMobile && <AuthorCard />}
+
+          {/* 搜索框 */}
+          <Card
+            style={{ marginBottom: 24, borderRadius: 8 }}
+            styles={{ body: { padding: 16 } }}
+          >
+            <SearchInput
+              value={keyword}
+              onSearch={handleSearch}
+              onClear={handleClear}
+              loading={loading}
+              placeholder="搜索文章标题或摘要..."
+            />
+            {hasFilters && !loading && (
+              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ color: '#9ca3af' }}>
+                  {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
+                </span>
+                <Tag
+                  closable
+                  onClose={handleClearFilters}
+                  color="blue"
+                  style={{ cursor: 'pointer' }}
+                >
+                  清除筛选
+                </Tag>
+              </div>
+            )}
+          </Card>
+
+          {/* 加载状态 */}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: 40 }}>
+              <Spin size="large" />
+            </div>
+          ) : (
+            <>
+              {/* 置顶文章 */}
+              {featuredPost && <FeaturedPostCard post={featuredPost} />}
+
+              {/* 文章列表 */}
+              <Card style={{ borderRadius: 8 }}>
+                <List
+                  dataSource={regularPosts}
+                  renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
+                  pagination={{
+                    current: currentPage,
+                    pageSize: pageSize,
+                    total: total,
+                    onChange: handlePageChange,
+                    showSizeChanger: true,
+                    pageSizeOptions: ['10', '20', '50'],
+                    showTotal: (total) => `共 ${total} 篇文章`,
+                  }}
+                />
+              </Card>
+
+              {/* 空状态 */}
+              {posts.length === 0 && (
+                <Empty
+                  description="暂无文章"
+                  style={{ marginTop: 50 }}
+                />
               )}
-            </Card>
-          </>
-        )}
-      </main>
-    </div>
+            </>
+          )}
+        </main>
+      </div>
+    </>
   );
 }
-
-export default BlogHomePage;
