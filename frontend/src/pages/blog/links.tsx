@@ -89,14 +89,13 @@ function LinkApplyModal({ visible, onCancel }: { visible: boolean; onCancel: () 
   const onSubmit = async () => {
     try {
       setLoading(true);
-      const values = await form.validateFields();
+      await form.validateFields();
       // 模拟提交
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('友链申请提交:', values);
       form.resetFields();
       onCancel();
-    } catch (error) {
-      console.error('提交失败:', error);
+    } catch {
+      // 错误已由表单验证处理
     } finally {
       setLoading(false);
     }
@@ -165,7 +164,7 @@ function LinkApplyModal({ visible, onCancel }: { visible: boolean; onCancel: () 
         </Form.Item>
 
         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-          <Button onClick={onCancel} style={{ flex: 1 }}>
+          <Button htmlType="button" onClick={onCancel} style={{ flex: 1 }}>
             取消
           </Button>
           <Button type="primary" htmlType="submit" loading={loading} style={{ flex: 1 }}>

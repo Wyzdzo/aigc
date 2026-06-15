@@ -1,9 +1,11 @@
 // src/pages/admin/index.tsx
 
 import { BarChartOutlined, FileTextOutlined, LinkOutlined, MessageOutlined, WarningOutlined, UserOutlined } from '@ant-design/icons';
-import { Card, Row, Col, Statistic } from 'antd';
+import { Card, Row, Col, Statistic, Spin, Typography } from 'antd';
 import { useQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
+
+const { Title, Paragraph } = Typography;
 
 const GET_DASHBOARD_STATS = gql`
   query GetDashboardStats {
@@ -133,7 +135,7 @@ function QuickActionCard({ title, icon: Icon, color, onClick }: { title: string;
  * 后台仪表盘页面
  */
 export function AdminDashboardPage() {
-  const { data, loading } = useQuery<DashboardStatsData>(GET_DASHBOARD_STATS);
+  const { data, loading, error } = useQuery<DashboardStatsData>(GET_DASHBOARD_STATS);
 
   const postStats = data?.postStats || { total: 0, published: 0, draft: 0 };
   const commentStats = data?.commentStats || { total: 0, pending: 0, approved: 0, rejected: 0 };
@@ -145,8 +147,20 @@ export function AdminDashboardPage() {
     return (
       <div style={{ padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-          <div className="ant-spin ant-spin-lg">
-            <span className="ant-spin-dot"></span>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+          <div style={{ textAlign: 'center' }}>
+            <MessageOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+            <Title level={3} style={{ marginBottom: 8 }}>加载失败</Title>
+            <Paragraph type="secondary">数据加载失败，请稍后重试</Paragraph>
           </div>
         </div>
       </div>
@@ -157,8 +171,8 @@ export function AdminDashboardPage() {
     <div style={{ padding: 24 }}>
       {/* 页面标题 */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>仪表盘</h1>
-        <p style={{ color: '#666' }}>欢迎回来！这是您的博客管理控制台</p>
+        <Title level={2} style={{ marginBottom: 8 }}>仪表盘</Title>
+        <Paragraph type="secondary">欢迎回来！这是您的博客管理控制台</Paragraph>
       </div>
 
       {/* 统计卡片 */}

@@ -83,6 +83,17 @@ function sandboxPlaygroundLoader() {
   return null;
 }
 
+function adminAuthLoader() {
+  // 简单的权限检查：检查是否有 admin_token（模拟认证）
+  const isAdmin = localStorage.getItem('admin_token') !== null;
+
+  if (!isAdmin) {
+    throw redirect('/');
+  }
+
+  return null;
+}
+
 const router = createBrowserRouter([
   {
     children: [
@@ -110,10 +121,12 @@ const router = createBrowserRouter([
       },
       {
         element: <AdminDashboardPage />,
+        loader: adminAuthLoader,
         path: 'admin',
       },
       {
         element: <AdminCommentsPage />,
+        loader: adminAuthLoader,
         path: 'admin/comments',
       },
       {

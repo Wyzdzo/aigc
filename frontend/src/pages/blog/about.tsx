@@ -78,6 +78,7 @@ export function BlogAboutPage() {
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'scale(1)';
                     }}
+                    aria-label={`访问${link.label}`}
                   >
                     {link.icon}
                   </a>
