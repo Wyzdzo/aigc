@@ -14,6 +14,7 @@ import { BlogDetailPage } from '@/pages/blog/[slug]';
 import { BlogAboutPage } from '@/pages/blog/about';
 import { BlogLinksPage } from '@/pages/blog/links';
 import { AdminCommentsPage } from '@/pages/admin/comments';
+import { AdminDashboardPage } from '@/pages/admin';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
@@ -106,6 +107,10 @@ const router = createBrowserRouter([
         element: <SandboxPlaygroundPage />,
         loader: sandboxPlaygroundLoader,
         path: 'sandbox/playground',
+      },
+      {
+        element: <AdminDashboardPage />,
+        path: 'admin',
       },
       {
         element: <AdminCommentsPage />,
