@@ -1,5 +1,6 @@
 // src/modules/blog/blog.module.ts
 import { DynamicModule, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogCategoryEntity } from './entities/blog-category.entity';
 import { BlogCommentEntity } from './entities/blog-comment.entity';
@@ -25,8 +26,36 @@ export class BlogModule {
           BlogLinkEntity,
         ]),
       ],
-      providers: [BlogService, BlogQueryService],
-      exports: [TypeOrmModule, BlogService, BlogQueryService],
+      providers: [
+        BlogService,
+        BlogQueryService,
+        {
+          provide: 'BLOG_SITE_URL',
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) =>
+            configService.get<string>('blog.siteUrl') ?? 'https://example.com',
+        },
+        {
+          provide: 'BLOG_OWNER_EMAIL',
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) =>
+            configService.get<string>('blog.ownerEmail') ?? 'admin@example.com',
+        },
+        {
+          provide: 'BLOG_SITE_NAME',
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) =>
+            configService.get<string>('blog.siteName') ?? 'AIGC Blog',
+        },
+      ],
+      exports: [
+        TypeOrmModule,
+        BlogService,
+        BlogQueryService,
+        'BLOG_SITE_URL',
+        'BLOG_OWNER_EMAIL',
+        'BLOG_SITE_NAME',
+      ],
     };
   }
 }

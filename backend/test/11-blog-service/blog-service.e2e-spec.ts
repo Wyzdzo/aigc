@@ -358,10 +358,7 @@ describe('Blog Service E2E', () => {
         }
       `;
 
-      await request(app.getHttpServer())
-        .post('/graphql')
-        .send({ query: likeMutation })
-        .expect(200);
+      await request(app.getHttpServer()).post('/graphql').send({ query: likeMutation }).expect(200);
 
       const updated = await postRepo.findOne({ where: { id: savedPost.id } });
       expect(updated?.likeCount).toBe(1);
@@ -601,13 +598,182 @@ describe('Blog Service E2E', () => {
         }
       `;
 
-      await request(app.getHttpServer())
-        .post('/graphql')
-        .send({ query: likeMutation })
-        .expect(200);
+      await request(app.getHttpServer()).post('/graphql').send({ query: likeMutation }).expect(200);
 
       const updated = await commentRepo.findOne({ where: { id: savedComment.id } });
       expect(updated?.likeCount).toBe(1);
+    });
+
+    it('should create nested comments up to max depth (3 levels)', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Post for Nested Comments',
+        slug: 'post-nested-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+
+      // Level 1: Root comment
+      const createL1 = `
+        mutation {
+          createComment(input: {
+            postId: ${savedPost.id},
+            nickname: "User 1",
+            content: "Level 1 comment"
+          }) {
+            id
+            parentId
+          }
+        }
+      `;
+
+      const resL1 = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createL1 })
+        .expect(200);
+
+      const l1CommentId = resL1.body.data.createComment.id;
+      expect(resL1.body.data.createComment.parentId).toBeNull();
+
+      // Level 2: Reply to root
+      const createL2 = `
+        mutation {
+          createComment(input: {
+            postId: ${savedPost.id},
+            parentId: ${l1CommentId},
+            nickname: "User 2",
+            content: "Level 2 comment"
+          }) {
+            id
+            parentId
+          }
+        }
+      `;
+
+      const resL2 = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createL2 })
+        .expect(200);
+
+      const l2CommentId = resL2.body.data.createComment.id;
+      expect(resL2.body.data.createComment.parentId).toBe(l1CommentId);
+
+      // Level 3: Reply to level 2
+      const createL3 = `
+        mutation {
+          createComment(input: {
+            postId: ${savedPost.id},
+            parentId: ${l2CommentId},
+            nickname: "User 3",
+            content: "Level 3 comment"
+          }) {
+            id
+            parentId
+          }
+        }
+      `;
+
+      const resL3 = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createL3 })
+        .expect(200);
+
+      // Level 3 should still be under level 2
+      expect(resL3.body.data.createComment.parentId).toBe(l2CommentId);
+    });
+
+    it('should redirect level-4 reply to root comment (max depth exceeded)', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Post for Max Depth',
+        slug: 'post-max-depth-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+
+      // Create a chain: root -> l1 -> l2 -> l3
+      const l1 = await commentRepo.save({
+        postId: savedPost.id,
+        parentId: null,
+        nickname: 'L1',
+        content: 'Level 1',
+        status: CommentStatus.APPROVED,
+      });
+
+      const l2 = await commentRepo.save({
+        postId: savedPost.id,
+        parentId: l1.id,
+        nickname: 'L2',
+        content: 'Level 2',
+        status: CommentStatus.APPROVED,
+      });
+
+      const l3 = await commentRepo.save({
+        postId: savedPost.id,
+        parentId: l2.id,
+        nickname: 'L3',
+        content: 'Level 3',
+        status: CommentStatus.APPROVED,
+      });
+
+      // Try to create level 4 (should redirect to root)
+      const createL4 = `
+        mutation {
+          createComment(input: {
+            postId: ${savedPost.id},
+            parentId: ${l3.id},
+            nickname: "User 4",
+            content: "Level 4 comment (should be under root)"
+          }) {
+            id
+            parentId
+          }
+        }
+      `;
+
+      const resL4 = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createL4 })
+        .expect(200);
+
+      // Should be redirected to root (l1.id)
+      expect(resL4.body.data.createComment.parentId).toBe(l1.id);
+    });
+
+    it('should create reply with no email (guestbook scenario)', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Guestbook Post',
+        slug: 'guestbook-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+
+      const createMutation = `
+        mutation {
+          createComment(input: {
+            postId: ${savedPost.id},
+            nickname: "Anonymous",
+            content: "Guestbook entry without email"
+          }) {
+            id
+            nickname
+            email
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createMutation })
+        .expect(200);
+
+      expect(response.body.data.createComment.nickname).toBe('Anonymous');
+      expect(response.body.data.createComment.email).toBeNull();
     });
   });
 
@@ -659,7 +825,11 @@ describe('Blog Service E2E', () => {
 
     it('should delete a link', async () => {
       const linkRepo = dataSource.getRepository(BlogLinkEntity);
-      const saved = await linkRepo.save({ title: 'Delete Link', url: 'https://delete.com', status: LinkStatus.ACTIVE });
+      const saved = await linkRepo.save({
+        title: 'Delete Link',
+        url: 'https://delete.com',
+        status: LinkStatus.ACTIVE,
+      });
 
       const deleteMutation = `
         mutation {
@@ -684,7 +854,10 @@ describe('Blog Service E2E', () => {
       const categoryRepo = dataSource.getRepository(BlogCategoryEntity);
       const postRepo = dataSource.getRepository(BlogPostEntity);
 
-      const category = await categoryRepo.save({ name: 'Filter Category', slug: 'filter-category-e2e' });
+      const category = await categoryRepo.save({
+        name: 'Filter Category',
+        slug: 'filter-category-e2e',
+      });
 
       await postRepo.save({
         title: 'Post in Category',

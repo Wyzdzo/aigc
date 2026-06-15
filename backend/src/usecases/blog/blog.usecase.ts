@@ -178,6 +178,9 @@ export class BlogUsecase {
     });
   }
 
+  /** 评论最大嵌套层级 */
+  private static readonly MAX_COMMENT_DEPTH = 3;
+
   // ==================== Comment Operations ====================
 
   async createComment(params: {
@@ -191,27 +194,24 @@ export class BlogUsecase {
         transactionContext: activeTransactionContext,
       });
 
-      // 获取被回复的评论（如果有）
+      // 获取被回复的评论（如果有），并处理嵌套层级限制
       let parentComment: CommentNotificationCommentView | null = null;
+      let effectiveParentId: number | null | undefined = params.data.parentId;
+
       if (params.data.parentId) {
-        const rawParent = await this.blogQueryService.getCommentById({
-          id: params.data.parentId,
+        const resolved = await this.resolveCommentParent({
+          parentId: params.data.parentId,
           transactionContext: activeTransactionContext,
         });
-        if (rawParent) {
-          parentComment = {
-            id: rawParent.id,
-            nickname: rawParent.nickname,
-            email: rawParent.email,
-            content: rawParent.content,
-            createdAt: rawParent.createdAt,
-          };
+        if (resolved) {
+          effectiveParentId = resolved.effectiveParentId;
+          parentComment = resolved.parentComment;
         }
       }
 
       // 创建评论
       const comment = await this.blogService.createComment({
-        data: params.data,
+        data: { ...params.data, parentId: effectiveParentId },
         transactionContext: activeTransactionContext,
       });
 
@@ -325,11 +325,15 @@ export class BlogUsecase {
         commentTime: comment.createdAt,
       };
 
-      // 使用 setImmediate 异步执行，不阻塞主流程
-      void this.notifyCommentUsecase.notifyNewComment({
-        to: this.blogOwnerEmail,
-        data: newCommentData,
-      });
+      // 通知操作不阻塞主流程，错误在 NotifyCommentUsecase 内部处理
+      this.notifyCommentUsecase
+        .notifyNewComment({
+          to: this.blogOwnerEmail,
+          data: newCommentData,
+        })
+        .catch(() => {
+          // 错误已在 NotifyCommentUsecase 内部记录日志，此处静默处理
+        });
     }
 
     // 2. 如果是回复，通知被回复者
@@ -343,10 +347,138 @@ export class BlogUsecase {
         replyTime: comment.createdAt,
       };
 
-      void this.notifyCommentUsecase.notifyCommentReply({
-        to: parentComment.email,
-        data: replyData,
-      });
+      this.notifyCommentUsecase
+        .notifyCommentReply({
+          to: parentComment.email,
+          data: replyData,
+        })
+        .catch(() => {
+          // 错误已在 NotifyCommentUsecase 内部记录日志，此处静默处理
+        });
     }
+  }
+
+  /**
+   * 获取评论的嵌套深度
+   * @returns 深度值（1表示根评论，2表示一级回复，3表示二级回复）
+   */
+  private async getCommentDepth(params: {
+    commentId: number;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<number> {
+    let depth = 1;
+    let currentId: number | null = params.commentId;
+
+    while (currentId !== null && depth <= BlogUsecase.MAX_COMMENT_DEPTH) {
+      const comment = await this.blogQueryService.getCommentById({
+        id: currentId,
+        transactionContext: params.transactionContext,
+      });
+
+      if (!comment) {
+        break;
+      }
+
+      if (comment.parentId === null) {
+        break;
+      }
+
+      currentId = comment.parentId;
+      depth++;
+    }
+
+    return depth;
+  }
+
+  /**
+   * 获取评论的根评论ID
+   * @returns 根评论的ID，如果没有父评论则返回当前评论ID
+   */
+  private async getRootCommentId(params: {
+    commentId: number;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<number | null> {
+    let currentId: number | null = params.commentId;
+
+    while (currentId !== null) {
+      const comment = await this.blogQueryService.getCommentById({
+        id: currentId,
+        transactionContext: params.transactionContext,
+      });
+
+      if (!comment) {
+        return null;
+      }
+
+      if (comment.parentId === null) {
+        return comment.id;
+      }
+
+      currentId = comment.parentId;
+    }
+
+    return null;
+  }
+
+  /**
+   * 处理评论嵌套层级，获取实际的父评论ID和父评论视图
+   * @returns 包含 effectiveParentId 和 updatedParentComment 的结果
+   */
+  private async resolveCommentParent(params: {
+    parentId: number;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{
+    effectiveParentId: number;
+    parentComment: CommentNotificationCommentView;
+  } | null> {
+    const rawParent = await this.blogQueryService.getCommentById({
+      id: params.parentId,
+      transactionContext: params.transactionContext,
+    });
+
+    if (!rawParent) {
+      return null;
+    }
+
+    let effectiveParentId = params.parentId;
+    let parentComment: CommentNotificationCommentView = {
+      id: rawParent.id,
+      nickname: rawParent.nickname,
+      email: rawParent.email,
+      content: rawParent.content,
+      createdAt: rawParent.createdAt,
+    };
+
+    const depth = await this.getCommentDepth({
+      commentId: params.parentId,
+      transactionContext: params.transactionContext,
+    });
+
+    if (depth >= BlogUsecase.MAX_COMMENT_DEPTH) {
+      const rootCommentId = await this.getRootCommentId({
+        commentId: params.parentId,
+        transactionContext: params.transactionContext,
+      });
+
+      if (rootCommentId !== null && rootCommentId !== params.parentId) {
+        const rootComment = await this.blogQueryService.getCommentById({
+          id: rootCommentId,
+          transactionContext: params.transactionContext,
+        });
+
+        if (rootComment) {
+          effectiveParentId = rootComment.id;
+          parentComment = {
+            id: rootComment.id,
+            nickname: rootComment.nickname,
+            email: rootComment.email,
+            content: rootComment.content,
+            createdAt: rootComment.createdAt,
+          };
+        }
+      }
+    }
+
+    return { effectiveParentId, parentComment };
   }
 }

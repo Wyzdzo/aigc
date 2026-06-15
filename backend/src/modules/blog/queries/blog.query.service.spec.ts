@@ -53,10 +53,16 @@ describe('BlogQueryService', () => {
 
     service = module.get<BlogQueryService>(BlogQueryService);
     postRepository = module.get<Repository<BlogPostEntity>>(getRepositoryToken(BlogPostEntity));
-    categoryRepository = module.get<Repository<BlogCategoryEntity>>(getRepositoryToken(BlogCategoryEntity));
+    categoryRepository = module.get<Repository<BlogCategoryEntity>>(
+      getRepositoryToken(BlogCategoryEntity),
+    );
     tagRepository = module.get<Repository<BlogTagEntity>>(getRepositoryToken(BlogTagEntity));
-    postTagRepository = module.get<Repository<BlogPostTagEntity>>(getRepositoryToken(BlogPostTagEntity));
-    commentRepository = module.get<Repository<BlogCommentEntity>>(getRepositoryToken(BlogCommentEntity));
+    postTagRepository = module.get<Repository<BlogPostTagEntity>>(
+      getRepositoryToken(BlogPostTagEntity),
+    );
+    commentRepository = module.get<Repository<BlogCommentEntity>>(
+      getRepositoryToken(BlogCommentEntity),
+    );
     linkRepository = module.get<Repository<BlogLinkEntity>>(getRepositoryToken(BlogLinkEntity));
   });
 
@@ -74,7 +80,7 @@ describe('BlogQueryService', () => {
         status: PostStatus.PUBLISHED,
       };
 
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost);
 
       const result = await service.getPostById({ id: 1 });
 
@@ -102,7 +108,7 @@ describe('BlogQueryService', () => {
         status: PostStatus.PUBLISHED,
       };
 
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost);
 
       const result = await service.getPostBySlug({ slug: 'test-post' });
 
@@ -164,7 +170,9 @@ describe('BlogQueryService', () => {
         options: { categoryId: 1 },
       });
 
-      expect(queryBuilderMock.where).toHaveBeenCalledWith('post.categoryId = :categoryId', { categoryId: 1 });
+      expect(queryBuilderMock.where).toHaveBeenCalledWith('post.categoryId = :categoryId', {
+        categoryId: 1,
+      });
     });
 
     it('should filter posts by keyword', async () => {
@@ -207,7 +215,11 @@ describe('BlogQueryService', () => {
         options: { tagId: 1 },
       });
 
-      expect(queryBuilderMock.innerJoin).toHaveBeenCalledWith('blog_post_tag', 'pt', 'pt.postId = post.id');
+      expect(queryBuilderMock.innerJoin).toHaveBeenCalledWith(
+        'blog_post_tag',
+        'pt',
+        'pt.postId = post.id',
+      );
     });
   });
 
@@ -232,13 +244,18 @@ describe('BlogQueryService', () => {
 
       expect(result.length).toBe(2);
       expect(queryBuilderMock.where).toHaveBeenCalledWith('post.isTop = :isTop', { isTop: true });
-      expect(queryBuilderMock.andWhere).toHaveBeenCalledWith('post.status = :status', { status: PostStatus.PUBLISHED });
+      expect(queryBuilderMock.andWhere).toHaveBeenCalledWith('post.status = :status', {
+        status: PostStatus.PUBLISHED,
+      });
     });
   });
 
   describe('getPostTags', () => {
     it('should return tags for a post', async () => {
-      const mockPostTags = [{ postId: 1, tagId: 1 }, { postId: 1, tagId: 2 }];
+      const mockPostTags = [
+        { postId: 1, tagId: 1 },
+        { postId: 1, tagId: 2 },
+      ];
       const mockTags = [
         { id: 1, name: 'Tag 1', slug: 'tag-1' },
         { id: 2, name: 'Tag 2', slug: 'tag-2' },
@@ -280,9 +297,36 @@ describe('BlogQueryService', () => {
   describe('getCategoryTree', () => {
     it('should build category tree', async () => {
       const mockCategories: BlogCategoryEntity[] = [
-        { id: 1, name: 'Root 1', slug: 'root-1', description: null, parentId: null, sortOrder: 0, createdAt: new Date(), updatedAt: new Date() },
-        { id: 2, name: 'Child 1', slug: 'child-1', description: null, parentId: 1, sortOrder: 0, createdAt: new Date(), updatedAt: new Date() },
-        { id: 3, name: 'Root 2', slug: 'root-2', description: null, parentId: null, sortOrder: 1, createdAt: new Date(), updatedAt: new Date() },
+        {
+          id: 1,
+          name: 'Root 1',
+          slug: 'root-1',
+          description: null,
+          parentId: null,
+          sortOrder: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 2,
+          name: 'Child 1',
+          slug: 'child-1',
+          description: null,
+          parentId: 1,
+          sortOrder: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 3,
+          name: 'Root 2',
+          slug: 'root-2',
+          description: null,
+          parentId: null,
+          sortOrder: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
 
       jest.spyOn(categoryRepository, 'find').mockResolvedValue(mockCategories);
@@ -357,8 +401,20 @@ describe('BlogQueryService', () => {
   describe('getAllLinks', () => {
     it('should return active links sorted', async () => {
       const mockLinks: Partial<BlogLinkEntity>[] = [
-        { id: 1, title: 'Link 1', url: 'https://example.com', status: LinkStatus.ACTIVE, sortOrder: 2 },
-        { id: 2, title: 'Link 2', url: 'https://test.com', status: LinkStatus.ACTIVE, sortOrder: 1 },
+        {
+          id: 1,
+          title: 'Link 1',
+          url: 'https://example.com',
+          status: LinkStatus.ACTIVE,
+          sortOrder: 2,
+        },
+        {
+          id: 2,
+          title: 'Link 2',
+          url: 'https://test.com',
+          status: LinkStatus.ACTIVE,
+          sortOrder: 1,
+        },
       ];
 
       const queryBuilderMock = {

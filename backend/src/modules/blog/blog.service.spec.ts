@@ -53,10 +53,16 @@ describe('BlogService', () => {
 
     service = module.get<BlogService>(BlogService);
     postRepository = module.get<Repository<BlogPostEntity>>(getRepositoryToken(BlogPostEntity));
-    categoryRepository = module.get<Repository<BlogCategoryEntity>>(getRepositoryToken(BlogCategoryEntity));
+    categoryRepository = module.get<Repository<BlogCategoryEntity>>(
+      getRepositoryToken(BlogCategoryEntity),
+    );
     tagRepository = module.get<Repository<BlogTagEntity>>(getRepositoryToken(BlogTagEntity));
-    postTagRepository = module.get<Repository<BlogPostTagEntity>>(getRepositoryToken(BlogPostTagEntity));
-    commentRepository = module.get<Repository<BlogCommentEntity>>(getRepositoryToken(BlogCommentEntity));
+    postTagRepository = module.get<Repository<BlogPostTagEntity>>(
+      getRepositoryToken(BlogPostTagEntity),
+    );
+    commentRepository = module.get<Repository<BlogCommentEntity>>(
+      getRepositoryToken(BlogCommentEntity),
+    );
     linkRepository = module.get<Repository<BlogLinkEntity>>(getRepositoryToken(BlogLinkEntity));
   });
 
@@ -190,7 +196,9 @@ describe('BlogService', () => {
   describe('updatePost', () => {
     it('should update post fields', async () => {
       jest.spyOn(postRepository, 'findOne').mockResolvedValue({ id: 1 } as any);
-      const updateSpy = jest.spyOn(postRepository, 'update').mockResolvedValue({ affected: 1 } as any);
+      const updateSpy = jest
+        .spyOn(postRepository, 'update')
+        .mockResolvedValue({ affected: 1 } as any);
 
       await service.updatePost({
         id: 1,
@@ -210,17 +218,21 @@ describe('BlogService', () => {
     it('should throw NotFoundException when post does not exist', async () => {
       jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.updatePost({
-        id: 999,
-        data: { title: 'Updated Title' },
-      })).rejects.toThrow('Post with id 999 not found');
+      await expect(
+        service.updatePost({
+          id: 999,
+          data: { title: 'Updated Title' },
+        }),
+      ).rejects.toThrow('Post with id 999 not found');
     });
   });
 
   describe('deletePost', () => {
     it('should soft delete a post and return true', async () => {
       jest.spyOn(postRepository, 'findOne').mockResolvedValue({ id: 1 } as any);
-      const softDeleteSpy = jest.spyOn(postRepository, 'softDelete').mockResolvedValue({ affected: 1 } as any);
+      const softDeleteSpy = jest
+        .spyOn(postRepository, 'softDelete')
+        .mockResolvedValue({ affected: 1 } as any);
 
       const result = await service.deletePost({ id: 1 });
 
@@ -239,7 +251,9 @@ describe('BlogService', () => {
 
   describe('incrementViewCount', () => {
     it('should increment view count', async () => {
-      const incrementSpy = jest.spyOn(postRepository, 'increment').mockResolvedValue({ affected: 1 } as any);
+      const incrementSpy = jest
+        .spyOn(postRepository, 'increment')
+        .mockResolvedValue({ affected: 1 } as any);
 
       await service.incrementViewCount({ id: 1 });
 
@@ -249,7 +263,9 @@ describe('BlogService', () => {
 
   describe('incrementLikeCount', () => {
     it('should increment like count', async () => {
-      const incrementSpy = jest.spyOn(postRepository, 'increment').mockResolvedValue({ affected: 1 } as any);
+      const incrementSpy = jest
+        .spyOn(postRepository, 'increment')
+        .mockResolvedValue({ affected: 1 } as any);
 
       await service.incrementLikeCount({ id: 1 });
 
@@ -395,7 +411,7 @@ describe('BlogService', () => {
 
   describe('addTagsToPost', () => {
     it('should add tags to post', async () => {
-      const createSpy = jest.spyOn(postTagRepository, 'create').mockImplementation((dto) => dto as any);
+      const createSpy = jest.spyOn(postTagRepository, 'create').mockImplementation((dto) => dto);
       const saveSpy = jest.spyOn(postTagRepository, 'save').mockResolvedValue({} as any);
 
       await service.addTagsToPost({ postId: 1, tagIds: [1, 2, 3] });
@@ -407,7 +423,9 @@ describe('BlogService', () => {
 
   describe('clearPostTags', () => {
     it('should clear all tags from post', async () => {
-      const deleteSpy = jest.spyOn(postTagRepository, 'delete').mockResolvedValue({ affected: 3 } as any);
+      const deleteSpy = jest
+        .spyOn(postTagRepository, 'delete')
+        .mockResolvedValue({ affected: 3 } as any);
 
       await service.clearPostTags({ postId: 1 });
 

@@ -1,7 +1,6 @@
 // src/usecases/blog/notification/notify-comment.usecase.ts
 
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
 import { EmailQueueService } from '@src/modules/common/email-queue/email-queue.service';
 import { PinoLogger } from 'nestjs-pino';
 import type { QueueEmailInput } from '@src/modules/common/email-queue/email-queue.types';
@@ -37,7 +36,8 @@ export interface NotifyCommentReplyInput {
 export class NotifyCommentUsecase {
   constructor(
     private readonly emailQueueService: EmailQueueService,
-    private readonly configService: ConfigService,
+    @Inject('BLOG_SITE_NAME') private readonly siteName: string,
+    @Inject('BLOG_SITE_URL') private readonly siteUrl: string,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(NotifyCommentUsecase.name);
@@ -47,14 +47,11 @@ export class NotifyCommentUsecase {
    * 通知博主有新评论
    */
   async notifyNewComment(input: NotifyNewCommentInput): Promise<void> {
-    const siteName = this.configService.get<string>('blog.siteName') ?? 'AIGC Blog';
-    const siteUrl = this.configService.get<string>('blog.siteUrl') ?? 'https://example.com';
-
     const emailInput: QueueEmailInput = {
       to: input.to,
-      subject: generateNewCommentSubject(input.data, siteName),
-      text: generateNewCommentText(input.data, siteName, siteUrl),
-      html: generateNewCommentHtml(input.data, siteName, siteUrl),
+      subject: generateNewCommentSubject(input.data, this.siteName),
+      text: generateNewCommentText(input.data, this.siteName, this.siteUrl),
+      html: generateNewCommentHtml(input.data, this.siteName, this.siteUrl),
       dedupKey: `new-comment-${input.data.commentTime.getTime()}`,
     };
 
@@ -74,14 +71,11 @@ export class NotifyCommentUsecase {
    * 通知用户有回复
    */
   async notifyCommentReply(input: NotifyCommentReplyInput): Promise<void> {
-    const siteName = this.configService.get<string>('blog.siteName') ?? 'AIGC Blog';
-    const siteUrl = this.configService.get<string>('blog.siteUrl') ?? 'https://example.com';
-
     const emailInput: QueueEmailInput = {
       to: input.to,
-      subject: generateReplySubject(input.data, siteName),
-      text: generateReplyText(input.data, siteName, siteUrl),
-      html: generateReplyHtml(input.data, siteName, siteUrl),
+      subject: generateReplySubject(input.data, this.siteName),
+      text: generateReplyText(input.data, this.siteName, this.siteUrl),
+      html: generateReplyHtml(input.data, this.siteName, this.siteUrl),
       dedupKey: `comment-reply-${input.data.replyTime.getTime()}`,
     };
 

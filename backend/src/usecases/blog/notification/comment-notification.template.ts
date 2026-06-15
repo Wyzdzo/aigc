@@ -26,7 +26,7 @@ export function generateNewCommentText(
   siteName: string,
   siteUrl: string,
 ): string {
-  return `
+  const content = `
 您好！
 
 您的文章「${data.postTitle}」收到了一条新评论。
@@ -40,7 +40,8 @@ export function generateNewCommentText(
 ---
 ${siteName}
 ${siteUrl}
-  `.trim();
+  `;
+  return content.replace(/^\s+|\s+$/g, '');
 }
 
 /**
@@ -57,7 +58,7 @@ export function generateNewCommentHtml(
   const subject = generateNewCommentSubject(data, siteName);
   const escapedSubject = escapeHtml(subject);
 
-  return `
+  const content = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -102,7 +103,8 @@ export function generateNewCommentHtml(
   </div>
 </body>
 </html>
-  `.trim();
+  `;
+  return content.replace(/^\s+|\s+$/g, '');
 }
 
 /**
@@ -120,7 +122,7 @@ export function generateReplyText(
   siteName: string,
   siteUrl: string,
 ): string {
-  return `
+  const content = `
 您好，${data.replyToNickname}！
 
 ${data.replierNickname} 在「${data.postTitle}」中回复了您的评论。
@@ -133,7 +135,8 @@ ${data.replierNickname} 在「${data.postTitle}」中回复了您的评论。
 ---
 ${siteName}
 ${siteUrl}
-  `.trim();
+  `;
+  return content.replace(/^\s+|\s+$/g, '');
 }
 
 /**
@@ -151,7 +154,7 @@ export function generateReplyHtml(
   const subject = generateReplySubject(data, siteName);
   const escapedSubject = escapeHtml(subject);
 
-  return `
+  const content = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -199,19 +202,19 @@ export function generateReplyHtml(
   </div>
 </body>
 </html>
-  `.trim();
+  `;
+  return content.replace(/^\s+|\s+$/g, '');
 }
 
 /**
  * HTML 转义函数
+ * 注意: & 必须最先转义，否则后续转义的 < > 会变成 &lt; &gt; 然后被二次转义为 &amp;lt; &amp;gt;
  */
 function escapeHtml(text: string): string {
-  const htmlEscapes: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  };
-  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

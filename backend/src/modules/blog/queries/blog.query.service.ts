@@ -88,10 +88,9 @@ export class BlogQueryService {
 
     if (options.status) {
       const whereClause = options.categoryId ? 'AND' : 'WHERE';
-      queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere'](
-        'post.status = :status',
-        { status: options.status },
-      );
+      queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere']('post.status = :status', {
+        status: options.status,
+      });
     }
 
     if (options.keyword) {
@@ -243,18 +242,16 @@ export class BlogQueryService {
 
     if (options.parentId !== undefined) {
       const whereClause = options.postId ? 'AND' : 'WHERE';
-      queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere'](
-        'comment.parentId = :parentId',
-        { parentId: options.parentId },
-      );
+      queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere']('comment.parentId = :parentId', {
+        parentId: options.parentId,
+      });
     }
 
     if (options.status) {
       const whereClause = options.postId || options.parentId !== undefined ? 'AND' : 'WHERE';
-      queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere'](
-        'comment.status = :status',
-        { status: options.status },
-      );
+      queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere']('comment.status = :status', {
+        status: options.status,
+      });
     }
 
     queryBuilder.orderBy('comment.createdAt', 'DESC').skip(skip).take(pageSize);
@@ -280,7 +277,9 @@ export class BlogQueryService {
     const { postId, status, transactionContext } = params;
     const repository = this.getCommentRepository(transactionContext);
 
-    const query = repository.createQueryBuilder('comment').where('comment.postId = :postId', { postId });
+    const query = repository
+      .createQueryBuilder('comment')
+      .where('comment.postId = :postId', { postId });
 
     if (status) {
       query.andWhere('comment.status = :status', { status });
@@ -359,7 +358,9 @@ export class BlogQueryService {
       : this.linkRepository;
   }
 
-  private buildTree(categories: BlogCategoryEntity[]): (BlogCategoryEntity & { children?: BlogCategoryEntity[] })[] {
+  private buildTree(
+    categories: BlogCategoryEntity[],
+  ): (BlogCategoryEntity & { children?: BlogCategoryEntity[] })[] {
     interface CategoryWithChildren extends BlogCategoryEntity {
       children?: BlogCategoryEntity[];
     }

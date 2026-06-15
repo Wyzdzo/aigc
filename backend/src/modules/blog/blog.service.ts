@@ -262,9 +262,7 @@ export class BlogService {
     const { postId, tagIds, transactionContext } = params;
     const repository = this.getPostTagRepository(transactionContext);
 
-    const postTags = tagIds.map((tagId) =>
-      repository.create({ postId, tagId }),
-    );
+    const postTags = tagIds.map((tagId) => repository.create({ postId, tagId }));
 
     await repository.save(postTags);
   }
