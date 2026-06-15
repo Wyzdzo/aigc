@@ -1,4 +1,5 @@
 // src/usecases/blog/blog.usecase.ts
+
 import type { PersistenceTransactionContext } from '@app-types/common/transaction.types';
 import { PostStatus } from '@app-types/models/blog/blog.types';
 import { Inject, Injectable } from '@nestjs/common';
@@ -13,11 +14,16 @@ import {
   TRANSACTION_RUNNER,
   type TransactionRunner,
 } from '@src/usecases/common/ports/transaction-runner.contract';
-import { BlogPostEntity } from '@src/modules/blog/entities/blog-post.entity';
-import { BlogCommentEntity } from '@src/modules/blog/entities/blog-comment.entity';
+import {
+  NotifyCommentUsecase,
+  type CommentNotificationData,
+  type CommentReplyNotificationData,
+  type CommentNotificationPostView,
+  type CommentNotificationCommentView,
+} from './notification';
 
 export interface CreatePostResult {
-  post: BlogPostEntity;
+  post: { id: number; title: string; slug: string };
 }
 
 export interface UpdatePostResult {
@@ -29,7 +35,7 @@ export interface DeletePostResult {
 }
 
 export interface CreateCommentResult {
-  comment: BlogCommentEntity;
+  comment: { id: number; nickname: string; email: string | null; content: string; createdAt: Date };
 }
 
 @Injectable()
@@ -37,6 +43,9 @@ export class BlogUsecase {
   constructor(
     private readonly blogService: BlogService,
     private readonly blogQueryService: BlogQueryService,
+    private readonly notifyCommentUsecase: NotifyCommentUsecase,
+    @Inject('BLOG_SITE_URL') private readonly siteUrl: string,
+    @Inject('BLOG_OWNER_EMAIL') private readonly blogOwnerEmail: string,
     @Inject(TRANSACTION_RUNNER)
     private readonly transactionRunner: TransactionRunner,
   ) {}
@@ -52,7 +61,7 @@ export class BlogUsecase {
         data: params.data,
         transactionContext: activeTransactionContext,
       });
-      return { post };
+      return { post: { id: post.id, title: post.title, slug: post.slug } };
     };
 
     return params.transactionContext
@@ -135,7 +144,7 @@ export class BlogUsecase {
   async viewPost(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<BlogPostEntity | null> {
+  }): Promise<CommentNotificationPostView | null> {
     // Increment view count
     await this.blogService.incrementViewCount({
       id: params.id,
@@ -143,10 +152,20 @@ export class BlogUsecase {
     });
 
     // Return post
-    return this.blogQueryService.getPostById({
+    const post = await this.blogQueryService.getPostById({
       id: params.id,
       transactionContext: params.transactionContext,
     });
+
+    if (!post) {
+      return null;
+    }
+
+    return {
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+    };
   }
 
   async likePost(params: {
@@ -166,11 +185,58 @@ export class BlogUsecase {
     transactionContext?: PersistenceTransactionContext;
   }): Promise<CreateCommentResult> {
     const run = async (activeTransactionContext: PersistenceTransactionContext) => {
+      // 获取文章信息用于通知
+      const post = await this.blogQueryService.getPostById({
+        id: params.data.postId,
+        transactionContext: activeTransactionContext,
+      });
+
+      // 获取被回复的评论（如果有）
+      let parentComment: CommentNotificationCommentView | null = null;
+      if (params.data.parentId) {
+        const rawParent = await this.blogQueryService.getCommentById({
+          id: params.data.parentId,
+          transactionContext: activeTransactionContext,
+        });
+        if (rawParent) {
+          parentComment = {
+            id: rawParent.id,
+            nickname: rawParent.nickname,
+            email: rawParent.email,
+            content: rawParent.content,
+            createdAt: rawParent.createdAt,
+          };
+        }
+      }
+
+      // 创建评论
       const comment = await this.blogService.createComment({
         data: params.data,
         transactionContext: activeTransactionContext,
       });
-      return { comment };
+
+      // 准备返回的视图
+      const commentView: CreateCommentResult['comment'] = {
+        id: comment.id,
+        nickname: comment.nickname,
+        email: comment.email,
+        content: comment.content,
+        createdAt: comment.createdAt,
+      };
+
+      // 准备文章视图用于通知
+      const postView: CommentNotificationPostView | null = post
+        ? { id: post.id, title: post.title, slug: post.slug }
+        : null;
+
+      // 异步发送通知（不阻塞评论创建）
+      this.sendCommentNotifications({
+        comment: commentView,
+        post: postView,
+        parentComment,
+      });
+
+      return { comment: commentView };
     };
 
     return params.transactionContext
@@ -193,20 +259,94 @@ export class BlogUsecase {
   async getPostById(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<BlogPostEntity | null> {
-    return this.blogQueryService.getPostById({
+  }): Promise<CommentNotificationPostView | null> {
+    const post = await this.blogQueryService.getPostById({
       id: params.id,
       transactionContext: params.transactionContext,
     });
+
+    if (!post) {
+      return null;
+    }
+
+    return {
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+    };
   }
 
   async getPostBySlug(params: {
     slug: string;
     transactionContext?: PersistenceTransactionContext;
-  }): Promise<BlogPostEntity | null> {
-    return this.blogQueryService.getPostBySlug({
+  }): Promise<CommentNotificationPostView | null> {
+    const post = await this.blogQueryService.getPostBySlug({
       slug: params.slug,
       transactionContext: params.transactionContext,
     });
+
+    if (!post) {
+      return null;
+    }
+
+    return {
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+    };
+  }
+
+  // ==================== Notification Helpers ====================
+
+  /**
+   * 发送评论通知（异步，不阻塞主流程）
+   */
+  private sendCommentNotifications(params: {
+    comment: { nickname: string; email: string | null; content: string; createdAt: Date };
+    post: CommentNotificationPostView | null;
+    parentComment: CommentNotificationCommentView | null;
+  }): void {
+    const { comment, post, parentComment } = params;
+
+    // 如果没有关联的文章（如留言板），跳过通知
+    if (!post) {
+      return;
+    }
+
+    const postUrl = `${this.siteUrl}/blog/${post.slug}`;
+
+    // 1. 通知博主有新评论
+    if (comment.email) {
+      const newCommentData: CommentNotificationData = {
+        postTitle: post.title,
+        postUrl,
+        commenterNickname: comment.nickname,
+        commentContent: comment.content,
+        commentTime: comment.createdAt,
+      };
+
+      // 使用 setImmediate 异步执行，不阻塞主流程
+      void this.notifyCommentUsecase.notifyNewComment({
+        to: this.blogOwnerEmail,
+        data: newCommentData,
+      });
+    }
+
+    // 2. 如果是回复，通知被回复者
+    if (parentComment && parentComment.email && parentComment.email !== comment.email) {
+      const replyData: CommentReplyNotificationData = {
+        replyToNickname: parentComment.nickname,
+        postTitle: post.title,
+        postUrl,
+        replierNickname: comment.nickname,
+        replyContent: comment.content,
+        replyTime: comment.createdAt,
+      };
+
+      void this.notifyCommentUsecase.notifyCommentReply({
+        to: parentComment.email,
+        data: replyData,
+      });
+    }
   }
 }

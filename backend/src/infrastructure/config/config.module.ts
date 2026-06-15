@@ -436,6 +436,17 @@ const emailDeliveryConfig: ConfigFactory = () => ({
 });
 
 /**
+ * 生成博客配置
+ */
+const blogConfig: ConfigFactory = () => ({
+  blog: {
+    ownerEmail: getOptionalEnv('BLOG_OWNER_EMAIL') ?? 'admin@example.com',
+    siteName: getOptionalEnv('BLOG_SITE_NAME') ?? 'AIGC Blog',
+    siteUrl: getOptionalEnv('BLOG_SITE_URL') ?? 'https://example.com',
+  },
+});
+
+/**
  * 生成 JWT 配置
  */
 const jwtConfig = registerAs('jwt', () => ({
@@ -485,6 +496,7 @@ const paginationConfig = () => ({
         qmWorkerEntryConfig,
         aiWorkerConfig,
         emailDeliveryConfig,
+        blogConfig,
         jwtConfig,
         paginationConfig,
       ],

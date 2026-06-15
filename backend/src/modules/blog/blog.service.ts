@@ -116,7 +116,11 @@ export class BlogService {
       updatedAt: new Date(),
     });
 
-    return await repository.findOne({ where: { id } })!;
+    const updated = await repository.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Post with id ${id} not found after update`);
+    }
+    return updated;
   }
 
   async deletePost(params: {
@@ -195,7 +199,11 @@ export class BlogService {
     }
 
     await repository.update(id, { ...updateData, updatedAt: new Date() });
-    return await repository.findOne({ where: { id } })!;
+    const updated = await repository.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Category with id ${id} not found after update`);
+    }
+    return updated;
   }
 
   async deleteCategory(params: {
@@ -318,7 +326,11 @@ export class BlogService {
     }
 
     await repository.update(id, { status });
-    return await repository.findOne({ where: { id } })!;
+    const updated = await repository.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Comment with id ${id} not found after update`);
+    }
+    return updated;
   }
 
   async deleteComment(params: {
@@ -388,7 +400,11 @@ export class BlogService {
     }
 
     await repository.update(id, { ...updateData, updatedAt: new Date() });
-    return await repository.findOne({ where: { id } })!;
+    const updated = await repository.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Link with id ${id} not found after update`);
+    }
+    return updated;
   }
 
   async deleteLink(params: {
