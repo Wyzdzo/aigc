@@ -12,6 +12,7 @@ import { AppLayout, BlogLayout } from '@/app/layout';
 
 import { BlogDetailPage } from '@/pages/blog/[slug]';
 import { BlogAboutPage } from '@/pages/blog/about';
+import { BlogLinksPage } from '@/pages/blog/links';
 import { AdminCommentsPage } from '@/pages/admin/comments';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
@@ -148,6 +149,10 @@ const router = createBrowserRouter([
       {
         element: <BlogAboutPage />,
         path: 'about',
+      },
+      {
+        element: <BlogLinksPage />,
+        path: 'links',
       },
       {
         element: <BlogDetailPage />,
