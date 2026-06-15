@@ -6,6 +6,7 @@ export * from '@/entities/blog';
 // Application - Hooks
 export * from './application/hooks/useCategories';
 export * from './application/hooks/useComments';
+export * from './application/hooks/useAdminComments';
 export * from './application/hooks/useCreateComment';
 export * from './application/hooks/useLikePost';
 export * from './application/hooks/useLinks';

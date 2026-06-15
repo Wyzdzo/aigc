@@ -241,6 +241,36 @@ export const DELETE_TAG = gql`
 `;
 
 /**
+ * 更新评论状态
+ */
+export const UPDATE_COMMENT_STATUS = gql`
+  mutation UpdateCommentStatus($id: Int!, $status: CommentStatus!) {
+    updateCommentStatus(id: $id, status: $status) {
+      id
+      postId
+      parentId
+      nickname
+      email
+      avatar
+      content
+      status
+      likeCount
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * 删除评论
+ */
+export const DELETE_COMMENT = gql`
+  mutation DeleteComment($id: Int!) {
+    deleteComment(id: $id)
+  }
+`;
+
+/**
  * 创建友链
  */
 export const CREATE_LINK = gql`
