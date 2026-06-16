@@ -14,11 +14,13 @@ import {
   Tag,
 } from 'antd';
 import type { Key } from 'react';
+import { useNavigate } from 'react-router';
 import {
   CheckCircleOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
+  PlusOutlined,
   RestOutlined,
   SaveOutlined,
   StarOutlined,
@@ -34,6 +36,7 @@ import {
 import type { BlogPost } from '@/entities/blog';
 
 export function AdminPostsPage() {
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<PostStatus | undefined>();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
@@ -191,6 +194,7 @@ export function AdminPostsPage() {
           <Button
             size="small"
             icon={<EditOutlined />}
+            onClick={() => navigate(`/admin/posts/${record.id}`)}
           >
             编辑
           </Button>
@@ -244,14 +248,23 @@ export function AdminPostsPage() {
       <Card
         title="文章管理"
         extra={
-          <Button
-            type="text"
-            icon={<RestOutlined />}
-            onClick={() => refetch()}
-            loading={loading}
-          >
-            刷新
-          </Button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate('/admin/posts/new')}
+            >
+              新建文章
+            </Button>
+            <Button
+              type="text"
+              icon={<RestOutlined />}
+              onClick={() => refetch()}
+              loading={loading}
+            >
+              刷新
+            </Button>
+          </div>
         }
       >
         <div

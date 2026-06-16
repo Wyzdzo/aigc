@@ -17,6 +17,8 @@ export * from './application/hooks/usePublishPost';
 export * from './application/hooks/useSearch';
 export * from './application/hooks/useTags';
 export * from './application/hooks/useUnpublishPost';
+export * from './application/hooks/useCreatePost';
+export * from './application/hooks/useUpdatePost';
 
 // Infrastructure - GraphQL (for testing)
 export { CREATE_COMMENT, LIKE_POST } from './infrastructure/graphql/mutations';

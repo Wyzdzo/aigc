@@ -4,6 +4,10 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import {
+  CREATE_POST,
+  UPDATE_POST,
+} from '../../infrastructure/graphql/mutations';
+import {
   GET_CATEGORIES,
   GET_COMMENT_STATS,
   GET_COMMENTS,
@@ -18,10 +22,12 @@ import { mockCategories, mockComments, mockLinks,mockPosts, mockTags } from '../
 
 import { useCategories } from './useCategories';
 import { useComments, useCommentStats } from './useComments';
+import { useCreatePost } from './useCreatePost';
 import { useLinks } from './useLinks';
 import { usePostById, usePostBySlug } from './usePost';
 import { usePosts } from './usePosts';
 import { usePostTags,useTags } from './useTags';
+import { useUpdatePost } from './useUpdatePost';
 
 describe('Blog Hooks', () => {
   describe('usePosts', () => {
@@ -467,6 +473,178 @@ describe('Blog Hooks', () => {
       });
 
       expect(result.current.links).toEqual(mockLinks);
+    });
+  });
+
+  describe('useCreatePost', () => {
+    it('should create post successfully', async () => {
+      const newPost = {
+        id: 100,
+        title: 'Test New Post',
+        slug: 'test-new-post',
+        content: '<p>Test content</p>',
+        summary: 'Test summary',
+        coverImage: null,
+        status: 'DRAFT',
+        isTop: false,
+        viewCount: 0,
+        likeCount: 0,
+        categoryId: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const mocks = [
+        {
+          request: {
+            query: CREATE_POST,
+            variables: {
+              input: {
+                title: 'Test New Post',
+                slug: 'test-new-post',
+                content: '<p>Test content</p>',
+                summary: 'Test summary',
+                categoryId: 1,
+                status: 'DRAFT',
+                isTop: false,
+              },
+            },
+          },
+          result: {
+            data: { createPost: newPost },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useCreatePost(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      const createdPost = await result.current.createPost({
+        title: 'Test New Post',
+        slug: 'test-new-post',
+        content: '<p>Test content</p>',
+        summary: 'Test summary',
+        categoryId: 1,
+        status: 'DRAFT',
+        isTop: false,
+      });
+
+      expect(createdPost).toEqual(newPost);
+    });
+
+    it('should handle create post error', async () => {
+      const mocks = [
+        {
+          request: {
+            query: CREATE_POST,
+            variables: {
+              input: {
+                title: 'Test Post',
+                slug: 'test-post',
+                content: '<p>Content</p>',
+              },
+            },
+          },
+          error: new Error('Database error'),
+        },
+      ];
+
+      const { result } = renderHook(() => useCreatePost(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await expect(
+        result.current.createPost({
+          title: 'Test Post',
+          slug: 'test-post',
+          content: '<p>Content</p>',
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('useUpdatePost', () => {
+    it('should update post successfully', async () => {
+      const updatedPost = {
+        id: 1,
+        title: 'Updated Post',
+        slug: 'updated-post',
+        content: '<p>Updated content</p>',
+        summary: 'Updated summary',
+        coverImage: null,
+        status: 'PUBLISHED',
+        isTop: true,
+        viewCount: 10,
+        likeCount: 5,
+        categoryId: 2,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const mocks = [
+        {
+          request: {
+            query: UPDATE_POST,
+            variables: {
+              id: 1,
+              input: {
+                title: 'Updated Post',
+                slug: 'updated-post',
+                content: '<p>Updated content</p>',
+                summary: 'Updated summary',
+                status: 'PUBLISHED',
+                isTop: true,
+                categoryId: 2,
+              },
+            },
+          },
+          result: {
+            data: { updatePost: updatedPost },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useUpdatePost(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      const resultPost = await result.current.updatePost(1, {
+        title: 'Updated Post',
+        slug: 'updated-post',
+        content: '<p>Updated content</p>',
+        summary: 'Updated summary',
+        status: 'PUBLISHED',
+        isTop: true,
+        categoryId: 2,
+      });
+
+      expect(resultPost).toEqual(updatedPost);
+    });
+
+    it('should handle update post error', async () => {
+      const mocks = [
+        {
+          request: {
+            query: UPDATE_POST,
+            variables: {
+              id: 999,
+              input: {
+                title: 'Non-existent Post',
+              },
+            },
+          },
+          error: new Error('Post not found'),
+        },
+      ];
+
+      const { result } = renderHook(() => useUpdatePost(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await expect(
+        result.current.updatePost(999, { title: 'Non-existent Post' }),
+      ).rejects.toThrow();
     });
   });
 });
