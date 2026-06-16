@@ -15,6 +15,7 @@ import { BlogAboutPage } from '@/pages/blog/about';
 import { BlogLinksPage } from '@/pages/blog/links';
 import { AdminCommentsPage } from '@/pages/admin/comments';
 import { AdminDashboardPage } from '@/pages/admin';
+import { AdminPostsPage } from '@/pages/admin/posts';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
@@ -128,6 +129,11 @@ const router = createBrowserRouter([
         element: <AdminCommentsPage />,
         loader: adminAuthLoader,
         path: 'admin/comments',
+      },
+      {
+        element: <AdminPostsPage />,
+        loader: adminAuthLoader,
+        path: 'admin/posts',
       },
       {
         element: <Error404 />,

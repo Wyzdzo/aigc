@@ -3,10 +3,10 @@
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { useQuery } from '@apollo/client/react';
 
 import { AdminDashboardPage } from './index';
 
-// Mock window globals for Ant Design
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -30,7 +30,6 @@ beforeAll(() => {
   window.ResizeObserver = ResizeObserverMock;
 });
 
-// Mock Apollo useQuery hook - 静态 mock
 vi.mock('@apollo/client/react', () => ({
   useQuery: vi.fn(() => ({
     data: {
@@ -44,6 +43,8 @@ vi.mock('@apollo/client/react', () => ({
     error: null,
   })),
 }));
+
+const mockedUseQuery = vi.mocked(useQuery);
 
 describe('AdminDashboardPage', () => {
   describe('Happy Path', () => {
@@ -131,9 +132,64 @@ describe('AdminDashboardPage', () => {
         </BrowserRouter>
       );
 
-      // 验证统计卡片包含数值
       const statValues = container.querySelectorAll('.ant-statistic-content-value');
       expect(statValues.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Error Path', () => {
+    it('should display loading state when data is loading', async () => {
+      mockedUseQuery.mockReturnValue({
+        data: null,
+        loading: true,
+        error: undefined,
+        client: {} as any,
+        observable: {} as any,
+        networkStatus: 1,
+        startPolling: vi.fn(),
+        stopPolling: vi.fn(),
+        refetch: vi.fn(),
+        fetchMore: vi.fn(),
+        updateQuery: vi.fn(),
+        variables: {},
+        subscribeToMore: vi.fn(),
+        dataState: 'complete' as const,
+      });
+
+      const { container } = render(
+        <BrowserRouter>
+          <AdminDashboardPage />
+        </BrowserRouter>
+      );
+
+      expect(container.querySelector('.ant-spin')).toBeTruthy();
+    });
+
+    it('should display error state when query fails', async () => {
+      mockedUseQuery.mockReturnValue({
+        data: null,
+        loading: false,
+        error: new Error('Network error'),
+        client: {} as any,
+        observable: {} as any,
+        networkStatus: 7,
+        startPolling: vi.fn(),
+        stopPolling: vi.fn(),
+        refetch: vi.fn(),
+        fetchMore: vi.fn(),
+        updateQuery: vi.fn(),
+        variables: {},
+        subscribeToMore: vi.fn(),
+        dataState: 'complete' as const,
+      });
+
+      const { container } = render(
+        <BrowserRouter>
+          <AdminDashboardPage />
+        </BrowserRouter>
+      );
+
+      expect(container.textContent).toContain('加载失败');
     });
   });
 });

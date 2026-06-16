@@ -8,12 +8,15 @@ export * from './application/hooks/useCategories';
 export * from './application/hooks/useComments';
 export * from './application/hooks/useAdminComments';
 export * from './application/hooks/useCreateComment';
+export * from './application/hooks/useDeletePost';
 export * from './application/hooks/useLikePost';
 export * from './application/hooks/useLinks';
 export * from './application/hooks/usePost';
 export * from './application/hooks/usePosts';
+export * from './application/hooks/usePublishPost';
 export * from './application/hooks/useSearch';
 export * from './application/hooks/useTags';
+export * from './application/hooks/useUnpublishPost';
 
 // Infrastructure - GraphQL (for testing)
 export { CREATE_COMMENT, LIKE_POST } from './infrastructure/graphql/mutations';

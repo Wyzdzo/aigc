@@ -180,6 +180,24 @@ describe('AdminCommentsPage', () => {
 
       expect(container.querySelector('.ant-spin')).toBeTruthy();
     });
+
+    it('should show empty state when GraphQL query error occurs', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 0, page: 1, pageSize: 20 },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<AdminCommentsPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('暂无评论');
+      });
+    });
   });
 
   describe('Edge Cases', () => {
