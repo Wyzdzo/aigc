@@ -3,8 +3,12 @@ import { MockedProvider } from '@apollo/client/testing/react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { PostStatus } from '@/entities/blog';
+
 import {
   CREATE_POST,
+  DELETE_CATEGORY,
+  DELETE_TAG,
   UPDATE_POST,
 } from '../../infrastructure/graphql/mutations';
 import {
@@ -23,6 +27,8 @@ import { mockCategories, mockComments, mockLinks,mockPosts, mockTags } from '../
 import { useCategories } from './useCategories';
 import { useComments, useCommentStats } from './useComments';
 import { useCreatePost } from './useCreatePost';
+import { useDeleteCategory } from './useDeleteCategory';
+import { useDeleteTag } from './useDeleteTag';
 import { useLinks } from './useLinks';
 import { usePostById, usePostBySlug } from './usePost';
 import { usePosts } from './usePosts';
@@ -526,7 +532,7 @@ describe('Blog Hooks', () => {
         content: '<p>Test content</p>',
         summary: 'Test summary',
         categoryId: 1,
-        status: 'DRAFT',
+        status: PostStatus.DRAFT,
         isTop: false,
       });
 
@@ -614,7 +620,7 @@ describe('Blog Hooks', () => {
         slug: 'updated-post',
         content: '<p>Updated content</p>',
         summary: 'Updated summary',
-        status: 'PUBLISHED',
+        status: PostStatus.PUBLISHED,
         isTop: true,
         categoryId: 2,
       });
@@ -645,6 +651,130 @@ describe('Blog Hooks', () => {
       await expect(
         result.current.updatePost(999, { title: 'Non-existent Post' }),
       ).rejects.toThrow();
+    });
+  });
+
+  describe('useDeleteCategory', () => {
+    it('should delete category successfully', async () => {
+      const mocks = [
+        {
+          request: {
+            query: DELETE_CATEGORY,
+            variables: { id: 1 },
+          },
+          result: {
+            data: { deleteCategory: true },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteCategory(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      const deleted = await result.current.deleteCategory(1);
+      expect(deleted).toBe(true);
+    });
+
+    it('should handle delete category error', async () => {
+      const mocks = [
+        {
+          request: {
+            query: DELETE_CATEGORY,
+            variables: { id: 999 },
+          },
+          error: new Error('Category not found'),
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteCategory(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await expect(result.current.deleteCategory(999)).rejects.toThrow();
+    });
+
+    it('should return false when delete fails', async () => {
+      const mocks = [
+        {
+          request: {
+            query: DELETE_CATEGORY,
+            variables: { id: 1 },
+          },
+          result: {
+            data: { deleteCategory: false },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteCategory(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      const deleted = await result.current.deleteCategory(1);
+      expect(deleted).toBe(false);
+    });
+  });
+
+  describe('useDeleteTag', () => {
+    it('should delete tag successfully', async () => {
+      const mocks = [
+        {
+          request: {
+            query: DELETE_TAG,
+            variables: { id: 1 },
+          },
+          result: {
+            data: { deleteTag: true },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteTag(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      const deleted = await result.current.deleteTag(1);
+      expect(deleted).toBe(true);
+    });
+
+    it('should handle delete tag error', async () => {
+      const mocks = [
+        {
+          request: {
+            query: DELETE_TAG,
+            variables: { id: 999 },
+          },
+          error: new Error('Tag not found'),
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteTag(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      await expect(result.current.deleteTag(999)).rejects.toThrow();
+    });
+
+    it('should return false when delete fails', async () => {
+      const mocks = [
+        {
+          request: {
+            query: DELETE_TAG,
+            variables: { id: 1 },
+          },
+          result: {
+            data: { deleteTag: false },
+          },
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteTag(), {
+        wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
+      });
+
+      const deleted = await result.current.deleteTag(1);
+      expect(deleted).toBe(false);
     });
   });
 });

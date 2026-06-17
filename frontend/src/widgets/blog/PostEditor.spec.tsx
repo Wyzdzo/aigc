@@ -1,6 +1,6 @@
 // src/widgets/blog/PostEditor.spec.tsx
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
 import { useEditor } from '@tiptap/react';
 

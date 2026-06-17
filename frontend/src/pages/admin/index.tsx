@@ -4,6 +4,7 @@ import { BarChartOutlined, FileTextOutlined, LinkOutlined, MessageOutlined, Warn
 import { Card, Row, Col, Statistic, Spin, Typography } from 'antd';
 import { useQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
+import { useNavigate } from 'react-router';
 
 const { Title, Paragraph } = Typography;
 
@@ -135,6 +136,7 @@ function QuickActionCard({ title, icon: Icon, color, onClick }: { title: string;
  * 后台仪表盘页面
  */
 export function AdminDashboardPage() {
+  const navigate = useNavigate();
   const { data, loading, error } = useQuery<DashboardStatsData>(GET_DASHBOARD_STATS);
 
   const postStats = data?.postStats || { total: 0, published: 0, draft: 0 };
@@ -250,16 +252,16 @@ export function AdminDashboardPage() {
       <Card title="快捷操作" style={{ borderRadius: 8 }}>
         <Row gutter={[16, 16]}>
           <Col xs={6} sm={4} lg={3}>
-            <QuickActionCard title="写文章" icon={FileTextOutlined} color="#1890ff" />
+            <QuickActionCard title="写文章" icon={FileTextOutlined} color="#1890ff" onClick={() => navigate('/admin/posts/new')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
-            <QuickActionCard title="管理评论" icon={MessageOutlined} color="#52c41a" />
+            <QuickActionCard title="管理评论" icon={MessageOutlined} color="#52c41a" onClick={() => navigate('/admin/comments')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
-            <QuickActionCard title="分类管理" icon={WarningOutlined} color="#722ed1" />
+            <QuickActionCard title="分类管理" icon={WarningOutlined} color="#722ed1" onClick={() => navigate('/admin/categories')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
-            <QuickActionCard title="标签管理" icon={UserOutlined} color="#fa8c16" />
+            <QuickActionCard title="标签管理" icon={UserOutlined} color="#fa8c16" onClick={() => navigate('/admin/tags')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
             <QuickActionCard title="友链管理" icon={LinkOutlined} color="#13c2c2" />

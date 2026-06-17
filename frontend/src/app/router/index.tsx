@@ -13,10 +13,12 @@ import { AppLayout, BlogLayout } from '@/app/layout';
 import { BlogDetailPage } from '@/pages/blog/[slug]';
 import { BlogAboutPage } from '@/pages/blog/about';
 import { BlogLinksPage } from '@/pages/blog/links';
+import { AdminCategoriesPage } from '@/pages/admin/categories';
 import { AdminCommentsPage } from '@/pages/admin/comments';
 import { AdminDashboardPage } from '@/pages/admin';
 import { AdminPostsPage } from '@/pages/admin/posts';
 import { AdminPostEditPage } from '@/pages/admin/posts/[id]';
+import { AdminTagsPage } from '@/pages/admin/tags';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
@@ -127,6 +129,11 @@ const router = createBrowserRouter([
         path: 'admin',
       },
       {
+        element: <AdminCategoriesPage />,
+        loader: adminAuthLoader,
+        path: 'admin/categories',
+      },
+      {
         element: <AdminCommentsPage />,
         loader: adminAuthLoader,
         path: 'admin/comments',
@@ -135,6 +142,11 @@ const router = createBrowserRouter([
         element: <AdminPostsPage />,
         loader: adminAuthLoader,
         path: 'admin/posts',
+      },
+      {
+        element: <AdminTagsPage />,
+        loader: adminAuthLoader,
+        path: 'admin/tags',
       },
       {
         element: <AdminPostEditPage />,
