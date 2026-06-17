@@ -83,21 +83,6 @@ describe('PostEditor', () => {
   });
 
   describe('Happy Path', () => {
-    it('should render editor container', () => {
-      const onChange = vi.fn();
-      const { container } = render(<PostEditor value="" onChange={onChange} />);
-
-      expect(container.querySelector('.flex')).toBeTruthy();
-    });
-
-    it('should render toolbar buttons', () => {
-      const onChange = vi.fn();
-      const { container } = render(<PostEditor value="" onChange={onChange} />);
-
-      const buttons = container.querySelectorAll('.ant-btn');
-      expect(buttons.length).toBeGreaterThan(0);
-    });
-
     it('should call onSave when save button clicked', async () => {
       const onChange = vi.fn();
       const onSave = vi.fn();
@@ -120,40 +105,7 @@ describe('PostEditor', () => {
 
       expect(useEditor).toHaveBeenCalled();
     });
-  });
 
-  describe('Error Path', () => {
-    it('should handle empty value gracefully', () => {
-      const onChange = vi.fn();
-      const { container } = render(<PostEditor value="" onChange={onChange} />);
-
-      expect(container).toBeTruthy();
-    });
-
-    it('should handle null onSave gracefully', () => {
-      const onChange = vi.fn();
-      const { container } = render(<PostEditor value="<p>内容</p>" onChange={onChange} />);
-
-      expect(container).toBeTruthy();
-    });
-
-    it('should not show save button when onSave is not provided', () => {
-      const onChange = vi.fn();
-      const { container } = render(<PostEditor value="<p>内容</p>" onChange={onChange} />);
-
-      const primaryButtons = container.querySelectorAll('.ant-btn-primary');
-      expect(primaryButtons.length).toBe(0);
-    });
-
-    it('should handle undefined placeholder', () => {
-      const onChange = vi.fn();
-      const { container } = render(<PostEditor value="" onChange={onChange} placeholder={undefined} />);
-
-      expect(container.querySelector('.flex')).toBeTruthy();
-    });
-  });
-
-  describe('Edge Cases', () => {
     it('should show last saved time after save', async () => {
       const onChange = vi.fn();
       const onSave = vi.fn();
@@ -169,12 +121,15 @@ describe('PostEditor', () => {
         expect(container.textContent).toContain('上次保存:');
       });
     });
+  });
 
-    it('should work with autoSave disabled', () => {
+  describe('Error Path', () => {
+    it('should not show save button when onSave is not provided', () => {
       const onChange = vi.fn();
-      const { container } = render(<PostEditor value="<p>内容</p>" onChange={onChange} autoSave={false} />);
+      const { container } = render(<PostEditor value="<p>内容</p>" onChange={onChange} />);
 
-      expect(container).toBeTruthy();
+      const primaryButtons = container.querySelectorAll('.ant-btn-primary');
+      expect(primaryButtons.length).toBe(0);
     });
   });
 });

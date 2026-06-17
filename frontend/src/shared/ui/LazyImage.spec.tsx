@@ -47,38 +47,19 @@ describe('LazyImage', () => {
       expect(placeholder.classList.contains('bg-gray-100')).toBe(true);
     });
 
-    it('should accept className prop', () => {
+    it('should accept className and style props', () => {
       const customClass = 'custom-image-class';
-      const { container } = render(
-        <LazyImage
-          src={testImageUrl}
-          alt={testAltText}
-          className={customClass}
-        />
-      );
-
-      const containerDiv = container.querySelector(`.${customClass}`);
-      expect(containerDiv).toBeTruthy();
-    });
-
-    it('should accept style prop', () => {
       const customStyle = { width: '200px', height: '150px' };
       const { container } = render(
         <LazyImage
           src={testImageUrl}
           alt={testAltText}
+          className={customClass}
           style={customStyle}
         />
       );
 
-      const containerDiv = container.firstChild as HTMLElement;
-      expect(containerDiv).toBeTruthy();
-    });
-
-    it('should accept alt prop for accessibility', () => {
-      const { container } = render(<LazyImage src={testImageUrl} alt={testAltText} />);
-
-      const containerDiv = container.firstChild;
+      const containerDiv = container.querySelector(`.${customClass}`);
       expect(containerDiv).toBeTruthy();
     });
   });
@@ -106,36 +87,12 @@ describe('LazyImage', () => {
       vi.restoreAllMocks();
     });
 
-    it('should handle empty src gracefully', () => {
-      const { container } = render(<LazyImage src="" alt={testAltText} />);
+    it('should handle empty src and alt gracefully', () => {
+      const { container: srcContainer } = render(<LazyImage src="" alt={testAltText} />);
+      const { container: altContainer } = render(<LazyImage src={testImageUrl} alt="" />);
 
-      const containerDiv = container.firstChild;
-      expect(containerDiv).toBeTruthy();
-    });
-
-    it('should handle empty alt gracefully', () => {
-      const { container } = render(<LazyImage src={testImageUrl} alt="" />);
-
-      const containerDiv = container.firstChild;
-      expect(containerDiv).toBeTruthy();
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle very large image URL', () => {
-      const longUrl = 'https://example.com/' + 'a'.repeat(1000) + '.png';
-      const { container } = render(<LazyImage src={longUrl} alt={testAltText} />);
-
-      const containerDiv = container.firstChild;
-      expect(containerDiv).toBeTruthy();
-    });
-
-    it('should handle special characters in alt text', () => {
-      const specialAlt = 'Image with special chars: <>&"\'';
-      const { container } = render(<LazyImage src={testImageUrl} alt={specialAlt} />);
-
-      const containerDiv = container.firstChild;
-      expect(containerDiv).toBeTruthy();
+      expect(srcContainer.firstChild).toBeTruthy();
+      expect(altContainer.firstChild).toBeTruthy();
     });
   });
 });

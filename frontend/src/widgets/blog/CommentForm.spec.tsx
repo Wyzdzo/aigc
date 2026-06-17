@@ -166,7 +166,7 @@ describe('CommentForm', () => {
   });
 
   describe('Error Path', () => {
-    it('should show validation error for empty nickname', async () => {
+    it('should show validation errors for empty fields', async () => {
       const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
 
       const submitButton = container.querySelector('button[type="submit"]');
@@ -175,28 +175,8 @@ describe('CommentForm', () => {
       await waitFor(() => {
         expect(container.textContent).toContain('请输入昵称');
       });
-    });
-
-    it('should show validation error for short nickname', async () => {
-      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
 
       const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
-      const submitButton = container.querySelector('button[type="submit"]');
-
-      fireEvent.change(nicknameInput, { target: { value: 'A' } });
-      fireEvent.click(submitButton!);
-
-      await waitFor(() => {
-        expect(container.textContent).toContain('昵称长度在 2-20 个字符');
-      });
-    });
-
-    it('should show validation error for empty content', async () => {
-      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
-
-      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
-      const submitButton = container.querySelector('button[type="submit"]');
-
       fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
       fireEvent.click(submitButton!);
 
@@ -205,19 +185,30 @@ describe('CommentForm', () => {
       });
     });
 
-    it('should show validation error for short content', async () => {
+    it('should show validation errors for invalid input', async () => {
       const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
 
       const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
       const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
+      const emailInput = container.querySelector('input[placeholder="邮箱（选填）"]') as HTMLInputElement;
       const submitButton = container.querySelector('button[type="submit"]');
 
-      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
+      fireEvent.change(nicknameInput, { target: { value: 'A' } });
       fireEvent.change(contentInput, { target: { value: '123' } });
       fireEvent.click(submitButton!);
 
       await waitFor(() => {
+        expect(container.textContent).toContain('昵称长度在 2-20 个字符');
         expect(container.textContent).toContain('评论内容至少 5 个字符');
+      });
+
+      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
+      fireEvent.change(contentInput, { target: { value: '测试评论内容' } });
+      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+      fireEvent.click(submitButton!);
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('请输入有效的邮箱地址');
       });
     });
 
@@ -251,24 +242,6 @@ describe('CommentForm', () => {
 
       await waitFor(() => {
         expect(message.error).toHaveBeenCalled();
-      });
-    });
-
-    it('should show validation error for invalid email', async () => {
-      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
-
-      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
-      const emailInput = container.querySelector('input[placeholder="邮箱（选填）"]') as HTMLInputElement;
-      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
-      const submitButton = container.querySelector('button[type="submit"]');
-
-      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      fireEvent.change(contentInput, { target: { value: '测试评论内容' } });
-      fireEvent.click(submitButton!);
-
-      await waitFor(() => {
-        expect(container.textContent).toContain('请输入有效的邮箱地址');
       });
     });
   });

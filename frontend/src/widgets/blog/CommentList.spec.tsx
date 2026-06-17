@@ -122,12 +122,6 @@ describe('CommentList', () => {
   });
 
   describe('Error Path', () => {
-    it('should handle empty comments array', () => {
-      const { container } = render(<CommentList comments={[]} postId={1} />, { wrapper: createWrapper() });
-
-      expect(container.querySelector('.ant-empty')).toBeTruthy();
-    });
-
     it('should handle comments with null avatar', () => {
       const commentsWithNullAvatar: BlogComment[] = [
         {

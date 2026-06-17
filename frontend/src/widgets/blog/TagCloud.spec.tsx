@@ -107,22 +107,6 @@ describe('TagCloud', () => {
     expect(screen.getAllByText('Node.js').length).toBeGreaterThan(0);
   });
 
-  it('should render tags with different colors', async () => {
-    render(<TagCloud onChange={() => {}} />, {
-      wrapper: createWrapper(),
-    });
-
-    await waitFor(() => {
-      expect(screen.getAllByText('React').length).toBeGreaterThan(0);
-    });
-
-    // 验证标签渲染
-    const tagTexts = ['React', 'TypeScript', 'Vue', 'Node.js'];
-    tagTexts.forEach((text) => {
-      expect(screen.getAllByText(text).length).toBeGreaterThan(0);
-    });
-  });
-
   it('should render empty state when no tags', async () => {
     const emptyMocks = [
       {

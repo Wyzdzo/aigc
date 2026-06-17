@@ -64,7 +64,7 @@ describe('AdminTagsPage', () => {
       });
     });
 
-    it('should render tags table', async () => {
+    it('should render tags table with columns', async () => {
       const mocks: MockedResponse[] = [
         {
           request: { query: GET_TAGS },
@@ -95,6 +95,10 @@ describe('AdminTagsPage', () => {
         expect(container.querySelector('.ant-table')).toBeTruthy();
         expect(container.textContent).toContain('React');
         expect(container.textContent).toContain('TypeScript');
+        expect(container.textContent).toContain('标签名称');
+        expect(container.textContent).toContain('标签别名');
+        expect(container.textContent).toContain('创建时间');
+        expect(container.textContent).toContain('操作');
       });
     });
 
@@ -136,35 +140,6 @@ describe('AdminTagsPage', () => {
 
       await waitFor(() => {
         expect(container.textContent).toContain('暂无标签');
-      });
-    });
-
-    it('should render table columns', async () => {
-      const mocks: MockedResponse[] = [
-        {
-          request: { query: GET_TAGS },
-          result: {
-            data: {
-              tags: [
-                {
-                  id: 1,
-                  name: 'Test',
-                  slug: 'test',
-                  createdAt: '2024-01-15T10:00:00Z',
-                },
-              ],
-            },
-          },
-        },
-      ];
-
-      const { container } = render(<AdminTagsPage />, { wrapper: createWrapper(mocks) });
-
-      await waitFor(() => {
-        expect(container.textContent).toContain('标签名称');
-        expect(container.textContent).toContain('标签别名');
-        expect(container.textContent).toContain('创建时间');
-        expect(container.textContent).toContain('操作');
       });
     });
   });
