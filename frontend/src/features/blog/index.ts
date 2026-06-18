@@ -22,6 +22,7 @@ export * from './application/hooks/useUnpublishPost';
 export * from './application/hooks/useCreatePost';
 export * from './application/hooks/useUpdatePost';
 
-// Infrastructure - GraphQL (for testing)
+// Infrastructure - GraphQL (for testing only)
+// Note: These are exported for testing purposes only. Production code should use hooks from application layer.
 export { CREATE_COMMENT, LIKE_POST } from './infrastructure/graphql/mutations';
 export { GET_CATEGORY_TREE, GET_COMMENT_STATS, GET_COMMENTS, GET_POST_BY_SLUG, GET_POSTS, GET_TAGS } from './infrastructure/graphql/queries';

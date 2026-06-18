@@ -1,15 +1,15 @@
 // src/widgets/blog/CommentForm.spec.tsx
 
-import { render, waitFor, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from 'vitest';
+import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
+import { render, waitFor, fireEvent } from '@testing-library/react';
 import { message } from 'antd';
+import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 
 import { CREATE_COMMENT, GET_COMMENTS } from '@/features/blog';
 
 import { CommentForm } from './CommentForm';
 
-// Mock ResizeObserver and matchMedia
 beforeAll(() => {
   class ResizeObserverMock {
     observe() {}
@@ -43,7 +43,7 @@ describe('CommentForm', () => {
     vi.restoreAllMocks();
   });
 
-  function createWrapper(mocks: any[] = []) {
+  function createWrapper(mocks: MockedResponse[] = []) {
     return function Wrapper({ children }: { children: React.ReactNode }) {
       return <MockedProvider mocks={mocks}>{children}</MockedProvider>;
     };

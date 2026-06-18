@@ -2,7 +2,7 @@
 
 import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -10,7 +10,6 @@ import { GET_ACTIVE_LINKS } from '@/features/blog/infrastructure/graphql/queries
 
 import { BlogLinksPage } from './links';
 
-// Mock window globals for Ant Design
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -44,7 +43,6 @@ function createWrapper(mocks: MockedResponse[] = []) {
   };
 }
 
-// Mock link data
 const mockLinks = [
   {
     id: 1,
@@ -94,52 +92,38 @@ const emptyMocks: MockedResponse[] = [
 
 describe('BlogLinksPage', () => {
   describe('Happy Path', () => {
-    it('should render page without crashing', () => {
+    it('should render page structure correctly', () => {
       const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
-      expect(container).toBeTruthy();
-    });
-
-    it('should contain main content elements', () => {
-      const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
-
-      // 检查页面标题
-      const headings = container.querySelectorAll('h2');
-      const hasLinksHeading = Array.from(headings).some(
-        h => h.textContent === '友情链接'
-      );
-      expect(hasLinksHeading).toBe(true);
-
-      // 检查申请友链按钮
-      const buttons = container.querySelectorAll('button');
-      const hasApplyButton = Array.from(buttons).some(
-        b => b.textContent === '申请友链'
-      );
-      expect(hasApplyButton).toBe(true);
+      expect(container.textContent).toContain('友情链接');
+      expect(container.textContent).toContain('申请友链');
     });
 
     it('should display link cards with proper security attributes', async () => {
       const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
 
-      // 等待数据加载
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await waitFor(() => {
+        expect(container.textContent).toContain('React 官方文档');
+      });
 
-      // 检查链接卡片
       const links = container.querySelectorAll('a');
       expect(links.length).toBeGreaterThan(0);
 
-      // 检查安全属性
       links.forEach(link => {
         expect(link.getAttribute('target')).toBe('_blank');
         expect(link.getAttribute('rel')).toBe('noopener noreferrer');
       });
     });
 
-    it('should have apply link button', () => {
-      const { getAllByText } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
+    it('should sort links by sortOrder', async () => {
+      const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
 
-      // 检查申请友链按钮存在
-      const applyButtons = getAllByText('申请友链');
-      expect(applyButtons.length).toBeGreaterThan(0);
+      await waitFor(() => {
+        expect(container.textContent).toContain('React 官方文档');
+      });
+
+      const titles = container.querySelectorAll('h5');
+      expect(titles[0]?.textContent).toBe('React 官方文档');
+      expect(titles[1]?.textContent).toBe('Vue 官方文档');
     });
   });
 
@@ -147,12 +131,14 @@ describe('BlogLinksPage', () => {
     it('should display empty state when no links available', async () => {
       const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(emptyMocks) });
 
-      // 等待数据加载
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await waitFor(() => {
+        expect(container.querySelector('.ant-empty')).not.toBeNull();
+      });
+    });
 
-      // 检查空状态
-      const emptyElement = container.querySelector('.ant-empty');
-      expect(emptyElement).not.toBeNull();
+    it('should show loading state initially', () => {
+      const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
+      expect(container.querySelector('.ant-spin')).not.toBeNull();
     });
   });
 });

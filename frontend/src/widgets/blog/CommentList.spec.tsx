@@ -1,15 +1,15 @@
 // src/widgets/blog/CommentList.spec.tsx
 
+import type { MockedResponse } from '@apollo/client/testing';
+import { MockedProvider } from '@apollo/client/testing/react';
 import { render, waitFor, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeAll } from 'vitest';
-import { MockedProvider } from '@apollo/client/testing/react';
 
 import type { BlogComment } from '@/entities/blog';
 import { CommentStatus } from '@/entities/blog';
 
 import { CommentList } from './CommentList';
 
-// Mock ResizeObserver and matchMedia
 beforeAll(() => {
   class ResizeObserverMock {
     observe() {}
@@ -33,7 +33,7 @@ beforeAll(() => {
   });
 });
 
-function createWrapper(mocks: any[] = []) {
+function createWrapper(mocks: MockedResponse[] = []) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return <MockedProvider mocks={mocks}>{children}</MockedProvider>;
   };

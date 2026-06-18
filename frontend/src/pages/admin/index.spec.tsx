@@ -135,6 +135,34 @@ describe('AdminDashboardPage', () => {
       const statValues = container.querySelectorAll('.ant-statistic-content-value');
       expect(statValues.length).toBeGreaterThan(0);
     });
+
+    it('should display correct stat values', () => {
+      const { container } = render(
+        <BrowserRouter>
+          <AdminDashboardPage />
+        </BrowserRouter>
+      );
+
+      expect(container.textContent).toContain('10');
+      expect(container.textContent).toContain('8');
+      expect(container.textContent).toContain('2');
+      expect(container.textContent).toContain('50');
+      expect(container.textContent).toContain('3');
+      expect(container.textContent).toContain('5');
+      expect(container.textContent).toContain('20');
+      expect(container.textContent).toContain('15');
+    });
+
+    it('should display recent activities content', () => {
+      const { container } = render(
+        <BrowserRouter>
+          <AdminDashboardPage />
+        </BrowserRouter>
+      );
+
+      expect(container.textContent).toContain('有 3 条评论待审核');
+      expect(container.textContent).toContain('有 2 篇文章草稿');
+    });
   });
 
   describe('Error Path', () => {

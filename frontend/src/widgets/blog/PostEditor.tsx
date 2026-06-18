@@ -2,40 +2,39 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Heading from '@tiptap/extension-heading';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import Placeholder from '@tiptap/extension-placeholder';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
-
-import {
-  BoldOutlined,
-  ItalicOutlined,
-  UnderlineOutlined,
-  StrikethroughOutlined,
-  CodeOutlined,
-  AlignLeftOutlined,
-  AlignCenterOutlined,
-  AlignRightOutlined,
-  UnorderedListOutlined,
-  OrderedListOutlined,
-  MessageOutlined,
-  BlockOutlined,
-  LinkOutlined,
-  PictureOutlined,
-  UndoOutlined,
-  RedoOutlined,
-  CheckSquareOutlined,
-  SaveOutlined,
-  EyeOutlined,
-} from '@ant-design/icons';
 import { Button, Space, Tooltip } from 'antd';
+import {
+  AlignCenterOutlined,
+  AlignLeftOutlined,
+  AlignRightOutlined,
+  BlockOutlined,
+  BoldOutlined,
+  CheckSquareOutlined,
+  CodeOutlined,
+  EyeOutlined,
+  ItalicOutlined,
+  LinkOutlined,
+  MessageOutlined,
+  OrderedListOutlined,
+  PictureOutlined,
+  RedoOutlined,
+  SaveOutlined,
+  StrikethroughOutlined,
+  UnderlineOutlined,
+  UndoOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons';
+import { useEditor, EditorContent } from '@tiptap/react';
+import Heading from '@tiptap/extension-heading';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import StarterKit from '@tiptap/starter-kit';
+import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import remarkGfm from 'remark-gfm';
 import 'highlight.js/styles/github.css';
 
 export interface PostEditorProps {
@@ -93,7 +92,12 @@ export function PostEditor({
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+      const timeoutId = setTimeout(() => {
+        if (editor && value !== editor.getHTML()) {
+          editor.commands.setContent(value);
+        }
+      }, 100);
+      return () => clearTimeout(timeoutId);
     }
   }, [value, editor]);
 

@@ -1,6 +1,8 @@
+// src/widgets/blog/GuestbookList.tsx
+
 import { useCallback, useMemo, useState } from 'react';
-import { Avatar, Empty, List, Space, Spin, Typography } from 'antd';
 import { MessageOutlined } from '@ant-design/icons';
+import { Avatar, Empty, List, Space, Spin, Typography } from 'antd';
 
 import type { BlogComment } from '@/entities/blog';
 
@@ -52,7 +54,7 @@ function GuestbookReplyItem({
   }, [comment.id, onReply, showReplyForm]);
 
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div style={{ marginBottom: 'var(--spacing-md)' }}>
       <Space align="start" size={12} style={{ width: '100%' }}>
         <Avatar
           src={getAvatarUrl(comment.nickname, comment.email || undefined)}
@@ -65,10 +67,10 @@ function GuestbookReplyItem({
               {formatRelativeTime(comment.createdAt)}
             </Text>
           </Space>
-          <div style={{ marginTop: 4 }}>
+          <div style={{ marginTop: 'var(--spacing-xs)' }}>
             <Text style={{ lineHeight: 1.6, fontSize: 14 }}>{comment.content}</Text>
           </div>
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 'var(--spacing-sm)' }}>
             <button
               type="button"
               className="text-gray-400 hover:text-blue-500 bg-transparent border-none cursor-pointer p-0 text-sm transition-colors"
@@ -78,7 +80,7 @@ function GuestbookReplyItem({
             </button>
           </div>
           {showReplyForm && (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 'var(--spacing-md)' }}>
               <CommentForm
                 postId={GUESTBOOK_POST_ID}
                 parentId={comment.id}
@@ -133,10 +135,10 @@ function GuestbookItem({
                 {formatRelativeTime(comment.createdAt)}
               </Text>
             </Space>
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginTop: 'var(--spacing-md)' }}>
               <Text style={{ lineHeight: 1.8 }}>{comment.content}</Text>
             </div>
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 'var(--spacing-md)' }}>
               <button
                 type="button"
                 className="text-gray-400 hover:text-blue-500 bg-transparent border-none cursor-pointer p-0 text-sm transition-colors"
@@ -150,7 +152,7 @@ function GuestbookItem({
 
         {/* 回复表单 */}
         {showReplyForm && (
-          <div style={{ marginTop: 16, paddingLeft: 60 }}>
+          <div style={{ marginTop: 'var(--spacing-lg)', paddingLeft: 'var(--spacing-xl)' }}>
             <CommentForm
               postId={GUESTBOOK_POST_ID}
               parentId={comment.id}
@@ -165,7 +167,7 @@ function GuestbookItem({
 
         {/* 子回复列表 */}
         {replies.length > 0 && (
-          <div style={{ marginTop: 16, paddingLeft: 60 }}>
+          <div style={{ marginTop: 'var(--spacing-lg)', paddingLeft: 'var(--spacing-xl)' }}>
             {replies.map((reply) => (
               <GuestbookReplyItem key={reply.id} comment={reply} onReply={onReply} />
             ))}
@@ -257,7 +259,7 @@ export function GuestbookList({
         }}
       />
       {orphanComments.length > 0 && (
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--color-border)' }}>
+        <div style={{ marginTop: 'var(--spacing-md)', paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--color-border)' }}>
           {orphanComments.map((comment) => (
             <GuestbookReplyItem key={comment.id} comment={comment} onReply={onReply} />
           ))}

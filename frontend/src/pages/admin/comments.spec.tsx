@@ -52,7 +52,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -79,7 +79,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -107,7 +107,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -151,7 +151,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -186,7 +186,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
           },
           error: new Error('Network error'),
         },
@@ -206,7 +206,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -267,6 +267,49 @@ describe('AdminCommentsPage', () => {
         expect(container.textContent).toContain('待审核');
         expect(container.textContent).toContain('已通过');
         expect(container.textContent).toContain('已拒绝');
+      });
+    });
+  });
+
+  describe('Action Buttons', () => {
+    it('should show delete button for all comments', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+          },
+          result: {
+            data: {
+              comments: {
+                items: [
+                  {
+                    id: 1,
+                    postId: 0,
+                    parentId: null,
+                    nickname: '测试用户',
+                    email: 'test@example.com',
+                    avatar: null,
+                    content: '测试评论',
+                    status: CommentStatus.APPROVED,
+                    likeCount: 5,
+                    createdAt: '2024-01-15T10:00:00Z',
+                    updatedAt: '2024-01-15T10:00:00Z',
+                  },
+                ],
+                total: 1,
+                page: 1,
+                pageSize: 20,
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<AdminCommentsPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('删除');
       });
     });
   });

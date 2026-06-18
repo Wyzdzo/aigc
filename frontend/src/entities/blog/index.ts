@@ -1,3 +1,3 @@
 // src/entities/blog/index.ts
 
-export * from './model';
+export * from './domain';

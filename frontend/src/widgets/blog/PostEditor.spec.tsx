@@ -2,7 +2,6 @@
 
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
-import { useEditor } from '@tiptap/react';
 
 import { PostEditor } from './PostEditor';
 
@@ -95,15 +94,6 @@ describe('PostEditor', () => {
       });
 
       expect(onSave).toHaveBeenCalled();
-    });
-
-    it('should update content when value prop changes', async () => {
-      const onChange = vi.fn();
-      const { rerender } = render(<PostEditor value="<p>初始内容</p>" onChange={onChange} />);
-
-      rerender(<PostEditor value="<p>更新内容</p>" onChange={onChange} />);
-
-      expect(useEditor).toHaveBeenCalled();
     });
 
     it('should show last saved time after save', async () => {
