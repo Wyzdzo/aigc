@@ -102,20 +102,21 @@ const config: Config = {
   // 测试超时时间（毫秒）
   testTimeout: 10000,
 
-  // 详细输出
-  verbose: true,
+  // 详细输出 - 内存紧张时关闭
+  verbose: false,
 
   // 错误时显示堆栈跟踪
   errorOnDeprecated: true,
 
-  // 检测打开的句柄
-  detectOpenHandles: true,
+  // 检测打开的句柄 - 内存紧张时关闭
+  detectOpenHandles: false,
 
   // 强制退出
   forceExit: true,
 
-  // 最大工作进程数
-  maxWorkers: '50%',
+  // 串行运行测试以避免内存溢出
+  maxWorkers: 1,
+  // 等效于 --runInBand
 
   // 预设配置
   preset: 'ts-jest',

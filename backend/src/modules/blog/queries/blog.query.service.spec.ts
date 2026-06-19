@@ -80,7 +80,7 @@ describe('BlogQueryService', () => {
         status: PostStatus.PUBLISHED,
       };
 
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost);
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
 
       const result = await service.getPostById({ id: 1 });
 
@@ -108,7 +108,7 @@ describe('BlogQueryService', () => {
         status: PostStatus.PUBLISHED,
       };
 
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost);
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
 
       const result = await service.getPostBySlug({ slug: 'test-post' });
 

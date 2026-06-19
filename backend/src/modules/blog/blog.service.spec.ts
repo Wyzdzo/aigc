@@ -1,6 +1,7 @@
 // src/modules/blog/blog.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { PostStatus, CommentStatus, LinkStatus } from '@app-types/models/blog/blog.types';
 import { BlogService } from './blog.service';
@@ -240,12 +241,10 @@ describe('BlogService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false when post does not exist', async () => {
+    it('should throw NotFoundException when post does not exist', async () => {
       jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
 
-      const result = await service.deletePost({ id: 999 });
-
-      expect(result).toBe(false);
+      await expect(service.deletePost({ id: 999 })).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -411,7 +410,7 @@ describe('BlogService', () => {
 
   describe('addTagsToPost', () => {
     it('should add tags to post', async () => {
-      const createSpy = jest.spyOn(postTagRepository, 'create').mockImplementation((dto) => dto);
+      const createSpy = jest.spyOn(postTagRepository, 'create').mockImplementation((dto) => dto as BlogPostTagEntity);
       const saveSpy = jest.spyOn(postTagRepository, 'save').mockResolvedValue({} as any);
 
       await service.addTagsToPost({ postId: 1, tagIds: [1, 2, 3] });
