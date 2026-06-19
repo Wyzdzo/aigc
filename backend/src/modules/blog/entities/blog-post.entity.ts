@@ -60,10 +60,10 @@ export class BlogPostEntity implements BlogPostModel {
   @Column({ name: 'category_id', type: 'int', nullable: true, comment: '分类ID' })
   categoryId!: number | null;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 3, comment: '创建时间' })
+  @CreateDateColumn({ name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', precision: 3, comment: '更新时间' })
+  @UpdateDateColumn({ name: 'updated_at', comment: '更新时间' })
   updatedAt!: Date;
 
   @DeleteDateColumn({

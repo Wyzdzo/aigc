@@ -70,12 +70,12 @@ export class OperationLogEntity {
   /**
    * 操作时间
    */
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 3 })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt!: Date;
 
   /**
    * 更新时间
    */
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', precision: 3 })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: Date;
 }

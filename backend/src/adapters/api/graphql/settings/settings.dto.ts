@@ -4,16 +4,16 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class SiteSettingGql {
-  @Field()
+  @Field(() => String)
   key!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   value!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   displayName!: string | null;
 
-  @Field()
+  @Field(() => String)
   groupName!: string;
 }
 
@@ -28,60 +28,60 @@ export class SettingsResultGql {
 
 @ObjectType()
 export class BloggerInfoGql {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   nickname!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   avatar!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   bio!: string | null;
 }
 
 @InputType()
 export class UpdateSiteSettingsInput {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   siteName?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   siteDescription?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   siteKeywords?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   bloggerName?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   bloggerBio?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   bloggerAvatar?: string;
 
-  @Field({ nullable: true })
+  @Field(() => Number, { nullable: true })
   perPage?: number;
 
-  @Field({ nullable: true })
+  @Field(() => Boolean, { nullable: true })
   allowComment?: boolean;
 }
 
 @InputType()
 export class UpdateBloggerInfoInput {
-  @Field()
+  @Field(() => String)
   nickname!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   bio?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   avatar?: string;
 }
 
 @InputType()
 export class UpdatePasswordInput {
-  @Field()
+  @Field(() => String)
   oldPassword!: string;
 
-  @Field()
+  @Field(() => String)
   newPassword!: string;
 }

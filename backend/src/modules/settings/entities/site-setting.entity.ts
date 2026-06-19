@@ -52,9 +52,9 @@ export class SiteSettingEntity {
   @Column({ name: 'is_public', type: 'tinyint', default: 1, comment: '是否公开' })
   isPublic!: number;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 3 })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', precision: 3 })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }

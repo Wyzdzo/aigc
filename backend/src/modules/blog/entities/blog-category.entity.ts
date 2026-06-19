@@ -30,9 +30,9 @@ export class BlogCategoryEntity implements BlogCategoryModel {
   @Column({ name: 'sort_order', type: 'int', default: 0, comment: '排序序号' })
   sortOrder!: number;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 3, comment: '创建时间' })
+  @CreateDateColumn({ name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', precision: 3, comment: '更新时间' })
+  @UpdateDateColumn({ name: 'updated_at', comment: '更新时间' })
   updatedAt!: Date;
 }

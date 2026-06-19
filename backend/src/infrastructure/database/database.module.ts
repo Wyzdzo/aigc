@@ -23,7 +23,10 @@ const createDatabaseConfig = (config: ConfigService): TypeOrmModuleOptions => ({
   synchronize: config.get<boolean>('mysql.synchronize'),
   logging: config.get<boolean>('mysql.logging'),
   charset: config.get<string>('mysql.charset'),
-  extra: config.get('mysql.extra'),
+  extra: {
+    ...(config.get('mysql.extra') || {}),
+    initSql: "SET SESSION sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+  },
   // 自动加载 entities
   autoLoadEntities: true,
   // 实体文件路径

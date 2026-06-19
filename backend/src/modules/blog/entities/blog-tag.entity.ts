@@ -14,6 +14,6 @@ export class BlogTagEntity implements BlogTagModel {
   @Column({ type: 'varchar', length: 100, comment: 'URL别名' })
   slug!: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 3, comment: '创建时间' })
+  @CreateDateColumn({ name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
 }

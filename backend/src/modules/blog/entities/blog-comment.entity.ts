@@ -40,6 +40,6 @@ export class BlogCommentEntity implements BlogCommentModel {
   @Column({ name: 'like_count', type: 'int', default: 0, comment: '点赞次数' })
   likeCount!: number;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', precision: 3, comment: '创建时间' })
+  @CreateDateColumn({ name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
 }
