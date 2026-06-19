@@ -11,8 +11,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaUsecase } from '@src/usecases/media/media.usecase';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import sharp from 'sharp';
-import { existsSync, mkdirSync } from 'fs';
 import { ConfigService } from '@nestjs/config';
 
 const UPLOAD_DIR = 'uploads';
@@ -22,11 +20,7 @@ export class MediaController {
   constructor(
     private readonly mediaUsecase: MediaUsecase,
     private readonly configService: ConfigService,
-  ) {
-    if (!existsSync(UPLOAD_DIR)) {
-      mkdirSync(UPLOAD_DIR, { recursive: true });
-    }
-  }
+  ) {}
 
   @Post('upload')
   @UseInterceptors(
@@ -56,37 +50,15 @@ export class MediaController {
       throw new BadRequestException('没有上传文件');
     }
 
-    const uploadPath = `${UPLOAD_DIR}/${file.filename}`;
-
-    // 图片压缩（如果文件大于 1MB）
-    if (file.size > 1024 * 1024) {
-      const compressedPath = `${UPLOAD_DIR}/compressed-${file.filename}`;
-      await sharp(uploadPath)
-        .resize({ width: 1920, withoutEnlargement: true })
-        .jpeg({ quality: 85 })
-        .toFile(compressedPath);
-
-      // 替换原文件
-      const { renameSync, unlinkSync } = require('fs');
-      unlinkSync(uploadPath);
-      renameSync(compressedPath, uploadPath);
-    }
-
-    // 获取图片尺寸
-    const metadata = await sharp(uploadPath).metadata();
-
     const baseUrl =
       this.configService.get<string>('app.baseUrl') || 'http://localhost:3000';
-    const url = `${baseUrl}/${uploadPath}`;
 
     const media = await this.mediaUsecase.createMedia({
       filename: file.filename,
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
-      url,
-      width: metadata.width || 0,
-      height: metadata.height || 0,
+      baseUrl,
     });
 
     return {

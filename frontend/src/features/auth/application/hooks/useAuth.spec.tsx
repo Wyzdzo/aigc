@@ -50,33 +50,6 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const mockLoginSuccess = {
-  request: { query: { type: 'document' } as any },
-  result: {
-    data: {
-      login: {
-        accessToken: 'test-token-123',
-        refreshToken: 'refresh-token-456',
-        accountId: 1,
-        role: 'admin',
-        userInfo: {
-          id: 1,
-          accountId: 1,
-          nickname: 'Admin',
-          avatarUrl: null,
-          email: 'admin@example.com',
-          accessGroup: ['ADMIN', 'STAFF'],
-        },
-      },
-    },
-  },
-};
-
-const mockLoginFailure = {
-  request: { query: { type: 'document' } as any },
-  error: new Error('Invalid credentials'),
-};
-
 function createWrapper(mocks: MockedResponse[] = []) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return <MockedProvider mocks={mocks}>{children}</MockedProvider>;
