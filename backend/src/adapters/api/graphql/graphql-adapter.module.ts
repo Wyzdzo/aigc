@@ -6,6 +6,7 @@ import { AuthUsecasesModule } from '@src/usecases/auth/auth-usecases.module';
 import { AsyncTaskRecordUsecasesModule } from '@src/usecases/async-task-record/async-task-record-usecases.module';
 import { EmailQueueUsecasesModule } from '@src/usecases/email-queue/email-queue-usecases.module';
 import { RegistrationUsecasesModule } from '@src/usecases/registration/registration-usecases.module';
+import { SettingsUsecasesModule } from '@src/usecases/settings/settings-usecases.module';
 import { ThirdPartyAccountsUsecasesModule } from '@src/usecases/third-party-accounts/third-party-accounts-usecases.module';
 import { VerificationRecordUsecasesModule } from '@src/usecases/verification-record/verification-record-usecases.module';
 import { VerificationUsecasesModule } from '@src/usecases/verification/verification-usecases.module';
@@ -24,6 +25,7 @@ import { RegistrationResolver } from './registration/registration.resolver';
 import { ThirdPartyAuthResolver } from './third-party-auth/third-party-auth.resolver';
 import { VerificationRecordResolver } from './verification-record/verification-record.resolver';
 import { MediaResolver } from './media/media.resolver';
+import { SettingsResolver } from './settings/settings.resolver';
 
 // Guards
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -49,6 +51,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     AuthUsecasesModule,
     EmailQueueUsecasesModule,
     RegistrationUsecasesModule,
+    SettingsUsecasesModule,
     ThirdPartyAccountsUsecasesModule,
     VerificationRecordUsecasesModule,
     VerificationUsecasesModule,
@@ -95,6 +98,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     VerificationRecordResolver,
     UserInfoResolver,
     MediaResolver,
+    SettingsResolver,
     // Guards
     QmWorkerEntryGuard,
     JwtAuthGuard,
@@ -112,6 +116,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     VerificationRecordResolver,
     UserInfoResolver,
     MediaResolver,
+    SettingsResolver,
     QmWorkerEntryGuard,
     JwtAuthGuard,
     RolesGuard,
