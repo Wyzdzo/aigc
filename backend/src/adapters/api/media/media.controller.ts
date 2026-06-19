@@ -1,0 +1,97 @@
+// src/adapters/api/media/media.controller.ts
+
+import {
+  Controller,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MediaUsecase } from '@src/usecases/media/media.usecase';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import sharp from 'sharp';
+import { existsSync, mkdirSync } from 'fs';
+import { ConfigService } from '@nestjs/config';
+
+const UPLOAD_DIR = 'uploads';
+
+@Controller('api/media')
+export class MediaController {
+  constructor(
+    private readonly mediaUsecase: MediaUsecase,
+    private readonly configService: ConfigService,
+  ) {
+    if (!existsSync(UPLOAD_DIR)) {
+      mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+  }
+
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: UPLOAD_DIR,
+        filename: (_req, file, callback) => {
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          const ext = extname(file.originalname);
+          callback(null, `${uniqueSuffix}${ext}`);
+        },
+      }),
+      fileFilter: (_req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          callback(new BadRequestException('只允许上传图片文件'), false);
+          return;
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+      },
+    }),
+  )
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('没有上传文件');
+    }
+
+    const uploadPath = `${UPLOAD_DIR}/${file.filename}`;
+
+    // 图片压缩（如果文件大于 1MB）
+    if (file.size > 1024 * 1024) {
+      const compressedPath = `${UPLOAD_DIR}/compressed-${file.filename}`;
+      await sharp(uploadPath)
+        .resize({ width: 1920, withoutEnlargement: true })
+        .jpeg({ quality: 85 })
+        .toFile(compressedPath);
+
+      // 替换原文件
+      const { renameSync, unlinkSync } = require('fs');
+      unlinkSync(uploadPath);
+      renameSync(compressedPath, uploadPath);
+    }
+
+    // 获取图片尺寸
+    const metadata = await sharp(uploadPath).metadata();
+
+    const baseUrl =
+      this.configService.get<string>('app.baseUrl') || 'http://localhost:3000';
+    const url = `${baseUrl}/${uploadPath}`;
+
+    const media = await this.mediaUsecase.createMedia({
+      filename: file.filename,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      url,
+      width: metadata.width || 0,
+      height: metadata.height || 0,
+    });
+
+    return {
+      success: true,
+      data: media,
+    };
+  }
+}

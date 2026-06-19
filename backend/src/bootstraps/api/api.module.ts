@@ -14,6 +14,8 @@ import { MagicWorkshopModule } from '@src/modules/magic-workshop/magic-workshop.
 import { PasswordModule } from '@src/modules/common/password/password.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { MediaUsecasesModule } from '@src/usecases/media/media-usecases.module';
+import { MediaController } from '@src/adapters/api/media/media.controller';
 import { ApiController } from './api.controller';
 import { ApiService } from './api.service';
 
@@ -31,8 +33,9 @@ import { ApiService } from './api.service';
     AccountModule,
     AuthModule,
     MagicWorkshopModule,
+    MediaUsecasesModule,
   ],
-  controllers: [ApiController],
+  controllers: [ApiController, MediaController],
   providers: [
     ApiService,
     {

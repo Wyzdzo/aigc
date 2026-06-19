@@ -19,6 +19,7 @@ import { AdminDashboardPage } from '@/pages/admin';
 import { AdminPostsPage } from '@/pages/admin/posts';
 import { AdminPostEditPage } from '@/pages/admin/posts/[id]';
 import { AdminTagsPage } from '@/pages/admin/tags';
+import { AdminMediaPage } from '@/pages/admin/media';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
@@ -147,6 +148,11 @@ const router = createBrowserRouter([
         element: <AdminTagsPage />,
         loader: adminAuthLoader,
         path: 'admin/tags',
+      },
+      {
+        element: <AdminMediaPage />,
+        loader: adminAuthLoader,
+        path: 'admin/media',
       },
       {
         element: <AdminPostEditPage />,

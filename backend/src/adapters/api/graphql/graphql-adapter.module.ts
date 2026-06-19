@@ -23,6 +23,7 @@ import { EmailResolver } from './email/email.resolver';
 import { RegistrationResolver } from './registration/registration.resolver';
 import { ThirdPartyAuthResolver } from './third-party-auth/third-party-auth.resolver';
 import { VerificationRecordResolver } from './verification-record/verification-record.resolver';
+import { MediaResolver } from './media/media.resolver';
 
 // Guards
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -93,6 +94,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     RegistrationResolver,
     VerificationRecordResolver,
     UserInfoResolver,
+    MediaResolver,
     // Guards
     QmWorkerEntryGuard,
     JwtAuthGuard,
@@ -109,6 +111,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     RegistrationResolver,
     VerificationRecordResolver,
     UserInfoResolver,
+    MediaResolver,
     QmWorkerEntryGuard,
     JwtAuthGuard,
     RolesGuard,

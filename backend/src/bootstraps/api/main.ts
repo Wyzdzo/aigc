@@ -4,10 +4,12 @@ import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { useContainer } from 'class-validator';
-import type { Express } from 'express';
+import express, { type Express } from 'express';
 import { Logger } from 'nestjs-pino';
 import { initGraphQLSchema } from '@src/adapters/api/graphql/schema/schema.init';
 import { ApiModule } from '@src/bootstraps/api/api.module';
+import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 
 /**
  * 应用程序启动函数
@@ -21,6 +23,13 @@ async function bootstrap() {
   // 隐匿技术栈：移除 Express 默认的 X-Powered-By 响应头
   const expressApp = app.getHttpAdapter().getInstance() as unknown as Express;
   expressApp.disable('x-powered-by');
+
+  // 配置静态文件服务（上传的图片）
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (!existsSync(uploadsDir)) {
+    mkdirSync(uploadsDir, { recursive: true });
+  }
+  expressApp.use('/uploads', express.static(uploadsDir));
 
   // 启用 class-validator 的依赖注入支持
   useContainer(app.select(ApiModule), { fallbackOnErrors: true });
