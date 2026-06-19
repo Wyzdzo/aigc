@@ -2,14 +2,19 @@
 
 import { AccountUsecasesModule } from '@src/usecases/account/account-usecases.module';
 import { AiQueueUsecasesModule } from '@src/usecases/ai-queue/ai-queue-usecases.module';
+import { AuditUsecasesModule } from '@src/usecases/audit/audit-usecases.module';
 import { AuthUsecasesModule } from '@src/usecases/auth/auth-usecases.module';
 import { AsyncTaskRecordUsecasesModule } from '@src/usecases/async-task-record/async-task-record-usecases.module';
 import { EmailQueueUsecasesModule } from '@src/usecases/email-queue/email-queue-usecases.module';
+import { MediaUsecasesModule } from '@src/usecases/media/media-usecases.module';
 import { RegistrationUsecasesModule } from '@src/usecases/registration/registration-usecases.module';
 import { SettingsUsecasesModule } from '@src/usecases/settings/settings-usecases.module';
 import { ThirdPartyAccountsUsecasesModule } from '@src/usecases/third-party-accounts/third-party-accounts-usecases.module';
 import { VerificationRecordUsecasesModule } from '@src/usecases/verification-record/verification-record-usecases.module';
 import { VerificationUsecasesModule } from '@src/usecases/verification/verification-usecases.module';
+
+import { AccountModule } from '@src/modules/account/account.module';
+import { SettingsModule } from '@src/modules/settings/settings.module';
 
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -18,6 +23,7 @@ import { PassportModule } from '@nestjs/passport';
 // Resolvers
 import { AccountResolver } from './account/account.resolver';
 import { AiResolver } from './ai/ai.resolver';
+import { AuditResolver } from './audit/audit.resolver';
 import { UserInfoResolver } from './account/user-info.resolver';
 import { AuthResolver } from './auth/auth.resolver';
 import { EmailResolver } from './email/email.resolver';
@@ -45,12 +51,16 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     // 导入业务模块以获取服务
+    AccountModule.forRoot(),
     AccountUsecasesModule,
     AiQueueUsecasesModule,
+    AuditUsecasesModule,
     AsyncTaskRecordUsecasesModule,
     AuthUsecasesModule,
     EmailQueueUsecasesModule,
+    MediaUsecasesModule,
     RegistrationUsecasesModule,
+    SettingsModule,
     SettingsUsecasesModule,
     ThirdPartyAccountsUsecasesModule,
     VerificationRecordUsecasesModule,
@@ -91,6 +101,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     // Resolvers
     AccountResolver,
     AiResolver,
+    AuditResolver,
     AuthResolver,
     ThirdPartyAuthResolver,
     EmailResolver,
@@ -109,6 +120,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     // Resolvers
     AccountResolver,
     AiResolver,
+    AuditResolver,
     AuthResolver,
     ThirdPartyAuthResolver,
     EmailResolver,

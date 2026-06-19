@@ -1,1 +1,0 @@
-export const TRANSACTION_RUNNER = Symbol('TRANSACTION_RUNNER');

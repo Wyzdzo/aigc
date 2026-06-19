@@ -20,6 +20,7 @@ import { AdminPostsPage } from '@/pages/admin/posts';
 import { AdminPostEditPage } from '@/pages/admin/posts/[id]';
 import { AdminTagsPage } from '@/pages/admin/tags';
 import { AdminMediaPage } from '@/pages/admin/media';
+import { AdminSettingsPage } from '@/pages/admin/settings';
 import { ArchivesPage } from '@/pages/blog/archives';
 import { BlogCategoriesPage } from '@/pages/blog/categories';
 import { BlogCategoryPage } from '@/pages/blog/category/[id]';
@@ -28,6 +29,7 @@ import { BlogHomePage } from '@/pages/blog/index';
 import { BlogTagsPage } from '@/pages/blog/tags';
 import { ErrorPreviewPage } from '@/pages/error-preview';
 import { HomePage } from '@/pages/home';
+import { LoginPage } from '@/pages/login';
 import { ProjectStructurePage } from '@/pages/project-structure';
 import { Error403, Error404, Error500, ErrorRouteCrash } from '@/features/error-feedback';
 
@@ -89,11 +91,29 @@ function sandboxPlaygroundLoader() {
 }
 
 function adminAuthLoader() {
-  // 简单的权限检查：检查是否有 admin_token（模拟认证）
-  const isAdmin = localStorage.getItem('admin_token') !== null;
+  // 检查是否有有效的JWT token
+  const token = localStorage.getItem('admin_token');
+  const userStr = localStorage.getItem('admin_user');
 
-  if (!isAdmin) {
-    throw redirect('/');
+  if (!token || !userStr) {
+    throw redirect('/login');
+  }
+
+  // 验证用户是否有管理员权限
+  try {
+    const user = JSON.parse(userStr);
+    const hasAdminRole = user.accessGroup?.some(
+      (role: string) => role.toLowerCase() === 'admin',
+    );
+
+    if (!hasAdminRole) {
+      throw redirect('/');
+    }
+  } catch {
+    // 解析失败，清除存储并重定向到登录页
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    throw redirect('/login');
   }
 
   return null;
@@ -123,6 +143,10 @@ const router = createBrowserRouter([
         element: <SandboxPlaygroundPage />,
         loader: sandboxPlaygroundLoader,
         path: 'sandbox/playground',
+      },
+      {
+        element: <LoginPage />,
+        path: 'login',
       },
       {
         element: <AdminDashboardPage />,
@@ -158,6 +182,11 @@ const router = createBrowserRouter([
         element: <AdminPostEditPage />,
         loader: adminAuthLoader,
         path: 'admin/posts/:id',
+      },
+      {
+        element: <AdminSettingsPage />,
+        loader: adminAuthLoader,
+        path: 'admin/settings',
       },
       {
         element: <Error404 />,
