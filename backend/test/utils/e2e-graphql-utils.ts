@@ -54,7 +54,7 @@ export async function login(params: {
     loginName,
     loginPassword,
     type = LoginTypeEnum.PASSWORD,
-    audience = AudienceTypeEnum.DESKTOP,
+    audience = AudienceTypeEnum.SJWEB,
   } = params;
   const res = await request(app.getHttpServer())
     .post('/graphql')

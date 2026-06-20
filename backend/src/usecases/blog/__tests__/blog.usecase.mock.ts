@@ -82,3 +82,25 @@ export const mockComment = Object.freeze({
   status: CommentStatus.PENDING,
   createdAt: new Date('2024-01-01'),
 });
+
+export const mockParentComment = Object.freeze({
+  id: 2,
+  postId: 1,
+  parentId: 1,
+  nickname: 'Parent User',
+  email: 'parent@test.com',
+  content: 'Parent comment',
+  status: CommentStatus.APPROVED,
+  createdAt: new Date('2024-01-01'),
+});
+
+export const mockRootComment = Object.freeze({
+  id: 3,
+  postId: 1,
+  parentId: null,
+  nickname: 'Root User',
+  email: 'root@test.com',
+  content: 'Root comment',
+  status: CommentStatus.APPROVED,
+  createdAt: new Date('2024-01-01'),
+});

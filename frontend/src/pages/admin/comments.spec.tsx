@@ -114,6 +114,7 @@ describe('AdminCommentsPage', () => {
               comments: {
                 items: [
                   {
+                    __typename: 'BlogComment',
                     id: 1,
                     postId: 0,
                     parentId: null,
@@ -213,6 +214,7 @@ describe('AdminCommentsPage', () => {
               comments: {
                 items: [
                   {
+                    __typename: 'BlogComment',
                     id: 1,
                     postId: 0,
                     parentId: null,
@@ -226,6 +228,7 @@ describe('AdminCommentsPage', () => {
                     updatedAt: '2024-01-15T10:00:00Z',
                   },
                   {
+                    __typename: 'BlogComment',
                     id: 2,
                     postId: 0,
                     parentId: null,
@@ -239,6 +242,7 @@ describe('AdminCommentsPage', () => {
                     updatedAt: '2024-01-15T11:00:00Z',
                   },
                   {
+                    __typename: 'BlogComment',
                     id: 3,
                     postId: 0,
                     parentId: null,
@@ -284,6 +288,7 @@ describe('AdminCommentsPage', () => {
               comments: {
                 items: [
                   {
+                    __typename: 'BlogComment',
                     id: 1,
                     postId: 0,
                     parentId: null,

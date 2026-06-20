@@ -154,7 +154,7 @@ const loginAndGetAccessToken = async (input: {
         loginName: input.loginName,
         loginPassword: input.loginPassword,
         type: 'PASSWORD',
-        audience: 'DESKTOP',
+        audience: 'SJWEB',
       },
     },
   });

@@ -31,6 +31,35 @@ beforeAll(() => {
     disconnect() {}
   }
   window.ResizeObserver = ResizeObserverMock;
+
+  // Mock IntersectionObserver for LazyImage
+  class IntersectionObserverMock {
+    readonly root: Element | null = null;
+    readonly rootMargin: string = '0px';
+    readonly thresholds: readonly number[] = [0];
+    readonly scrollMargin: string = '0px';
+    constructor(private callback: IntersectionObserverCallback) {}
+    observe(target: Element) {
+      this.callback([{ isIntersecting: true, target, intersectionRatio: 1, time: 0, boundingClientRect: target.getBoundingClientRect(), rootBounds: null, intersectionRect: target.getBoundingClientRect() }], this);
+    }
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return []; }
+  }
+  window.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
+
+  // Mock Image for LazyImage
+  class MockImage {
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    private _src = '';
+    get src() { return this._src; }
+    set src(_value: string) {
+      this._src = _value;
+      this.onload?.();
+    }
+  }
+  window.Image = MockImage as unknown as typeof Image;
 });
 
 function createWrapper(mocks: MockedResponse[] = []) {
@@ -45,6 +74,7 @@ function createWrapper(mocks: MockedResponse[] = []) {
 
 const mockLinks = [
   {
+    __typename: 'BlogLink',
     id: 1,
     title: 'React 官方文档',
     url: 'https://react.dev',
@@ -56,6 +86,7 @@ const mockLinks = [
     updatedAt: new Date('2024-01-01'),
   },
   {
+    __typename: 'BlogLink',
     id: 2,
     title: 'Vue 官方文档',
     url: 'https://vuejs.org',

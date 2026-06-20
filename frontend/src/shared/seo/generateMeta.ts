@@ -42,12 +42,16 @@ export function generateSeoMeta(
  * 生成文章 SEO Meta 数据
  */
 export function generateArticleSeoMeta(article: ArticleSeoData): SeoMeta {
-  const publishedTimeStr = typeof article.publishedTime === 'string' 
-    ? article.publishedTime 
-    : article.publishedTime.toISOString();
-  const modifiedTimeStr = typeof article.modifiedTime === 'string' 
-    ? article.modifiedTime 
-    : article.modifiedTime.toISOString();
+  const publishedTimeStr = article.publishedTime
+    ? (typeof article.publishedTime === 'string'
+      ? article.publishedTime
+      : article.publishedTime.toISOString())
+    : undefined;
+  const modifiedTimeStr = article.modifiedTime
+    ? (typeof article.modifiedTime === 'string'
+      ? article.modifiedTime
+      : article.modifiedTime.toISOString())
+    : undefined;
 
   return {
     title: article.title,

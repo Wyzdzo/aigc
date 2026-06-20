@@ -84,7 +84,7 @@ async function getAccessToken(
       loginName,
       loginPassword,
       type: 'PASSWORD',
-      audience: 'DESKTOP',
+      audience: 'SJWEB',
     },
   });
 
@@ -384,7 +384,7 @@ describe('验证记录类型测试 E2E', () => {
         loginName: testAccountsConfig.guest.loginName,
         loginPassword: newPassword,
         type: 'PASSWORD',
-        audience: 'DESKTOP',
+        audience: 'SJWEB',
       },
     });
     expect(loginResponse.body.data?.login?.accessToken).toBeDefined();
@@ -395,7 +395,7 @@ describe('验证记录类型测试 E2E', () => {
         loginName: testAccountsConfig.guest.loginName,
         loginPassword: testAccountsConfig.guest.loginPassword,
         type: 'PASSWORD',
-        audience: 'DESKTOP',
+        audience: 'SJWEB',
       },
     });
     expect(oldPasswordLoginResponse.body.errors?.length).toBeGreaterThan(0);

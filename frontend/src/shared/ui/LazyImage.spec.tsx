@@ -57,8 +57,8 @@ class MockImage {
 }
 
 beforeAll(() => {
-  window.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
-  window.Image = MockImage as unknown as typeof Image;
+  globalThis.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
+  globalThis.Image = MockImage as unknown as typeof Image;
 });
 
 afterAll(() => {

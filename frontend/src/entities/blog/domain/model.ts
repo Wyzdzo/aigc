@@ -12,6 +12,7 @@ export enum PostStatus {
  * 博客文章实体
  */
 export interface BlogPost {
+  __typename?: string;
   id: number;
   title: string;
   slug: string;
@@ -31,6 +32,7 @@ export interface BlogPost {
  * 博客分类实体
  */
 export interface BlogCategory {
+  __typename?: string;
   id: number;
   name: string;
   slug: string;
@@ -45,6 +47,7 @@ export interface BlogCategory {
  * 博客标签实体
  */
 export interface BlogTag {
+  __typename?: string;
   id: number;
   name: string;
   slug: string;
@@ -64,6 +67,7 @@ export enum CommentStatus {
  * 博客评论实体
  */
 export interface BlogComment {
+  __typename?: string;
   id: number;
   postId: number;
   parentId: number | null;
@@ -89,6 +93,7 @@ export enum LinkStatus {
  * 友链实体
  */
 export interface BlogLink {
+  __typename?: string;
   id: number;
   title: string;
   url: string;

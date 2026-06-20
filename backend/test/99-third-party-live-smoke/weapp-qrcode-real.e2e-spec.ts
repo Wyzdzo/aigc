@@ -42,7 +42,7 @@ async function getAccessToken(
           loginName,
           loginPassword: password,
           type: 'PASSWORD',
-          audience: 'DESKTOP',
+          audience: 'SJWEB',
         },
       },
     });

@@ -287,7 +287,7 @@ describe('Register (e2e)', () => {
             loginName,
             loginPassword,
             type: LoginTypeEnum.PASSWORD,
-            audience: AudienceTypeEnum.DESKTOP,
+            audience: AudienceTypeEnum.SJWEB,
           },
         },
       });

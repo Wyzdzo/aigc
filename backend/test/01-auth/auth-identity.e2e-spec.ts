@@ -68,7 +68,7 @@ describe('Auth Identity (e2e)', () => {
     loginName: string,
     loginPassword: string,
     type: LoginTypeEnum = LoginTypeEnum.PASSWORD,
-    audience: string = 'DESKTOP',
+    audience: string = 'SJWEB',
     ip: string = '127.0.0.1',
   ) => {
     const response = await request(app.getHttpServer())

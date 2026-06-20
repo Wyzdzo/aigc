@@ -72,6 +72,7 @@ describe('AdminCategoriesPage', () => {
             data: {
               categories: [
                 {
+                  __typename: 'BlogCategory',
                   id: 1,
                   name: '技术博客',
                   slug: 'tech',
@@ -82,6 +83,7 @@ describe('AdminCategoriesPage', () => {
                   updatedAt: '2024-01-15T10:00:00Z',
                 },
                 {
+                  __typename: 'BlogCategory',
                   id: 2,
                   name: '前端开发',
                   slug: 'frontend',
@@ -180,6 +182,7 @@ describe('AdminCategoriesPage', () => {
             data: {
               categories: [
                 {
+                  __typename: 'BlogCategory',
                   id: 1,
                   name: 'Level 1',
                   slug: 'level1',
@@ -190,6 +193,7 @@ describe('AdminCategoriesPage', () => {
                   updatedAt: '2024-01-15T10:00:00Z',
                 },
                 {
+                  __typename: 'BlogCategory',
                   id: 2,
                   name: 'Level 2',
                   slug: 'level2',
@@ -200,6 +204,7 @@ describe('AdminCategoriesPage', () => {
                   updatedAt: '2024-01-15T11:00:00Z',
                 },
                 {
+                  __typename: 'BlogCategory',
                   id: 3,
                   name: 'Level 3',
                   slug: 'level3',
@@ -232,6 +237,7 @@ describe('AdminCategoriesPage', () => {
             data: {
               categories: [
                 {
+                  __typename: 'BlogCategory',
                   id: 1,
                   name: '测试分类',
                   slug: 'test',

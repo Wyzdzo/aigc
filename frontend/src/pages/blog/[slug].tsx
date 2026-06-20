@@ -172,7 +172,7 @@ export function BlogDetailPage() {
             ? {
                 title: post.title,
                 slug: post.slug,
-                summary: post.summary || post.content.slice(0, 200),
+                summary: post.summary || (post.content ? post.content.slice(0, 200) : ''),
                 publishedTime: post.createdAt,
                 modifiedTime: post.updatedAt,
                 coverImage: post.coverImage,

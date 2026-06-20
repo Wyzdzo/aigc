@@ -34,7 +34,7 @@ async function loginAndGetToken(
           loginName,
           loginPassword,
           type: LoginTypeEnum.PASSWORD,
-          audience: AudienceTypeEnum.DESKTOP,
+          audience: AudienceTypeEnum.SJWEB,
         },
       },
     })
@@ -64,7 +64,7 @@ async function _getMyAccountId(
           loginName,
           loginPassword,
           type: LoginTypeEnum.PASSWORD,
-          audience: AudienceTypeEnum.DESKTOP,
+          audience: AudienceTypeEnum.SJWEB,
         },
       },
     })

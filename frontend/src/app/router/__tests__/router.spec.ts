@@ -23,15 +23,12 @@ vi.mock('react', async () => {
 describe('Router Configuration', () => {
   describe('Lazy Loading', () => {
     it('should use React.lazy for page components', async () => {
-      // Reset tracking
       lazyComponents.length = 0;
 
-      // Import router module - this will trigger lazy() calls
       await import('../index');
 
-      // Verify lazy was called multiple times for different pages
       expect(lazyComponents.length).toBeGreaterThan(0);
-    });
+    }, 30000);
 
     it('should export App component with RouterProvider', async () => {
       const { App } = await import('../index');

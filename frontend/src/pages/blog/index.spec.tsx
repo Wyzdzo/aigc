@@ -52,6 +52,7 @@ beforeAll(() => {
 
 const mockPosts: BlogPost[] = [
   {
+    __typename: 'BlogPost',
     id: 1,
     title: 'React 18 新特性详解',
     slug: 'react-18-new-features',
@@ -67,6 +68,7 @@ const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-15'),
   },
   {
+    __typename: 'BlogPost',
     id: 2,
     title: 'TypeScript 高级类型技巧',
     slug: 'typescript-advanced-types',
@@ -82,6 +84,7 @@ const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-10'),
   },
   {
+    __typename: 'BlogPost',
     id: 3,
     title: 'Next.js 14 全栈开发指南',
     slug: 'nextjs-14-fullstack-guide',

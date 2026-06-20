@@ -96,6 +96,13 @@ describe('BlogUsecase - Post Operations', () => {
 
       expect(result.success).toBe(true);
     });
+
+    it('should throw when delete fails with error', async () => {
+      const { usecase, blogService } = setup();
+      blogService.deletePost.mockRejectedValue(new Error('Database error'));
+
+      await expect(usecase.deletePost({ id: 1 })).rejects.toThrow('Database error');
+    });
   });
 
   describe('publishPost', () => {
@@ -106,6 +113,9 @@ describe('BlogUsecase - Post Operations', () => {
       const result = await usecase.publishPost({ id: 1 });
 
       expect(result.success).toBe(true);
+      expect(blogService.updatePost).toHaveBeenCalledWith(expect.objectContaining({
+        data: { status: PostStatus.PUBLISHED },
+      }));
     });
   });
 
@@ -117,6 +127,9 @@ describe('BlogUsecase - Post Operations', () => {
       const result = await usecase.unpublishPost({ id: 1 });
 
       expect(result.success).toBe(true);
+      expect(blogService.updatePost).toHaveBeenCalledWith(expect.objectContaining({
+        data: { status: PostStatus.DRAFT },
+      }));
     });
   });
 
@@ -140,6 +153,7 @@ describe('BlogUsecase - Post Operations', () => {
       const result = await usecase.viewPost({ id: 999 });
 
       expect(result).toBeNull();
+      expect(blogService.incrementViewCount).toHaveBeenCalled();
     });
   });
 
@@ -150,7 +164,7 @@ describe('BlogUsecase - Post Operations', () => {
 
       await usecase.likePost({ id: 1 });
 
-      expect(blogService.incrementLikeCount).toHaveBeenCalled();
+      expect(blogService.incrementLikeCount).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
     });
   });
 });

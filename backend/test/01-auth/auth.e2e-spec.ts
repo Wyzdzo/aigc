@@ -228,7 +228,7 @@ describe('Auth (e2e)', () => {
     loginName: string,
     loginPassword: string,
     type: LoginTypeEnum = LoginTypeEnum.PASSWORD,
-    audience: string = 'DESKTOP',
+    audience: string = 'SJWEB',
     ip: string = '127.0.0.1',
   ) => {
     const response = await request(app.getHttpServer())
@@ -284,7 +284,7 @@ describe('Auth (e2e)', () => {
   const performThirdPartyLogin = async (
     provider: ThirdPartyProviderEnum,
     authCredential: string,
-    audience: string = 'SSTSTEST',
+    audience: string = 'SJWEB',
     ip: string = '127.0.0.1',
   ) => {
     const response = await request(app.getHttpServer())
@@ -339,7 +339,7 @@ describe('Auth (e2e)', () => {
         activeUser.loginName,
         activeUser.loginPassword,
         LoginTypeEnum.PASSWORD,
-        'DESKTOP',
+        'SJWEB',
       );
 
       const { data } = response.body;
@@ -370,7 +370,7 @@ describe('Auth (e2e)', () => {
         activeUser.loginName,
         activeUser.loginPassword,
         LoginTypeEnum.PASSWORD,
-        'SSTSTEST',
+        'SJWEB',
       );
 
       const { data } = response.body;
@@ -424,7 +424,7 @@ describe('Auth (e2e)', () => {
       const response = await performThirdPartyLogin(
         ThirdPartyProviderEnum.WEAPP,
         'e2e-bound',
-        'SSTSTEST',
+        'SJWEB',
       );
 
       const { data, errors } = response.body;
@@ -445,7 +445,7 @@ describe('Auth (e2e)', () => {
       const response = await performThirdPartyLogin(
         ThirdPartyProviderEnum.WEAPP,
         'e2e-unbound',
-        'SSTSTEST',
+        'SJWEB',
       );
 
       const { errors } = response.body;

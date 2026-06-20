@@ -5,6 +5,7 @@ import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing/react';
 import type { MockedResponse } from '@apollo/client/testing';
 import { MemoryRouter, Routes, Route } from 'react-router';
+import { message } from 'antd';
 
 import { GET_POST_BY_ID, GET_CATEGORIES, GET_TAGS } from '@/features/blog/infrastructure/graphql/queries';
 import { UPDATE_POST, CREATE_POST } from '@/features/blog/infrastructure/graphql/mutations';
@@ -85,6 +86,10 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(message, 'success').mockClear();
+  vi.spyOn(message, 'error').mockClear();
+  vi.spyOn(message, 'info').mockClear();
+  vi.spyOn(message, 'warning').mockClear();
 });
 
 describe('AdminPostEditPage', () => {

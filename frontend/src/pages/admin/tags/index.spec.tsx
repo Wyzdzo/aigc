@@ -72,12 +72,14 @@ describe('AdminTagsPage', () => {
             data: {
               tags: [
                 {
+                  __typename: 'BlogTag',
                   id: 1,
                   name: 'React',
                   slug: 'react',
                   createdAt: '2024-01-15T10:00:00Z',
                 },
                 {
+                  __typename: 'BlogTag',
                   id: 2,
                   name: 'TypeScript',
                   slug: 'typescript',
@@ -176,6 +178,7 @@ describe('AdminTagsPage', () => {
             data: {
               tags: [
                 {
+                  __typename: 'BlogTag',
                   id: 1,
                   name: '测试标签',
                   slug: 'test-tag',
@@ -203,12 +206,14 @@ describe('AdminTagsPage', () => {
             data: {
               tags: [
                 {
+                  __typename: 'BlogTag',
                   id: 1,
                   name: 'AI & Machine Learning',
                   slug: 'ai-ml',
                   createdAt: '2024-01-15T10:00:00Z',
                 },
                 {
+                  __typename: 'BlogTag',
                   id: 2,
                   name: 'Web 前端开发',
                   slug: 'web-frontend',

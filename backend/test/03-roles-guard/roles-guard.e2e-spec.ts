@@ -174,7 +174,7 @@ describe('RolesGuard (e2e)', () => {
             loginName,
             loginPassword,
             type: LoginTypeEnum.PASSWORD,
-            audience: 'DESKTOP',
+            audience: 'SJWEB',
           },
         },
       })

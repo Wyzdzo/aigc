@@ -66,7 +66,7 @@ async function login(app: INestApplication, loginName: string, loginPassword: st
       loginName,
       loginPassword,
       type: 'PASSWORD',
-      audience: 'DESKTOP',
+      audience: 'SJWEB',
     },
   });
 
