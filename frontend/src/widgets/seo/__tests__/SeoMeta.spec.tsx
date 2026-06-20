@@ -44,6 +44,7 @@ describe('SeoMeta', () => {
         <SeoMeta
           article={{
             title: 'Article Title',
+            slug: 'article-title',
             summary: 'Article summary',
             publishedTime: '2024-01-15T00:00:00Z',
             modifiedTime: '2024-01-20T00:00:00Z',
@@ -126,13 +127,14 @@ describe('SeoMeta', () => {
         <SeoMeta
           article={{
             title: 'No Image Article',
+            slug: 'no-image-article',
             summary: 'Article without image',
             publishedTime: '2024-01-15T00:00:00Z',
             modifiedTime: '2024-01-20T00:00:00Z',
             author: 'Test Author',
             category: 'Tech',
             tags: ['React'],
-            coverImage: undefined,
+            coverImage: null,
           }}
           articleSlug="no-image"
         />,
@@ -159,6 +161,7 @@ describe('SeoMeta', () => {
         <SeoMeta
           article={{
             title: 'Test Article',
+            slug: 'test-article',
             summary: 'Test summary',
             publishedTime: '2024-01-15T00:00:00Z',
             modifiedTime: '2024-01-20T00:00:00Z',
@@ -167,7 +170,7 @@ describe('SeoMeta', () => {
             tags: ['React'],
             coverImage: 'https://example.com/image.jpg',
           }}
-          articleSlug={null}
+          articleSlug={undefined}
         />,
       );
 
@@ -179,13 +182,14 @@ describe('SeoMeta', () => {
         <SeoMeta
           article={{
             title: 'No Tags Article',
+            slug: 'no-tags-article',
             summary: 'Article without tags',
             publishedTime: '2024-01-15T00:00:00Z',
             modifiedTime: '2024-01-20T00:00:00Z',
             author: 'Test Author',
             category: 'Tech',
             tags: [],
-            coverImage: undefined,
+            coverImage: null,
           }}
           articleSlug="no-tags"
         />,

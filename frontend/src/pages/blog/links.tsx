@@ -5,6 +5,7 @@ import { Button, Card, Col, Empty, Form, Input, Modal, Row, Spin, Typography } f
 import { useState } from 'react';
 
 import { useActiveLinks } from '@/features/blog';
+import { LazyImage } from '@/shared/ui/LazyImage';
 
 import type { BlogLink } from '@/entities/blog';
 
@@ -50,17 +51,17 @@ function LinkCard({ link }: { link: BlogLink }) {
             }}
           >
             {link.logo ? (
-              <img
-                src={link.logo}
-                alt={link.title}
-                style={{ width: 40, height: 40, borderRadius: 4 }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '';
-                }}
-              />
-            ) : (
-              <LinkOutlined style={{ fontSize: 24, color: '#1890ff' }} />
-            )}
+            <LazyImage
+              src={link.logo}
+              alt={link.title}
+              width={40}
+              height={40}
+              style={{ borderRadius: 4 }}
+              skeleton={false}
+            />
+          ) : (
+            <LinkOutlined style={{ fontSize: 24, color: '#1890ff' }} />
+          )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <Title level={5} style={{ marginBottom: 4 }}>

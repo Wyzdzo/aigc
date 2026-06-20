@@ -55,6 +55,90 @@ function removeAuthorizationHeader(headers: unknown) {
   return nextHeaders;
 }
 
+/**
+ * 创建缓存配置
+ * 配置类型策略和字段策略以优化缓存行为
+ */
+function createCacheConfig() {
+  return new InMemoryCache({
+    // 类型策略
+    typePolicies: {
+      // 文章类型
+      BlogPost: {
+        // 使用 id 作为主键
+        keyFields: ['id'],
+        fields: {
+          // 点赞数和阅读数使用合并策略
+          likeCount: {
+            merge: (_existing: number | undefined, incoming: number): number => {
+              return incoming;
+            },
+          },
+          viewCount: {
+            merge: (_existing: number | undefined, incoming: number): number => {
+              return incoming;
+            },
+          },
+        },
+      },
+      // 分类类型
+      BlogCategory: {
+        keyFields: ['id'],
+        fields: {
+          // 子分类使用合并策略
+          children: {
+            merge: (_existing: unknown[] | undefined, incoming: unknown[]): unknown[] => {
+              return incoming;
+            },
+          },
+        },
+      },
+      // 标签类型
+      BlogTag: {
+        keyFields: ['id'],
+      },
+      // 评论类型
+      BlogComment: {
+        keyFields: ['id'],
+      },
+      // 友链类型
+      BlogLink: {
+        keyFields: ['id'],
+      },
+      // 分页结果类型
+      PaginatedPosts: {
+        keyFields: false,
+        fields: {
+          items: {
+            // 合并分页数据
+            merge: (existing: unknown[] | undefined, incoming: unknown[], { args }): unknown[] => {
+              // 如果是第一页，直接返回新数据
+              if (!args || args.page === 1 || !existing) {
+                return incoming;
+              }
+              // 否则合并数据
+              return [...existing, ...incoming];
+            },
+          },
+        },
+      },
+      PaginatedComments: {
+        keyFields: false,
+        fields: {
+          items: {
+            merge: (existing: unknown[] | undefined, incoming: unknown[], { args }): unknown[] => {
+              if (!args || args.page === 1 || !existing) {
+                return incoming;
+              }
+              return [...existing, ...incoming];
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 function createApolloClient() {
   const httpLink = new HttpLink({
     uri: getGraphQLEndpoint(),
@@ -80,8 +164,18 @@ function createApolloClient() {
   });
 
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: createCacheConfig(),
     link: authLink.concat(httpLink),
+    // 默认查询选项
+    defaultOptions: {
+      watchQuery: {
+        // 缓存优先策略
+        fetchPolicy: 'cache-first',
+      },
+      query: {
+        fetchPolicy: 'cache-first',
+      },
+    },
   });
 }
 
@@ -102,4 +196,14 @@ export function getGraphQLClient() {
   }
 
   return graphQLClient;
+}
+
+/**
+ * 重置缓存
+ * 用于用户登录/登出后清除缓存数据
+ */
+export function resetGraphQLCache() {
+  if (graphQLClient) {
+    graphQLClient.resetStore();
+  }
 }

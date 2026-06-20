@@ -61,8 +61,18 @@ function setMetaTags(
   if (og.ogImage) setMetaProperty('twitter:image', og.ogImage);
 
   // 文章特定 Meta
-  if (article?.publishedTime) setMetaProperty('article:published_time', article.publishedTime);
-  if (article?.modifiedTime) setMetaProperty('article:modified_time', article.modifiedTime);
+  if (article?.publishedTime) {
+    const publishedTimeStr = typeof article.publishedTime === 'string' 
+      ? article.publishedTime 
+      : article.publishedTime.toISOString();
+    setMetaProperty('article:published_time', publishedTimeStr);
+  }
+  if (article?.modifiedTime) {
+    const modifiedTimeStr = typeof article.modifiedTime === 'string' 
+      ? article.modifiedTime 
+      : article.modifiedTime.toISOString();
+    setMetaProperty('article:modified_time', modifiedTimeStr);
+  }
   if (article?.category) setMetaProperty('article:section', article.category);
 }
 

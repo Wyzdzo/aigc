@@ -42,13 +42,20 @@ export function generateSeoMeta(
  * 生成文章 SEO Meta 数据
  */
 export function generateArticleSeoMeta(article: ArticleSeoData): SeoMeta {
+  const publishedTimeStr = typeof article.publishedTime === 'string' 
+    ? article.publishedTime 
+    : article.publishedTime.toISOString();
+  const modifiedTimeStr = typeof article.modifiedTime === 'string' 
+    ? article.modifiedTime 
+    : article.modifiedTime.toISOString();
+
   return {
     title: article.title,
     description: article.summary || DEFAULT_SEO_CONFIG.description,
     keywords: article.tags?.join(', ') || undefined,
     author: article.author,
-    publishedTime: article.publishedTime,
-    modifiedTime: article.modifiedTime,
+    publishedTime: publishedTimeStr,
+    modifiedTime: modifiedTimeStr,
     category: article.category,
     tags: article.tags,
   };

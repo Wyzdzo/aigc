@@ -1,9 +1,11 @@
-// src/shared/blog/markdown.ts
+// src/shared/blog/markdown.tsx
 
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+
+import { LazyImage } from '@/shared/ui/LazyImage';
 
 /**
  * Markdown 渲染组件属性
@@ -66,7 +68,14 @@ const components: Components = {
       {children}
     </a>
   ),
-  img: ({ src, alt }) => <img src={src} alt={alt} className="my-4 max-w-full rounded-lg" />,
+  img: ({ src, alt }) => (
+    <LazyImage
+      src={src ?? ''}
+      alt={alt ?? ''}
+      className="my-4 max-w-full rounded-lg"
+      skeleton={false}
+    />
+  ),
   table: ({ children }) => (
     <div className="my-4 overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-300">{children}</table>

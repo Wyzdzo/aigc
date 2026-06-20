@@ -171,12 +171,10 @@ export function BlogDetailPage() {
           post
             ? {
                 title: post.title,
+                slug: post.slug,
                 summary: post.summary || post.content.slice(0, 200),
                 publishedTime: post.createdAt,
                 modifiedTime: post.updatedAt,
-                author: post.author?.nickname || 'Admin',
-                category: post.category?.name,
-                tags: post.tags?.map((t) => t.name),
                 coverImage: post.coverImage,
               }
             : undefined

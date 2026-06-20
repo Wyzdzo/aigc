@@ -1,5 +1,6 @@
 // src/app/router/index.tsx
 
+import { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
   isRouteErrorResponse,
@@ -9,34 +10,67 @@ import {
 } from 'react-router';
 
 import { AppLayout, BlogLayout } from '@/app/layout';
-
-import { BlogDetailPage } from '@/pages/blog/[slug]';
-import { BlogAboutPage } from '@/pages/blog/about';
-import { BlogLinksPage } from '@/pages/blog/links';
-import { AdminCategoriesPage } from '@/pages/admin/categories';
-import { AdminCommentsPage } from '@/pages/admin/comments';
-import { AdminDashboardPage } from '@/pages/admin';
-import { AdminPostsPage } from '@/pages/admin/posts';
-import { AdminPostEditPage } from '@/pages/admin/posts/[id]';
-import { AdminTagsPage } from '@/pages/admin/tags';
-import { AdminMediaPage } from '@/pages/admin/media';
-import { AdminSettingsPage } from '@/pages/admin/settings';
-import { ArchivesPage } from '@/pages/blog/archives';
-import { BlogCategoriesPage } from '@/pages/blog/categories';
-import { BlogCategoryPage } from '@/pages/blog/category/[id]';
-import { BlogGuestbookPage } from '@/pages/blog/guestbook';
-import { BlogHomePage } from '@/pages/blog/index';
-import { BlogTagsPage } from '@/pages/blog/tags';
-import { ErrorPreviewPage } from '@/pages/error-preview';
-import { HomePage } from '@/pages/home';
-import { LoginPage } from '@/pages/login';
-import { ProjectStructurePage } from '@/pages/project-structure';
 import { Error403, Error404, Error500, ErrorRouteCrash } from '@/features/error-feedback';
 
 import { getAppEnv } from '@/shared/env';
 
 import { canAccessGame2048Lab, Game2048LabPage } from '@/labs/game-2048';
 import { canAccessSandboxPlayground, SandboxPlaygroundPage } from '@/sandbox/playground';
+
+// 页面懒加载 - 按功能模块分组
+// 基础页面 - 首屏需要，不懒加载
+import { HomePage } from '@/pages/home';
+import { LoginPage } from '@/pages/login';
+
+// 博客前台页面 - 懒加载
+const BlogHomePage = lazy(() => import('@/pages/blog/index').then(m => ({ default: m.BlogHomePage })));
+const BlogDetailPage = lazy(() => import('@/pages/blog/[slug]').then(m => ({ default: m.BlogDetailPage })));
+const ArchivesPage = lazy(() => import('@/pages/blog/archives').then(m => ({ default: m.ArchivesPage })));
+const BlogCategoriesPage = lazy(() => import('@/pages/blog/categories').then(m => ({ default: m.BlogCategoriesPage })));
+const BlogCategoryPage = lazy(() => import('@/pages/blog/category/[id]').then(m => ({ default: m.BlogCategoryPage })));
+const BlogTagsPage = lazy(() => import('@/pages/blog/tags').then(m => ({ default: m.BlogTagsPage })));
+const BlogGuestbookPage = lazy(() => import('@/pages/blog/guestbook').then(m => ({ default: m.BlogGuestbookPage })));
+const BlogAboutPage = lazy(() => import('@/pages/blog/about').then(m => ({ default: m.BlogAboutPage })));
+const BlogLinksPage = lazy(() => import('@/pages/blog/links').then(m => ({ default: m.BlogLinksPage })));
+
+// 后台管理页面 - 懒加载（单独chunk）
+const AdminDashboardPage = lazy(() => import('@/pages/admin').then(m => ({ default: m.AdminDashboardPage })));
+const AdminPostsPage = lazy(() => import('@/pages/admin/posts').then(m => ({ default: m.AdminPostsPage })));
+const AdminPostEditPage = lazy(() => import('@/pages/admin/posts/[id]').then(m => ({ default: m.AdminPostEditPage })));
+const AdminCategoriesPage = lazy(() => import('@/pages/admin/categories').then(m => ({ default: m.AdminCategoriesPage })));
+const AdminTagsPage = lazy(() => import('@/pages/admin/tags').then(m => ({ default: m.AdminTagsPage })));
+const AdminCommentsPage = lazy(() => import('@/pages/admin/comments').then(m => ({ default: m.AdminCommentsPage })));
+const AdminMediaPage = lazy(() => import('@/pages/admin/media').then(m => ({ default: m.AdminMediaPage })));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/settings').then(m => ({ default: m.AdminSettingsPage })));
+
+// 工具页面 - 懒加载
+const ProjectStructurePage = lazy(() => import('@/pages/project-structure').then(m => ({ default: m.ProjectStructurePage })));
+const ErrorPreviewPage = lazy(() => import('@/pages/error-preview').then(m => ({ default: m.ErrorPreviewPage })));
+
+/**
+ * 页面加载骨架屏
+ */
+function PageSkeleton() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="animate-pulse flex flex-col items-center gap-4">
+        <div className="w-12 h-12 bg-gray-200 rounded-full" />
+        <div className="w-48 h-4 bg-gray-200 rounded" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 懒加载页面包装器
+ */
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      {children}
+    </Suspense>
+  );
+}
 
 function RouteErrorPage() {
   const error = useRouteError();
@@ -127,11 +161,11 @@ const router = createBrowserRouter([
         index: true,
       },
       {
-        element: <ProjectStructurePage />,
+        element: <LazyPage><ProjectStructurePage /></LazyPage>,
         path: 'project-structure',
       },
       {
-        element: <ErrorPreviewPage />,
+        element: <LazyPage><ErrorPreviewPage /></LazyPage>,
         path: 'error-preview',
       },
       {
@@ -149,42 +183,42 @@ const router = createBrowserRouter([
         path: 'login',
       },
       {
-        element: <AdminDashboardPage />,
+        element: <LazyPage><AdminDashboardPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin',
       },
       {
-        element: <AdminCategoriesPage />,
+        element: <LazyPage><AdminCategoriesPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/categories',
       },
       {
-        element: <AdminCommentsPage />,
+        element: <LazyPage><AdminCommentsPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/comments',
       },
       {
-        element: <AdminPostsPage />,
+        element: <LazyPage><AdminPostsPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/posts',
       },
       {
-        element: <AdminTagsPage />,
+        element: <LazyPage><AdminTagsPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/tags',
       },
       {
-        element: <AdminMediaPage />,
+        element: <LazyPage><AdminMediaPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/media',
       },
       {
-        element: <AdminPostEditPage />,
+        element: <LazyPage><AdminPostEditPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/posts/:id',
       },
       {
-        element: <AdminSettingsPage />,
+        element: <LazyPage><AdminSettingsPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/settings',
       },
@@ -200,39 +234,39 @@ const router = createBrowserRouter([
   {
     children: [
       {
-        element: <BlogHomePage />,
+        element: <LazyPage><BlogHomePage /></LazyPage>,
         index: true,
       },
       {
-        element: <ArchivesPage />,
+        element: <LazyPage><ArchivesPage /></LazyPage>,
         path: 'archives',
       },
       {
-        element: <BlogCategoriesPage />,
+        element: <LazyPage><BlogCategoriesPage /></LazyPage>,
         path: 'categories',
       },
       {
-        element: <BlogCategoryPage />,
+        element: <LazyPage><BlogCategoryPage /></LazyPage>,
         path: 'category/:id',
       },
       {
-        element: <BlogTagsPage />,
+        element: <LazyPage><BlogTagsPage /></LazyPage>,
         path: 'tags',
       },
       {
-        element: <BlogGuestbookPage />,
+        element: <LazyPage><BlogGuestbookPage /></LazyPage>,
         path: 'guestbook',
       },
       {
-        element: <BlogAboutPage />,
+        element: <LazyPage><BlogAboutPage /></LazyPage>,
         path: 'about',
       },
       {
-        element: <BlogLinksPage />,
+        element: <LazyPage><BlogLinksPage /></LazyPage>,
         path: 'links',
       },
       {
-        element: <BlogDetailPage />,
+        element: <LazyPage><BlogDetailPage /></LazyPage>,
         path: ':slug',
       },
       {
@@ -249,3 +283,6 @@ const router = createBrowserRouter([
 export function App() {
   return <RouterProvider router={router} />;
 }
+
+// Export for testing
+export { LazyPage, PageSkeleton, RouteErrorBoundary, BlogRouteErrorBoundary, adminAuthLoader, game2048LabLoader };

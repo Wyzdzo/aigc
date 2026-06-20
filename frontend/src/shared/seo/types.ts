@@ -75,14 +75,14 @@ export interface SitemapUrl {
  */
 export interface ArticleSeoData {
   title: string;
-  slug: string;
+  slug?: string;
   summary: string | null;
   coverImage: string | null;
   author?: string;
-  publishedTime: string;
-  modifiedTime: string;
+  publishedTime: string | Date;
+  modifiedTime: string | Date;
   category?: string;
-  tags: string[];
+  tags?: string[];
 }
 
 /**

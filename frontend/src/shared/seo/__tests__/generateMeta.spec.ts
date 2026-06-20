@@ -14,8 +14,6 @@ import {
 } from '../generateMeta';
 
 describe('generateMeta', () => {
-  const originalEnv = import.meta.env;
-
   beforeEach(() => {
     vi.stubEnv('VITE_PUBLIC_URL', 'https://example.com');
   });
@@ -159,6 +157,7 @@ describe('generateMeta', () => {
     it('should generate article SEO meta', () => {
       const article = {
         title: 'Article Title',
+        slug: 'article-title',
         summary: 'Article summary',
         publishedTime: '2024-01-15T00:00:00Z',
         modifiedTime: '2024-01-20T00:00:00Z',
@@ -183,13 +182,14 @@ describe('generateMeta', () => {
     it('should handle missing optional fields', () => {
       const article = {
         title: 'Article Title',
+        slug: 'article-title',
         summary: 'Article summary',
         publishedTime: '2024-01-15T00:00:00Z',
-        modifiedTime: undefined,
+        modifiedTime: '2024-01-20T00:00:00Z',
         author: undefined,
         category: undefined,
         tags: [],
-        coverImage: undefined,
+        coverImage: null,
       };
 
       const meta = generateArticleSeoMeta(article);
@@ -204,6 +204,7 @@ describe('generateMeta', () => {
     it('should generate article Open Graph meta', () => {
       const article = {
         title: 'Article Title',
+        slug: 'article-title',
         summary: 'Article summary',
         publishedTime: '2024-01-15T00:00:00Z',
         modifiedTime: '2024-01-20T00:00:00Z',
@@ -225,13 +226,14 @@ describe('generateMeta', () => {
     it('should use default image when article has no cover image', () => {
       const article = {
         title: 'No Image Article',
+        slug: 'no-image-article',
         summary: 'Article without image',
         publishedTime: '2024-01-15T00:00:00Z',
         modifiedTime: '2024-01-20T00:00:00Z',
         author: 'Test Author',
         category: 'Tech',
         tags: ['React'],
-        coverImage: undefined,
+        coverImage: null,
       };
 
       const og = generateArticleOpenGraphMeta(article, 'https://example.com/no-image');
@@ -244,6 +246,7 @@ describe('generateMeta', () => {
     it('should generate complete article page meta', () => {
       const article = {
         title: 'Complete Article',
+        slug: 'complete-article',
         summary: 'Complete article summary',
         publishedTime: '2024-01-15T00:00:00Z',
         modifiedTime: '2024-01-20T00:00:00Z',
@@ -266,13 +269,14 @@ describe('generateMeta', () => {
     it('should use default image when article has no cover image', () => {
       const article = {
         title: 'No Cover Article',
+        slug: 'no-cover-article',
         summary: 'Article without cover',
         publishedTime: '2024-01-15T00:00:00Z',
         modifiedTime: '2024-01-20T00:00:00Z',
         author: 'Test Author',
         category: 'Tech',
         tags: ['React'],
-        coverImage: undefined,
+        coverImage: null,
       };
 
       const meta = generateArticlePageMeta(article, 'no-cover');
