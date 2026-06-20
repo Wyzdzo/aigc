@@ -19,7 +19,8 @@ import {
 import { Link, useParams } from 'react-router';
 
 import { CommentForm, CommentList } from '@/widgets/blog';
-import { useComments,useLikePost, usePostBySlug } from '@/features/blog';
+import { SeoMeta } from '@/widgets/seo';
+import { useComments, useLikePost, usePostBySlug } from '@/features/blog';
 
 import { Markdown } from '@/shared/blog/markdown';
 import { extractToc, type TocItem } from '@/shared/lib/markdownUtils';
@@ -164,6 +165,25 @@ export function BlogDetailPage() {
 
   return (
     <>
+      {/* SEO Meta */}
+      <SeoMeta
+        article={
+          post
+            ? {
+                title: post.title,
+                summary: post.summary || post.content.slice(0, 200),
+                publishedTime: post.createdAt,
+                modifiedTime: post.updatedAt,
+                author: post.author?.nickname || 'Admin',
+                category: post.category?.name,
+                tags: post.tags?.map((t) => t.name),
+                coverImage: post.coverImage,
+              }
+            : undefined
+        }
+        articleSlug={slug}
+      />
+
       {/* 移动端目录按钮 */}
       {isMobile && toc.length > 0 && (
         <div className="fixed-z" style={{ bottom: '1.25rem', right: '1.25rem' }}>

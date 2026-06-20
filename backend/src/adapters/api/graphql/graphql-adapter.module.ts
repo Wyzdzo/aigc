@@ -14,7 +14,9 @@ import { VerificationRecordUsecasesModule } from '@src/usecases/verification-rec
 import { VerificationUsecasesModule } from '@src/usecases/verification/verification-usecases.module';
 
 import { AccountModule } from '@src/modules/account/account.module';
+import { BlogModule } from '@src/modules/blog/blog.module';
 import { SettingsModule } from '@src/modules/settings/settings.module';
+import { SeoModule } from '@src/adapters/api/seo/seo.module';
 
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -57,15 +59,17 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     AuditUsecasesModule,
     AsyncTaskRecordUsecasesModule,
     AuthUsecasesModule,
+    BlogModule.forRoot(),
     EmailQueueUsecasesModule,
     MediaUsecasesModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     RegistrationUsecasesModule,
+    SeoModule,
     SettingsModule,
     SettingsUsecasesModule,
     ThirdPartyAccountsUsecasesModule,
     VerificationRecordUsecasesModule,
     VerificationUsecasesModule,
-    PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   providers: [
     {

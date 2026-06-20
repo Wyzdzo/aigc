@@ -6,9 +6,10 @@ import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, T
 import { Link } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
+import { SeoMeta } from '@/widgets/seo';
 import { useCategoryTree, useLikePost, usePosts, useTags } from '@/features/blog';
 
-import { type BlogPost,PostStatus } from '@/entities/blog';
+import { type BlogPost, PostStatus } from '@/entities/blog';
 
 import { LazyImage } from '@/shared/ui/LazyImage';
 
@@ -339,6 +340,9 @@ export function BlogHomePage() {
 
   return (
     <>
+      {/* SEO Meta */}
+      <SeoMeta title="AIGC Blog - 技术博客" description="分享技术见解和生活感悟，专注于 React、TypeScript、Node.js 等前端技术" />
+
       {/* 移动端筛选按钮 */}
       {isMobile && (
         <div className="sticky-z bg-white py-3 border-b">

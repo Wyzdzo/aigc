@@ -22,6 +22,7 @@ import { registerEnumType } from '@nestjs/graphql';
 import { GqlPaginationMode, GqlSortDirection } from '@src/adapters/api/graphql/pagination.enums';
 import { OrderDirection } from '@app-types/common/sort.types';
 import { CommentStatus, LinkStatus, PostStatus } from '@app-types/models/blog/blog.types';
+import { ChangeFreq } from '@app-types/common/seo.types';
 
 export function registerEnums(): void {
   registerEnumType(AccountStatus, { name: 'AccountStatus' });
@@ -45,4 +46,6 @@ export function registerEnums(): void {
   registerEnumType(PostStatus, { name: 'PostStatus' });
   registerEnumType(CommentStatus, { name: 'CommentStatus' });
   registerEnumType(LinkStatus, { name: 'LinkStatus' });
+  // SEO enums
+  registerEnumType(ChangeFreq, { name: 'ChangeFreq' });
 }

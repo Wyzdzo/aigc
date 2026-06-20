@@ -23,3 +23,7 @@ export function getHealthEndpoint() {
 
   return typeof endpoint === 'string' && endpoint.trim() ? endpoint : null;
 }
+
+export function getBaseUrl(): string {
+  return (import.meta.env.VITE_PUBLIC_URL as string | undefined) || 'https://example.com';
+}

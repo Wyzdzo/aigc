@@ -1,10 +1,11 @@
 // src/pages/blog/archives.tsx
 
-import { useEffect,useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined } from '@ant-design/icons';
 import { Badge, Card, Collapse, Empty, List, Space, Spin, Typography } from 'antd';
 import { Link } from 'react-router';
 
+import { SeoMeta } from '@/widgets/seo';
 import { usePosts } from '@/features/blog';
 
 import { PostStatus } from '@/entities/blog';
@@ -147,7 +148,11 @@ export function ArchivesPage() {
   }
 
   return (
-    <div style={{ maxWidth: isMobile ? '100%' : 800, margin: '0 auto', padding: '24px 0' }}>
+    <>
+      {/* SEO Meta */}
+      <SeoMeta title="时间归档 - AIGC Blog" description="按时间归档整理的技术博客文章" />
+
+      <div style={{ maxWidth: isMobile ? '100%' : 800, margin: '0 auto', padding: '24px 0' }}>
       {/* 页面标题 */}
       <Card
         style={{ marginBottom: 24, borderRadius: 8 }}
@@ -214,5 +219,6 @@ export function ArchivesPage() {
         />
       </Card>
     </div>
+    </>
   );
 }
