@@ -72,15 +72,15 @@ describe('BlogQueryService', () => {
 
   describe('getPostById', () => {
     it('should return post when found', async () => {
-      const mockPost: Partial<BlogPostEntity> = {
+      const mockPost = {
         id: 1,
         title: 'Test Post',
         slug: 'test-post',
         content: 'Content',
         status: PostStatus.PUBLISHED,
-      };
+      } as BlogPostEntity;
 
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost);
 
       const result = await service.getPostById({ id: 1 });
 
@@ -100,15 +100,15 @@ describe('BlogQueryService', () => {
 
   describe('getPostBySlug', () => {
     it('should return post by slug', async () => {
-      const mockPost: Partial<BlogPostEntity> = {
+      const mockPost = {
         id: 1,
         title: 'Test Post',
         slug: 'test-post',
         content: 'Content',
         status: PostStatus.PUBLISHED,
-      };
+      } as BlogPostEntity;
 
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost as BlogPostEntity);
+      jest.spyOn(postRepository, 'findOne').mockResolvedValue(mockPost);
 
       const result = await service.getPostBySlug({ slug: 'test-post' });
 

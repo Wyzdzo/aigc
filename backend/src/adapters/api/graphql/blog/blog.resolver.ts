@@ -29,9 +29,7 @@ export class BlogResolver {
   // ==================== Post Queries ====================
 
   @Query(() => BlogPostsResult, { description: '查询文章列表' })
-  async posts(
-    @Args() args: BlogPostsArgs,
-  ): Promise<BlogPostsResult> {
+  async posts(@Args() args: BlogPostsArgs): Promise<BlogPostsResult> {
     const result = await this.blogQueryService.getPosts({
       options: {
         page: args.page,
@@ -54,17 +52,13 @@ export class BlogResolver {
   }
 
   @Query(() => BlogPostDTO, { description: '根据 ID 查询文章', nullable: true })
-  async post(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<BlogPostDTO | null> {
+  async post(@Args('id', { type: () => Int }) id: number): Promise<BlogPostDTO | null> {
     const post = await this.blogQueryService.getPostById({ id });
     return post ? this.toPostDTO(post) : null;
   }
 
   @Query(() => BlogPostDTO, { description: '根据 slug 查询文章', nullable: true })
-  async postBySlug(
-    @Args('slug') slug: string,
-  ): Promise<BlogPostDTO | null> {
+  async postBySlug(@Args('slug') slug: string): Promise<BlogPostDTO | null> {
     const post = await this.blogQueryService.getPostBySlug({ slug });
     return post ? this.toPostDTO(post) : null;
   }
@@ -78,17 +72,13 @@ export class BlogResolver {
   }
 
   @Query(() => BlogCategoryDTO, { description: '根据 ID 查询分类', nullable: true })
-  async category(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<BlogCategoryDTO | null> {
+  async category(@Args('id', { type: () => Int }) id: number): Promise<BlogCategoryDTO | null> {
     const category = await this.blogQueryService.getCategoryById({ id });
     return category ? this.toCategoryDTO(category) : null;
   }
 
   @Query(() => BlogCategoryDTO, { description: '根据 slug 查询分类', nullable: true })
-  async categoryBySlug(
-    @Args('slug') slug: string,
-  ): Promise<BlogCategoryDTO | null> {
+  async categoryBySlug(@Args('slug') slug: string): Promise<BlogCategoryDTO | null> {
     const category = await this.blogQueryService.getCategoryBySlug({ slug });
     return category ? this.toCategoryDTO(category) : null;
   }
@@ -102,9 +92,7 @@ export class BlogResolver {
   }
 
   @Query(() => BlogTagDTO, { description: '根据 ID 查询标签', nullable: true })
-  async tag(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<BlogTagDTO | null> {
+  async tag(@Args('id', { type: () => Int }) id: number): Promise<BlogTagDTO | null> {
     const tag = await this.blogQueryService.getTagById({ id });
     return tag ? this.toTagDTO(tag) : null;
   }
@@ -139,9 +127,7 @@ export class BlogResolver {
   // ==================== Post Mutations ====================
 
   @Mutation(() => BlogPostDTO, { description: '创建文章' })
-  async createPost(
-    @Args('input') input: CreateBlogPostInput,
-  ): Promise<BlogPostDTO> {
+  async createPost(@Args('input') input: CreateBlogPostInput): Promise<BlogPostDTO> {
     const result = await this.blogUsecase.createPost({
       data: {
         title: input.title,
@@ -182,41 +168,31 @@ export class BlogResolver {
   }
 
   @Mutation(() => Boolean, { description: '删除文章' })
-  async deletePost(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async deletePost(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     const result = await this.blogUsecase.deletePost({ id });
     return result.success;
   }
 
   @Mutation(() => Boolean, { description: '发布文章' })
-  async publishPost(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async publishPost(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     const result = await this.blogUsecase.publishPost({ id });
     return result.success;
   }
 
   @Mutation(() => Boolean, { description: '取消发布文章' })
-  async unpublishPost(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async unpublishPost(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     const result = await this.blogUsecase.unpublishPost({ id });
     return result.success;
   }
 
   @Mutation(() => BlogPostDTO, { description: '查看文章（增加阅读量）', nullable: true })
-  async viewPost(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<BlogPostDTO | null> {
+  async viewPost(@Args('id', { type: () => Int }) id: number): Promise<BlogPostDTO | null> {
     const post = await this.blogUsecase.viewPost({ id });
     return post ? this.toPostDTO(post) : null;
   }
 
   @Mutation(() => Boolean, { description: '点赞文章' })
-  async likePost(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async likePost(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     await this.blogUsecase.likePost({ id });
     return true;
   }
@@ -224,9 +200,7 @@ export class BlogResolver {
   // ==================== Comment Mutations ====================
 
   @Mutation(() => BlogCommentDTO, { description: '创建评论' })
-  async createComment(
-    @Args('input') input: CreateBlogCommentInput,
-  ): Promise<BlogCommentDTO> {
+  async createComment(@Args('input') input: CreateBlogCommentInput): Promise<BlogCommentDTO> {
     const result = await this.blogUsecase.createComment({
       data: {
         postId: input.postId,
@@ -241,9 +215,7 @@ export class BlogResolver {
   }
 
   @Mutation(() => Boolean, { description: '点赞评论' })
-  async likeComment(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async likeComment(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     await this.blogUsecase.likeComment({ id });
     return true;
   }
@@ -269,9 +241,7 @@ export class BlogResolver {
   }
 
   @Mutation(() => Boolean, { description: '删除分类' })
-  async deleteCategory(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async deleteCategory(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     await this.blogService.deleteCategory({ id });
     return true;
   }
@@ -279,18 +249,13 @@ export class BlogResolver {
   // ==================== Tag Mutations ====================
 
   @Mutation(() => BlogTagDTO, { description: '创建标签' })
-  async createTag(
-    @Args('name') name: string,
-    @Args('slug') slug: string,
-  ): Promise<BlogTagDTO> {
+  async createTag(@Args('name') name: string, @Args('slug') slug: string): Promise<BlogTagDTO> {
     const tag = await this.blogService.createTag({ name, slug });
     return this.toTagDTO(tag);
   }
 
   @Mutation(() => Boolean, { description: '删除标签' })
-  async deleteTag(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async deleteTag(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     await this.blogService.deleteTag({ id });
     return true;
   }
@@ -316,9 +281,7 @@ export class BlogResolver {
   }
 
   @Mutation(() => Boolean, { description: '删除友链' })
-  async deleteLink(
-    @Args('id', { type: () => Int }) id: number,
-  ): Promise<boolean> {
+  async deleteLink(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     await this.blogService.deleteLink({ id });
     return true;
   }

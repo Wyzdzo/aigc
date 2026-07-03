@@ -15,7 +15,7 @@ export class MagicItemCraftProcessor {
       if (!task) throw new Error('Task not found');
 
       // 模拟异步加工延迟
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       let quality: QualityLevel;
       if (task.materialLevel >= 5) quality = QualityLevel.LEGENDARY;

@@ -504,11 +504,12 @@ describe('Blog Entities E2E', () => {
       try {
         await postTagRepo.save(postTag2);
         saved = true;
-      } catch {
-      }
+      } catch {}
 
       if (saved) {
-        const count = await postTagRepo.count({ where: { postId: savedPost.id, tagId: savedTag.id } });
+        const count = await postTagRepo.count({
+          where: { postId: savedPost.id, tagId: savedTag.id },
+        });
         expect(count).toBe(1);
       }
 

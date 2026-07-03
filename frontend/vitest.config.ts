@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts', 'src/**/*.spec.tsx'],
     environment: 'jsdom',
+    pool: 'forks',
     handlerTimeout: 10000,
     onUnhandledError: (reason: unknown) => {
       // 忽略Antd表单验证的异步错误

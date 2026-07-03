@@ -1,6 +1,6 @@
 // src/shared/ui/LazyImage.spec.tsx
 
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { LazyImage } from './LazyImage';
@@ -168,12 +168,11 @@ describe('LazyImage', () => {
         <LazyImage src="invalid-url" alt={testAltText} placeholder={placeholderUrl} />
       );
 
-      // Wait for error handling
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Should show placeholder image
-      const img = container.querySelector('img');
-      expect(img?.getAttribute('src')).toBe(placeholderUrl);
+      // Wait for error handling and re-render
+      await waitFor(() => {
+        const img = container.querySelector('img');
+        expect(img?.getAttribute('src')).toBe(placeholderUrl);
+      }, { timeout: 3000 });
     });
   });
 

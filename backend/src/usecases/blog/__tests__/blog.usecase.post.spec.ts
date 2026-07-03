@@ -74,7 +74,9 @@ describe('BlogUsecase - Post Operations', () => {
       const { usecase, blogService } = setup();
       blogService.updatePost.mockRejectedValue(new Error('Update failed'));
 
-      await expect(usecase.updatePost({ id: 1, data: { title: 'Updated Title' } })).rejects.toThrow('Update failed');
+      await expect(usecase.updatePost({ id: 1, data: { title: 'Updated Title' } })).rejects.toThrow(
+        'Update failed',
+      );
     });
   });
 
@@ -113,9 +115,11 @@ describe('BlogUsecase - Post Operations', () => {
       const result = await usecase.publishPost({ id: 1 });
 
       expect(result.success).toBe(true);
-      expect(blogService.updatePost).toHaveBeenCalledWith(expect.objectContaining({
-        data: { status: PostStatus.PUBLISHED },
-      }));
+      expect(blogService.updatePost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: PostStatus.PUBLISHED },
+        }),
+      );
     });
   });
 
@@ -127,9 +131,11 @@ describe('BlogUsecase - Post Operations', () => {
       const result = await usecase.unpublishPost({ id: 1 });
 
       expect(result.success).toBe(true);
-      expect(blogService.updatePost).toHaveBeenCalledWith(expect.objectContaining({
-        data: { status: PostStatus.DRAFT },
-      }));
+      expect(blogService.updatePost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: PostStatus.DRAFT },
+        }),
+      );
     });
   });
 
@@ -164,7 +170,9 @@ describe('BlogUsecase - Post Operations', () => {
 
       await usecase.likePost({ id: 1 });
 
-      expect(blogService.incrementLikeCount).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
+      expect(blogService.incrementLikeCount).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 1 }),
+      );
     });
   });
 });

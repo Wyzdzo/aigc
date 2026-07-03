@@ -40,9 +40,7 @@ describe('AuditService', () => {
     }).compile();
 
     service = module.get<AuditService>(AuditService);
-    repository = module.get<Repository<OperationLogEntity>>(
-      getRepositoryToken(OperationLogEntity),
-    );
+    repository = module.get<Repository<OperationLogEntity>>(getRepositoryToken(OperationLogEntity));
   });
 
   describe('createLog', () => {
@@ -133,10 +131,9 @@ describe('AuditService', () => {
 
       await service.queryLogs({ operatorId: 5 });
 
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'log.operator_id = :operatorId',
-        { operatorId: 5 },
-      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith('log.operator_id = :operatorId', {
+        operatorId: 5,
+      });
     });
 
     it('should filter logs by operationType', async () => {
@@ -152,10 +149,9 @@ describe('AuditService', () => {
 
       await service.queryLogs({ operationType: 'DELETE' });
 
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'log.operation_type = :operationType',
-        { operationType: 'DELETE' },
-      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith('log.operation_type = :operationType', {
+        operationType: 'DELETE',
+      });
     });
 
     it('should filter logs by date range', async () => {
@@ -173,14 +169,10 @@ describe('AuditService', () => {
 
       await service.queryLogs({ startDate, endDate });
 
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'log.created_at >= :startDate',
-        { startDate },
-      );
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'log.created_at <= :endDate',
-        { endDate },
-      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith('log.created_at >= :startDate', {
+        startDate,
+      });
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith('log.created_at <= :endDate', { endDate });
     });
 
     it('should use default pagination when not provided', async () => {

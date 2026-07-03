@@ -1,13 +1,13 @@
 // src/usecases/settings/settings.usecase.ts
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
 import { Injectable } from '@nestjs/common';
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
 import { InjectRepository } from '@nestjs/typeorm';
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
 import { Repository } from 'typeorm';
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
 import { AccountEntity } from '@modules/account/base/entities/account.entity';
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
 import { UserInfoEntity } from '@modules/account/base/entities/user-info.entity';
 import { AccountService } from '@modules/account/base/services/account.service';
 import { AuditService } from '@modules/audit/audit.service';

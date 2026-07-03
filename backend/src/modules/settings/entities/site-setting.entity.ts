@@ -37,13 +37,25 @@ export class SiteSettingEntity {
   })
   settingType!: SettingType;
 
-  @Column({ name: 'display_name', type: 'varchar', length: 100, nullable: true, comment: '显示名称' })
+  @Column({
+    name: 'display_name',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    comment: '显示名称',
+  })
   displayName!: string | null;
 
   @Column({ type: 'varchar', length: 500, nullable: true, comment: '描述' })
   description!: string | null;
 
-  @Column({ name: 'group_name', type: 'varchar', length: 50, default: 'general', comment: '分组名称' })
+  @Column({
+    name: 'group_name',
+    type: 'varchar',
+    length: 50,
+    default: 'general',
+    comment: '分组名称',
+  })
   groupName!: string;
 
   @Column({ name: 'sort_order', type: 'int', default: 0, comment: '排序序号' })

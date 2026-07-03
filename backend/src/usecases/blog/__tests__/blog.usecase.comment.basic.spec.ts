@@ -31,12 +31,22 @@ describe('BlogUsecase - Comment Basic', () => {
 
   it('should create a comment and notify blog owner', async () => {
     const { usecase, blogService, blogQueryService, notifyCommentUsecase } = setup();
-    const comment = { id: 1, postId: 1, nickname: 'Test User', email: 'user@test.com', content: 'Test', status: CommentStatus.PENDING, createdAt: new Date() };
+    const comment = {
+      id: 1,
+      postId: 1,
+      nickname: 'Test User',
+      email: 'user@test.com',
+      content: 'Test',
+      status: CommentStatus.PENDING,
+      createdAt: new Date(),
+    };
     blogQueryService.getPostById.mockResolvedValue(mockPost);
     blogService.createComment.mockResolvedValue(comment);
     notifyCommentUsecase.notifyNewComment.mockResolvedValue();
 
-    const result = await usecase.createComment({ data: { postId: 1, nickname: 'Test User', email: 'user@test.com', content: 'Test' } });
+    const result = await usecase.createComment({
+      data: { postId: 1, nickname: 'Test User', email: 'user@test.com', content: 'Test' },
+    });
 
     expect(result.comment.id).toBe(1);
     expect(notifyCommentUsecase.notifyNewComment).toHaveBeenCalled();
@@ -44,11 +54,21 @@ describe('BlogUsecase - Comment Basic', () => {
 
   it('should not notify when comment has no email', async () => {
     const { usecase, blogService, blogQueryService, notifyCommentUsecase } = setup();
-    const comment = { id: 1, postId: 1, nickname: 'Anonymous', email: null, content: 'Test', status: CommentStatus.PENDING, createdAt: new Date() };
+    const comment = {
+      id: 1,
+      postId: 1,
+      nickname: 'Anonymous',
+      email: null,
+      content: 'Test',
+      status: CommentStatus.PENDING,
+      createdAt: new Date(),
+    };
     blogQueryService.getPostById.mockResolvedValue(mockPost);
     blogService.createComment.mockResolvedValue(comment);
 
-    const result = await usecase.createComment({ data: { postId: 1, nickname: 'Anonymous', content: 'Test' } });
+    const result = await usecase.createComment({
+      data: { postId: 1, nickname: 'Anonymous', content: 'Test' },
+    });
 
     expect(result.comment.id).toBe(1);
     expect(notifyCommentUsecase.notifyNewComment).not.toHaveBeenCalled();
@@ -56,24 +76,51 @@ describe('BlogUsecase - Comment Basic', () => {
 
   it('should not send notification when post is not found', async () => {
     const { usecase, blogService, blogQueryService } = setup();
-    const comment = { id: 1, postId: 999, nickname: 'Test User', email: 'user@test.com', content: 'Test', status: CommentStatus.PENDING, createdAt: new Date() };
+    const comment = {
+      id: 1,
+      postId: 999,
+      nickname: 'Test User',
+      email: 'user@test.com',
+      content: 'Test',
+      status: CommentStatus.PENDING,
+      createdAt: new Date(),
+    };
     blogQueryService.getPostById.mockResolvedValue(null);
     blogService.createComment.mockResolvedValue(comment);
 
-    const result = await usecase.createComment({ data: { postId: 999, nickname: 'Test User', email: 'user@test.com', content: 'Test' } });
+    const result = await usecase.createComment({
+      data: { postId: 999, nickname: 'Test User', email: 'user@test.com', content: 'Test' },
+    });
 
     expect(result.comment.id).toBe(1);
   });
 
   it('should handle missing parent comment gracefully', async () => {
     const { usecase, blogService, blogQueryService, notifyCommentUsecase } = setup();
-    const comment = { id: 1, postId: 1, parentId: 999, nickname: 'Test User', email: 'user@test.com', content: 'Test', status: CommentStatus.PENDING, createdAt: new Date() };
+    const comment = {
+      id: 1,
+      postId: 1,
+      parentId: 999,
+      nickname: 'Test User',
+      email: 'user@test.com',
+      content: 'Test',
+      status: CommentStatus.PENDING,
+      createdAt: new Date(),
+    };
     blogQueryService.getPostById.mockResolvedValue(mockPost);
     blogQueryService.getCommentById.mockResolvedValue(null);
     blogService.createComment.mockResolvedValue(comment);
     notifyCommentUsecase.notifyNewComment.mockResolvedValue();
 
-    const result = await usecase.createComment({ data: { postId: 1, parentId: 999, nickname: 'Test User', email: 'user@test.com', content: 'Test' } });
+    const result = await usecase.createComment({
+      data: {
+        postId: 1,
+        parentId: 999,
+        nickname: 'Test User',
+        email: 'user@test.com',
+        content: 'Test',
+      },
+    });
 
     expect(result.comment.id).toBe(1);
   });

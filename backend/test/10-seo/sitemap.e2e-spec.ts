@@ -38,7 +38,9 @@ describe('Sitemap (e2e)', () => {
       const response = await request(app.getHttpServer()).get('/sitemap.xml');
 
       expect(response.text).toContain('<?xml version="1.0" encoding="UTF-8"?>');
-      expect(response.text).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+      expect(response.text).toContain(
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      );
       expect(response.text).toContain('</urlset>');
     });
 

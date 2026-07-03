@@ -50,8 +50,7 @@ export class MediaController {
       throw new BadRequestException('没有上传文件');
     }
 
-    const baseUrl =
-      this.configService.get<string>('app.baseUrl') || 'http://localhost:3000';
+    const baseUrl = this.configService.get<string>('app.baseUrl') || 'http://localhost:3000';
 
     const media = await this.mediaUsecase.createMedia({
       filename: file.filename,

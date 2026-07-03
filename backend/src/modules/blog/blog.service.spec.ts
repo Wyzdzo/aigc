@@ -410,7 +410,9 @@ describe('BlogService', () => {
 
   describe('addTagsToPost', () => {
     it('should add tags to post', async () => {
-      const createSpy = jest.spyOn(postTagRepository, 'create').mockImplementation((dto) => dto as BlogPostTagEntity);
+      const createSpy = jest
+        .spyOn(postTagRepository, 'create')
+        .mockImplementation((dto) => dto as BlogPostTagEntity);
       const saveSpy = jest.spyOn(postTagRepository, 'save').mockResolvedValue({} as any);
 
       await service.addTagsToPost({ postId: 1, tagIds: [1, 2, 3] });
