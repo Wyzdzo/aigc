@@ -1,6 +1,6 @@
 // src/pages/blog/[slug].tsx
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined, MenuOutlined } from '@ant-design/icons';
 import {
   Anchor,
@@ -20,7 +20,7 @@ import { Link, useParams } from 'react-router';
 
 import { CommentForm, CommentList } from '@/widgets/blog';
 import { SeoMeta } from '@/widgets/seo';
-import { useComments, useLikePost, usePostBySlug } from '@/features/blog';
+import { useComments, useLikePost, usePostBySlug, useViewPost } from '@/features/blog';
 
 import { Markdown } from '@/shared/blog/markdown';
 import { extractToc, type TocItem } from '@/shared/lib/markdownUtils';
@@ -69,7 +69,7 @@ function ArticleMeta({
   const { likePost, loading: likeLoading } = useLikePost();
 
   return (
-    <div className="text-gray-400">
+    <div className="text-text-tertiary">
       <Space size="middle">
         <span>
           <EyeOutlined /> {viewCount}
@@ -77,7 +77,7 @@ function ArticleMeta({
         <Tooltip title="点赞">
           <button
             type="button"
-            className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none p-0"
+            className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
             onClick={() => likePost(postId)}
             disabled={likeLoading}
           >
@@ -103,7 +103,27 @@ function ArticleNavigation({
   next?: { slug: string; title: string } | null;
 }) {
   if (!prev && !next) return null;
-  return <Divider>文章导航</Divider>;
+  const { Text } = Typography;
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+      {prev ? (
+        <Link to={`/blog/${prev.slug}`} style={{ maxWidth: '50%' }}>
+          <Card size="small" hoverable>
+            <Text type="secondary">上一篇</Text>
+            <div><Text strong ellipsis>{prev.title}</Text></div>
+          </Card>
+        </Link>
+      ) : <div />}
+      {next ? (
+        <Link to={`/blog/${next.slug}`} style={{ maxWidth: '50%', textAlign: 'right' }}>
+          <Card size="small" hoverable>
+            <Text type="secondary">下一篇</Text>
+            <div><Text strong ellipsis>{next.title}</Text></div>
+          </Card>
+        </Link>
+      ) : <div />}
+    </div>
+  );
 }
 
 /**
@@ -115,6 +135,16 @@ export function BlogDetailPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { items: comments, total, loading: commentsLoading, refetch } = useComments({ postId: post?.id });
+
+  const { viewPost } = useViewPost();
+  const hasViewedRef = useRef(false);
+
+  useEffect(() => {
+    if (post?.id && !hasViewedRef.current) {
+      hasViewedRef.current = true;
+      viewPost(post.id);
+    }
+  }, [post?.id, viewPost]);
 
   // 检测是否为移动端
   useEffect(() => {

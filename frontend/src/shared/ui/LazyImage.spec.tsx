@@ -73,7 +73,7 @@ describe('LazyImage', () => {
     it('should render with skeleton placeholder initially', () => {
       const { container } = render(<LazyImage src={testImageUrl} alt={testAltText} />);
 
-      const skeleton = container.querySelector('.animate-pulse.bg-gray-200');
+      const skeleton = container.querySelector('.animate-pulse');
       expect(skeleton).toBeTruthy();
     });
 
@@ -143,14 +143,14 @@ describe('LazyImage', () => {
     it('should handle empty src gracefully', () => {
       const { container } = render(<LazyImage src="" alt={testAltText} />);
 
-      const placeholder = container.querySelector('.animate-pulse.bg-gray-200');
+      const placeholder = container.querySelector('.animate-pulse');
       expect(placeholder).toBeTruthy();
     });
 
     it('should handle null src gracefully', () => {
       const { container } = render(<LazyImage src={null as unknown as string} alt={testAltText} />);
 
-      const placeholder = container.querySelector('.animate-pulse.bg-gray-200');
+      const placeholder = container.querySelector('.animate-pulse');
       expect(placeholder).toBeTruthy();
     });
 

@@ -1,14 +1,20 @@
 // src/pages/admin/categories/index.spec.tsx
 
-import { render, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi, beforeAll } from 'vitest';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi, beforeAll } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing/react';
 import type { MockedResponse } from '@apollo/client/testing';
 import { BrowserRouter } from 'react-router';
+import { message } from 'antd';
 
 import { GET_CATEGORIES } from '@/features/blog/infrastructure/graphql/queries';
+import { CREATE_CATEGORY, UPDATE_CATEGORY } from '@/features/blog/infrastructure/graphql/mutations';
 
 import { AdminCategoriesPage } from './index';
+
+afterEach(() => {
+  cleanup();
+});
 
 beforeAll(() => {
   class ResizeObserverMock {
@@ -259,6 +265,235 @@ describe('AdminCategoriesPage', () => {
         expect(container.textContent).toContain('编辑');
         expect(container.textContent).toContain('删除');
       });
+    });
+  });
+
+  describe('Mutation Interactions', () => {
+    const categoryBase = {
+      __typename: 'BlogCategory',
+      id: 1,
+      name: '测试分类',
+      slug: 'test',
+      description: '测试描述',
+      parentId: null,
+      sortOrder: 0,
+      createdAt: '2024-01-15T10:00:00Z',
+      updatedAt: '2024-01-15T10:00:00Z',
+    };
+
+    it('should call createCategory mutation when submitting the create form', async () => {
+      vi.spyOn(message, 'success').mockReturnValue({} as ReturnType<typeof message.success>);
+
+      const mocks: MockedResponse[] = [
+        {
+          request: { query: GET_CATEGORIES },
+          result: { data: { categories: [] } },
+        },
+        {
+          request: {
+            query: CREATE_CATEGORY,
+            variables: {
+              name: '新分类',
+              slug: 'new-category',
+              description: undefined,
+              parentId: undefined,
+              sortOrder: undefined,
+            },
+          },
+          result: {
+            data: {
+              createCategory: {
+                __typename: 'BlogCategory',
+                id: 2,
+                name: '新分类',
+                slug: 'new-category',
+                description: null,
+                parentId: null,
+                sortOrder: 0,
+                createdAt: '2024-01-16T10:00:00Z',
+                updatedAt: '2024-01-16T10:00:00Z',
+              },
+            },
+          },
+        },
+        {
+          request: { query: GET_CATEGORIES },
+          result: { data: { categories: [{ ...categoryBase, id: 2, name: '新分类', slug: 'new-category' }] } },
+        },
+      ];
+
+      const { container } = render(<AdminCategoriesPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('新增分类');
+      });
+
+      // Click the "新增分类" button to open the modal
+      const addBtn = container.querySelector('.ant-btn-primary') as HTMLElement;
+      expect(addBtn).toBeTruthy();
+      fireEvent.click(addBtn);
+
+      // Modal renders in a portal (document.body), not inside container
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+      });
+
+      // Fill in the form fields in the portal
+      const inputs = document.querySelectorAll('.ant-modal .ant-input');
+      const nameInput = inputs[0] as HTMLInputElement;
+      const slugInput = inputs[1] as HTMLInputElement;
+
+      fireEvent.change(nameInput, { target: { value: '新分类' } });
+      fireEvent.change(slugInput, { target: { value: 'new-category' } });
+
+      // Click the OK button in modal
+      const okBtn = document.querySelector('.ant-modal .ant-btn-primary') as HTMLElement;
+      expect(okBtn).toBeTruthy();
+      fireEvent.click(okBtn);
+
+      await waitFor(() => {
+        expect(message.success).toHaveBeenCalledWith('创建成功');
+      });
+
+      vi.restoreAllMocks();
+    });
+
+    it('should call updateCategory mutation when submitting the edit form', async () => {
+      vi.spyOn(message, 'success').mockReturnValue({} as ReturnType<typeof message.success>);
+
+      const mocks: MockedResponse[] = [
+        {
+          request: { query: GET_CATEGORIES },
+          result: { data: { categories: [categoryBase] } },
+        },
+        {
+          request: {
+            query: UPDATE_CATEGORY,
+            variables: {
+              id: 1,
+              name: '更新分类',
+              slug: 'updated-category',
+              description: '测试描述',
+              parentId: null,
+              sortOrder: 0,
+            },
+          },
+          result: {
+            data: {
+              updateCategory: {
+                __typename: 'BlogCategory',
+                id: 1,
+                name: '更新分类',
+                slug: 'updated-category',
+                description: '测试描述',
+                parentId: null,
+                sortOrder: 0,
+                createdAt: '2024-01-15T10:00:00Z',
+                updatedAt: '2024-01-16T10:00:00Z',
+              },
+            },
+          },
+        },
+        {
+          request: { query: GET_CATEGORIES },
+          result: { data: { categories: [{ ...categoryBase, name: '更新分类', slug: 'updated-category' }] } },
+        },
+      ];
+
+      const { container } = render(<AdminCategoriesPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('测试分类');
+      });
+
+      // Click the "编辑" button
+      const editBtns = container.querySelectorAll('button');
+      const editBtn = Array.from(editBtns).find((btn) => btn.textContent?.includes('编辑'));
+      expect(editBtn).toBeTruthy();
+      fireEvent.click(editBtn!);
+
+      // Modal renders in a portal (document.body)
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+      });
+
+      // Update form fields in the portal
+      const inputs = document.querySelectorAll('.ant-modal .ant-input');
+      const nameInput = inputs[0] as HTMLInputElement;
+      const slugInput = inputs[1] as HTMLInputElement;
+
+      fireEvent.change(nameInput, { target: { value: '更新分类' } });
+      fireEvent.change(slugInput, { target: { value: 'updated-category' } });
+
+      // Click the OK button in modal
+      const okBtn = document.querySelector('.ant-modal .ant-btn-primary') as HTMLElement;
+      expect(okBtn).toBeTruthy();
+      fireEvent.click(okBtn);
+
+      await waitFor(() => {
+        expect(message.success).toHaveBeenCalledWith('更新成功');
+      });
+
+      vi.restoreAllMocks();
+    });
+
+    it('should show error message when createCategory fails', async () => {
+      vi.spyOn(message, 'error').mockReturnValue({} as ReturnType<typeof message.error>);
+
+      const mocks: MockedResponse[] = [
+        {
+          request: { query: GET_CATEGORIES },
+          result: { data: { categories: [] } },
+        },
+        {
+          request: {
+            query: CREATE_CATEGORY,
+            variables: {
+              name: '新分类',
+              slug: 'new-category',
+              description: undefined,
+              parentId: undefined,
+              sortOrder: undefined,
+            },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<AdminCategoriesPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('新增分类');
+      });
+
+      // Click the "新增分类" button to open the modal
+      const addBtn = container.querySelector('.ant-btn-primary') as HTMLElement;
+      expect(addBtn).toBeTruthy();
+      fireEvent.click(addBtn);
+
+      // Modal renders in a portal (document.body)
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+      });
+
+      // Fill in the form fields in the portal
+      const inputs = document.querySelectorAll('.ant-modal .ant-input');
+      const nameInput = inputs[0] as HTMLInputElement;
+      const slugInput = inputs[1] as HTMLInputElement;
+
+      fireEvent.change(nameInput, { target: { value: '新分类' } });
+      fireEvent.change(slugInput, { target: { value: 'new-category' } });
+
+      // Click the OK button in modal
+      const okBtn = document.querySelector('.ant-modal .ant-btn-primary') as HTMLElement;
+      expect(okBtn).toBeTruthy();
+      fireEvent.click(okBtn);
+
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith('操作失败，请重试');
+      });
+
+      vi.restoreAllMocks();
     });
   });
 });

@@ -52,7 +52,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -79,7 +79,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -107,7 +107,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -152,7 +152,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -187,7 +187,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           error: new Error('Network error'),
         },
@@ -207,7 +207,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -281,7 +281,7 @@ describe('AdminCommentsPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: undefined, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {

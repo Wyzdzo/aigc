@@ -103,7 +103,7 @@ export function LazyImage({
   return (
     <div
       ref={imgRef}
-      className={`relative overflow-hidden ${isLoaded ? '' : 'bg-gray-100'} ${className ?? ''}`}
+      className={`relative overflow-hidden ${isLoaded ? '' : 'bg-fill-tertiary'} ${className ?? ''}`}
       style={containerStyle}
     >
       {isLoaded ? (
@@ -114,9 +114,9 @@ export function LazyImage({
           loading="lazy"
         />
       ) : skeleton ? (
-        <div className="absolute inset-0 animate-pulse bg-gray-200" />
+        <div className="absolute inset-0 animate-pulse bg-fill-secondary" />
       ) : (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border-2 border-border border-t-primary rounded-full animate-spin" />
       )}
     </div>
   );

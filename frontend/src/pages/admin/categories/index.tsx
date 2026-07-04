@@ -28,7 +28,9 @@ interface TreeNodeNormal {
 
 import {
   useCategories,
+  useCreateCategory,
   useDeleteCategory,
+  useUpdateCategory,
 } from '@/features/blog';
 import type { BlogCategory } from '@/entities/blog';
 
@@ -38,6 +40,8 @@ export function AdminCategoriesPage() {
   const [form] = Form.useForm();
 
   const { categories, loading, refetch } = useCategories();
+  const { createCategory, loading: creating } = useCreateCategory();
+  const { updateCategory, loading: updating } = useUpdateCategory();
   const { deleteCategory, loading: deleting } = useDeleteCategory();
 
   const handleAdd = () => {
@@ -69,11 +73,26 @@ export function AdminCategoriesPage() {
   };
 
   const handleOk = () => {
-    form.validateFields().then(async () => {
+    form.validateFields().then(async (values) => {
       try {
         if (editingCategory) {
+          await updateCategory({
+            id: editingCategory.id,
+            name: values.name,
+            slug: values.slug,
+            description: values.description,
+            parentId: values.parentId,
+            sortOrder: values.sortOrder,
+          });
           message.success('更新成功');
         } else {
+          await createCategory({
+            name: values.name,
+            slug: values.slug,
+            description: values.description,
+            parentId: values.parentId,
+            sortOrder: values.sortOrder,
+          });
           message.success('创建成功');
         }
         setIsModalVisible(false);
@@ -174,7 +193,7 @@ export function AdminCategoriesPage() {
 
       <Modal
         title={editingCategory ? '编辑分类' : '新增分类'}
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         width={500}

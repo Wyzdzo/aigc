@@ -49,7 +49,7 @@ describe('useAdminComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -78,7 +78,7 @@ describe('useAdminComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, status: CommentStatus.PENDING, page: 1, pageSize: 20 },
+            variables: { postId: undefined, status: CommentStatus.PENDING, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -108,7 +108,7 @@ describe('useAdminComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 2, pageSize: 10 },
+            variables: { postId: undefined, page: 2, pageSize: 10 },
           },
           result: {
             data: {
@@ -142,7 +142,7 @@ describe('useAdminComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -183,7 +183,7 @@ describe('useUpdateCommentStatus', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {
@@ -214,7 +214,7 @@ describe('useDeleteComment', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 0, page: 1, pageSize: 20 },
+            variables: { postId: undefined, page: 1, pageSize: 20 },
           },
           result: {
             data: {

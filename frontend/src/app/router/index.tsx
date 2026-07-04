@@ -40,6 +40,7 @@ const AdminPostEditPage = lazy(() => import('@/pages/admin/posts/[id]').then(m =
 const AdminCategoriesPage = lazy(() => import('@/pages/admin/categories').then(m => ({ default: m.AdminCategoriesPage })));
 const AdminTagsPage = lazy(() => import('@/pages/admin/tags').then(m => ({ default: m.AdminTagsPage })));
 const AdminCommentsPage = lazy(() => import('@/pages/admin/comments').then(m => ({ default: m.AdminCommentsPage })));
+const AdminLinksPage = lazy(() => import('@/pages/admin/links').then(m => ({ default: m.AdminLinksPage })));
 const AdminMediaPage = lazy(() => import('@/pages/admin/media').then(m => ({ default: m.AdminMediaPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/settings').then(m => ({ default: m.AdminSettingsPage })));
 
@@ -196,6 +197,11 @@ const router = createBrowserRouter([
         element: <LazyPage><AdminCommentsPage /></LazyPage>,
         loader: adminAuthLoader,
         path: 'admin/comments',
+      },
+      {
+        element: <LazyPage><AdminLinksPage /></LazyPage>,
+        loader: adminAuthLoader,
+        path: 'admin/links',
       },
       {
         element: <LazyPage><AdminPostsPage /></LazyPage>,

@@ -8,3 +8,5 @@ export { BlogTagDTO } from './blog-tag.dto';
 export { CreateBlogCommentInput } from './create-blog-comment.input';
 export { CreateBlogPostInput } from './create-blog-post.input';
 export { UpdateBlogPostInput } from './update-blog-post.input';
+export { PostStatsDTO, CommentStatsDTO, CategoryStatsDTO, TagStatsDTO, LinkStatsDTO } from './blog-stats.dto';
+export { BlogCommentsResult } from './blog-comments.result';

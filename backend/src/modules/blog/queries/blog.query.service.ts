@@ -308,6 +308,62 @@ export class BlogQueryService {
     return await query.getMany();
   }
 
+  // ==================== Stats Queries ====================
+
+  async getPostStats(params: {
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{ total: number; published: number; draft: number }> {
+    const { transactionContext } = params;
+    const repository = this.getPostRepository(transactionContext);
+
+    const total = await repository.count();
+    const published = await repository.count({ where: { status: PostStatus.PUBLISHED } });
+    const draft = await repository.count({ where: { status: PostStatus.DRAFT } });
+
+    return { total, published, draft };
+  }
+
+  async getCommentStats(params: {
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{ total: number; pending: number; approved: number; rejected: number }> {
+    const { transactionContext } = params;
+    const repository = this.getCommentRepository(transactionContext);
+
+    const total = await repository.count();
+    const pending = await repository.count({ where: { status: CommentStatus.PENDING } });
+    const approved = await repository.count({ where: { status: CommentStatus.APPROVED } });
+    const rejected = await repository.count({ where: { status: CommentStatus.REJECTED } });
+
+    return { total, pending, approved, rejected };
+  }
+
+  async getCategoryStats(params: {
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{ total: number }> {
+    const { transactionContext } = params;
+    const repository = this.getCategoryRepository(transactionContext);
+    const total = await repository.count();
+    return { total };
+  }
+
+  async getTagStats(params: {
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{ total: number }> {
+    const { transactionContext } = params;
+    const repository = this.getTagRepository(transactionContext);
+    const total = await repository.count();
+    return { total };
+  }
+
+  async getLinkStats(params: {
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{ total: number }> {
+    const { transactionContext } = params;
+    const repository = this.getLinkRepository(transactionContext);
+    const total = await repository.count();
+    return { total };
+  }
+
   // ==================== Repository Helpers ====================
 
   private getPostRepository(

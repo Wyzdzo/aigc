@@ -1,14 +1,20 @@
 // src/pages/admin/tags/index.spec.tsx
 
-import { render, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi, beforeAll } from 'vitest';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi, beforeAll } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing/react';
 import type { MockedResponse } from '@apollo/client/testing';
 import { BrowserRouter } from 'react-router';
+import { message } from 'antd';
 
 import { GET_TAGS } from '@/features/blog/infrastructure/graphql/queries';
+import { CREATE_TAG, UPDATE_TAG } from '@/features/blog/infrastructure/graphql/mutations';
 
 import { AdminTagsPage } from './index';
+
+afterEach(() => {
+  cleanup();
+});
 
 beforeAll(() => {
   class ResizeObserverMock {
@@ -231,6 +237,204 @@ describe('AdminTagsPage', () => {
         expect(container.textContent).toContain('AI & Machine Learning');
         expect(container.textContent).toContain('Web 前端开发');
       });
+    });
+  });
+
+  describe('Mutation Interactions', () => {
+    const tagBase = {
+      __typename: 'BlogTag',
+      id: 1,
+      name: '测试标签',
+      slug: 'test-tag',
+      createdAt: '2024-01-15T10:00:00Z',
+    };
+
+    it('should call createTag mutation when submitting the create form', async () => {
+      vi.spyOn(message, 'success').mockReturnValue({} as ReturnType<typeof message.success>);
+
+      const mocks: MockedResponse[] = [
+        {
+          request: { query: GET_TAGS },
+          result: { data: { tags: [] } },
+        },
+        {
+          request: {
+            query: CREATE_TAG,
+            variables: { name: '新标签', slug: 'new-tag' },
+          },
+          result: {
+            data: {
+              createTag: {
+                __typename: 'BlogTag',
+                id: 2,
+                name: '新标签',
+                slug: 'new-tag',
+                createdAt: '2024-01-16T10:00:00Z',
+              },
+            },
+          },
+        },
+        {
+          request: { query: GET_TAGS },
+          result: { data: { tags: [{ ...tagBase, id: 2, name: '新标签', slug: 'new-tag' }] } },
+        },
+      ];
+
+      const { container } = render(<AdminTagsPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('新增标签');
+      });
+
+      // Click the "新增标签" button to open the modal
+      const addBtn = container.querySelector('.ant-btn-primary') as HTMLElement;
+      expect(addBtn).toBeTruthy();
+      fireEvent.click(addBtn);
+
+      // Modal renders in a portal (document.body)
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+      });
+
+      // Fill in the form fields in the portal
+      const inputs = document.querySelectorAll('.ant-modal .ant-input');
+      const nameInput = inputs[0] as HTMLInputElement;
+      const slugInput = inputs[1] as HTMLInputElement;
+
+      fireEvent.change(nameInput, { target: { value: '新标签' } });
+      fireEvent.change(slugInput, { target: { value: 'new-tag' } });
+
+      // Click the OK button in modal
+      const okBtn = document.querySelector('.ant-modal .ant-btn-primary') as HTMLElement;
+      expect(okBtn).toBeTruthy();
+      fireEvent.click(okBtn);
+
+      await waitFor(() => {
+        expect(message.success).toHaveBeenCalledWith('创建成功');
+      });
+
+      vi.restoreAllMocks();
+    });
+
+    it('should call updateTag mutation when submitting the edit form', async () => {
+      vi.spyOn(message, 'success').mockReturnValue({} as ReturnType<typeof message.success>);
+
+      const mocks: MockedResponse[] = [
+        {
+          request: { query: GET_TAGS },
+          result: { data: { tags: [tagBase] } },
+        },
+        {
+          request: {
+            query: UPDATE_TAG,
+            variables: { id: 1, name: '更新标签', slug: 'updated-tag' },
+          },
+          result: {
+            data: {
+              updateTag: {
+                __typename: 'BlogTag',
+                id: 1,
+                name: '更新标签',
+                slug: 'updated-tag',
+                createdAt: '2024-01-15T10:00:00Z',
+              },
+            },
+          },
+        },
+        {
+          request: { query: GET_TAGS },
+          result: { data: { tags: [{ ...tagBase, name: '更新标签', slug: 'updated-tag' }] } },
+        },
+      ];
+
+      const { container } = render(<AdminTagsPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('测试标签');
+      });
+
+      // Click the "编辑" button
+      const editBtns = container.querySelectorAll('button');
+      const editBtn = Array.from(editBtns).find((btn) => btn.textContent?.includes('编辑'));
+      expect(editBtn).toBeTruthy();
+      fireEvent.click(editBtn!);
+
+      // Modal renders in a portal (document.body)
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+      });
+
+      // Update form fields in the portal
+      const inputs = document.querySelectorAll('.ant-modal .ant-input');
+      const nameInput = inputs[0] as HTMLInputElement;
+      const slugInput = inputs[1] as HTMLInputElement;
+
+      fireEvent.change(nameInput, { target: { value: '更新标签' } });
+      fireEvent.change(slugInput, { target: { value: 'updated-tag' } });
+
+      // Click the OK button in modal
+      const okBtn = document.querySelector('.ant-modal .ant-btn-primary') as HTMLElement;
+      expect(okBtn).toBeTruthy();
+      fireEvent.click(okBtn);
+
+      await waitFor(() => {
+        expect(message.success).toHaveBeenCalledWith('更新成功');
+      });
+
+      vi.restoreAllMocks();
+    });
+
+    it('should show error message when createTag fails', async () => {
+      vi.spyOn(message, 'error').mockReturnValue({} as ReturnType<typeof message.error>);
+
+      const mocks: MockedResponse[] = [
+        {
+          request: { query: GET_TAGS },
+          result: { data: { tags: [] } },
+        },
+        {
+          request: {
+            query: CREATE_TAG,
+            variables: { name: '新标签', slug: 'new-tag' },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<AdminTagsPage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('新增标签');
+      });
+
+      // Click the "新增标签" button to open the modal
+      const addBtn = container.querySelector('.ant-btn-primary') as HTMLElement;
+      expect(addBtn).toBeTruthy();
+      fireEvent.click(addBtn);
+
+      // Modal renders in a portal (document.body)
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+      });
+
+      // Fill in the form fields in the portal
+      const inputs = document.querySelectorAll('.ant-modal .ant-input');
+      const nameInput = inputs[0] as HTMLInputElement;
+      const slugInput = inputs[1] as HTMLInputElement;
+
+      fireEvent.change(nameInput, { target: { value: '新标签' } });
+      fireEvent.change(slugInput, { target: { value: 'new-tag' } });
+
+      // Click the OK button in modal
+      const okBtn = document.querySelector('.ant-modal .ant-btn-primary') as HTMLElement;
+      expect(okBtn).toBeTruthy();
+      fireEvent.click(okBtn);
+
+      await waitFor(() => {
+        expect(message.error).toHaveBeenCalledWith('操作失败，请重试');
+      });
+
+      vi.restoreAllMocks();
     });
   });
 });

@@ -73,7 +73,7 @@ function GuestbookReplyItem({
           <div style={{ marginTop: 'var(--spacing-sm)' }}>
             <button
               type="button"
-              className="text-gray-400 hover:text-blue-500 bg-transparent border-none cursor-pointer p-0 text-sm transition-colors"
+              className="text-text-tertiary hover:text-primary bg-transparent border-none cursor-pointer p-0 text-sm transition-colors"
               onClick={handleReply}
             >
               回复
@@ -141,7 +141,7 @@ function GuestbookItem({
             <div style={{ marginTop: 'var(--spacing-md)' }}>
               <button
                 type="button"
-                className="text-gray-400 hover:text-blue-500 bg-transparent border-none cursor-pointer p-0 text-sm transition-colors"
+                className="text-text-tertiary hover:text-primary bg-transparent border-none cursor-pointer p-0 text-sm transition-colors"
                 onClick={handleReply}
               >
                 回复

@@ -4,7 +4,7 @@ import { LinkOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Empty, Form, Input, Modal, Row, Spin, Typography } from 'antd';
 import { useState } from 'react';
 
-import { useActiveLinks } from '@/features/blog';
+import { useActiveLinks, useCreateLink } from '@/features/blog';
 import { LazyImage } from '@/shared/ui/LazyImage';
 
 import type { BlogLink } from '@/entities/blog';
@@ -85,27 +85,28 @@ function LinkCard({ link }: { link: BlogLink }) {
  */
 function LinkApplyModal({ visible, onCancel }: { visible: boolean; onCancel: () => void }) {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+  const { createLink, loading } = useCreateLink();
 
   const onSubmit = async () => {
     try {
-      setLoading(true);
-      await form.validateFields();
-      // 模拟提交
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const values = await form.validateFields();
+      await createLink({
+        title: values.title,
+        url: values.url,
+        description: values.description,
+        logo: values.logo,
+      });
       form.resetFields();
       onCancel();
     } catch {
       // 错误已由表单验证处理
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <Modal
       title="友链申请"
-      visible={visible}
+      open={visible}
       onCancel={onCancel}
       footer={null}
     >

@@ -13,6 +13,8 @@ import { BlogPostsResult } from './dto/blog-posts.result';
 import { BlogService } from '@src/modules/blog/blog.service';
 import { BlogQueryService } from '@src/modules/blog/queries/blog.query.service';
 import { BlogUsecase } from '@src/usecases/blog/blog.usecase';
+import { PostStatsDTO, CommentStatsDTO, CategoryStatsDTO, TagStatsDTO, LinkStatsDTO } from './dto/blog-stats.dto';
+import { BlogCommentsResult } from './dto/blog-comments.result';
 import { PostStatus, CommentStatus, LinkStatus } from '@app-types/models/blog/blog.types';
 
 type OrderByType = 'createdAt' | 'viewCount' | 'likeCount';
@@ -63,6 +65,12 @@ export class BlogResolver {
     return post ? this.toPostDTO(post) : null;
   }
 
+  @Query(() => [BlogPostDTO], { description: '查询置顶文章' })
+  async topPosts(): Promise<BlogPostDTO[]> {
+    const posts = await this.blogQueryService.getTopPosts({});
+    return posts.map(this.toPostDTO);
+  }
+
   // ==================== Category Queries ====================
 
   @Query(() => [BlogCategoryDTO], { description: '查询所有分类' })
@@ -83,6 +91,12 @@ export class BlogResolver {
     return category ? this.toCategoryDTO(category) : null;
   }
 
+  @Query(() => [BlogCategoryDTO], { description: '查询分类树' })
+  async categoryTree(): Promise<BlogCategoryDTO[]> {
+    const categories = await this.blogQueryService.getCategoryTree({});
+    return categories.map((c) => this.toCategoryDTO(c));
+  }
+
   // ==================== Tag Queries ====================
 
   @Query(() => [BlogTagDTO], { description: '查询所有标签' })
@@ -97,29 +111,74 @@ export class BlogResolver {
     return tag ? this.toTagDTO(tag) : null;
   }
 
+  @Query(() => [BlogTagDTO], { description: '查询文章标签' })
+  async postTags(@Args('postId', { type: () => Int }) postId: number): Promise<BlogTagDTO[]> {
+    const tags = await this.blogQueryService.getPostTags({ postId });
+    return tags.map(this.toTagDTO);
+  }
+
   // ==================== Comment Queries ====================
 
-  @Query(() => [BlogCommentDTO], { description: '查询评论列表' })
+  @Query(() => BlogCommentsResult, { description: '查询评论列表' })
   async comments(
     @Args('postId', { type: () => Int, nullable: true }) postId?: number,
+    @Args('status', { type: () => CommentStatus, nullable: true }) status?: CommentStatus,
     @Args('page', { type: () => Int, defaultValue: 1 }) page?: number,
     @Args('pageSize', { type: () => Int, defaultValue: 20 }) pageSize?: number,
-  ): Promise<BlogCommentDTO[]> {
+  ): Promise<BlogCommentsResult> {
     const result = await this.blogQueryService.getComments({
       options: {
         postId,
+        status: status ?? CommentStatus.APPROVED,
         page,
         pageSize,
-        status: CommentStatus.APPROVED,
       },
     });
-    return result.items.map(this.toCommentDTO);
+    return {
+      items: result.items.map(this.toCommentDTO),
+      total: result.total,
+      page: page ?? 1,
+      pageSize: pageSize ?? 20,
+    };
+  }
+
+  // ==================== Stats Queries ====================
+
+  @Query(() => PostStatsDTO, { description: '文章统计' })
+  async postStats(): Promise<PostStatsDTO> {
+    return await this.blogQueryService.getPostStats({});
+  }
+
+  @Query(() => CommentStatsDTO, { description: '评论统计' })
+  async commentStats(): Promise<CommentStatsDTO> {
+    return await this.blogQueryService.getCommentStats({});
+  }
+
+  @Query(() => CategoryStatsDTO, { description: '分类统计' })
+  async categoryStats(): Promise<CategoryStatsDTO> {
+    return await this.blogQueryService.getCategoryStats({});
+  }
+
+  @Query(() => TagStatsDTO, { description: '标签统计' })
+  async tagStats(): Promise<TagStatsDTO> {
+    return await this.blogQueryService.getTagStats({});
+  }
+
+  @Query(() => LinkStatsDTO, { description: '友链统计' })
+  async linkStats(): Promise<LinkStatsDTO> {
+    return await this.blogQueryService.getLinkStats({});
   }
 
   // ==================== Link Queries ====================
 
   @Query(() => [BlogLinkDTO], { description: '查询所有友链' })
   async links(): Promise<BlogLinkDTO[]> {
+    const links = await this.blogQueryService.getAllLinks({});
+    return links.map(this.toLinkDTO);
+  }
+
+  @Query(() => [BlogLinkDTO], { description: '查询活跃友链' })
+  async activeLinks(): Promise<BlogLinkDTO[]> {
     const links = await this.blogQueryService.getAllLinks({ status: LinkStatus.ACTIVE });
     return links.map(this.toLinkDTO);
   }
@@ -220,6 +279,21 @@ export class BlogResolver {
     return true;
   }
 
+  @Mutation(() => BlogCommentDTO, { description: '更新评论状态' })
+  async updateCommentStatus(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('status', { type: () => CommentStatus }) status: CommentStatus,
+  ): Promise<BlogCommentDTO> {
+    const comment = await this.blogService.updateCommentStatus({ id, status });
+    return this.toCommentDTO(comment);
+  }
+
+  @Mutation(() => Boolean, { description: '删除评论' })
+  async deleteComment(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+    await this.blogService.deleteComment({ id });
+    return true;
+  }
+
   // ==================== Category Mutations ====================
 
   @Mutation(() => BlogCategoryDTO, { description: '创建分类' })
@@ -231,6 +305,26 @@ export class BlogResolver {
     @Args('sortOrder', { type: () => Int, defaultValue: 0 }) sortOrder?: number,
   ): Promise<BlogCategoryDTO> {
     const category = await this.blogService.createCategory({
+      name,
+      slug,
+      description,
+      parentId,
+      sortOrder,
+    });
+    return this.toCategoryDTO(category);
+  }
+
+  @Mutation(() => BlogCategoryDTO, { description: '更新分类' })
+  async updateCategory(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('name', { nullable: true }) name?: string,
+    @Args('slug', { nullable: true }) slug?: string,
+    @Args('description', { nullable: true }) description?: string,
+    @Args('parentId', { type: () => Int, nullable: true }) parentId?: number,
+    @Args('sortOrder', { type: () => Int, nullable: true }) sortOrder?: number,
+  ): Promise<BlogCategoryDTO> {
+    const category = await this.blogService.updateCategory({
+      id,
       name,
       slug,
       description,
@@ -254,6 +348,16 @@ export class BlogResolver {
     return this.toTagDTO(tag);
   }
 
+  @Mutation(() => BlogTagDTO, { description: '更新标签' })
+  async updateTag(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('name', { nullable: true }) name?: string,
+    @Args('slug', { nullable: true }) slug?: string,
+  ): Promise<BlogTagDTO> {
+    const tag = await this.blogService.updateTag({ id, name, slug });
+    return this.toTagDTO(tag);
+  }
+
   @Mutation(() => Boolean, { description: '删除标签' })
   async deleteTag(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
     await this.blogService.deleteTag({ id });
@@ -271,6 +375,26 @@ export class BlogResolver {
     @Args('sortOrder', { type: () => Int, defaultValue: 0 }) sortOrder?: number,
   ): Promise<BlogLinkDTO> {
     const link = await this.blogService.createLink({
+      title,
+      url,
+      description,
+      logo,
+      sortOrder,
+    });
+    return this.toLinkDTO(link);
+  }
+
+  @Mutation(() => BlogLinkDTO, { description: '更新友链' })
+  async updateLink(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('title', { nullable: true }) title?: string,
+    @Args('url', { nullable: true }) url?: string,
+    @Args('description', { nullable: true }) description?: string,
+    @Args('logo', { nullable: true }) logo?: string,
+    @Args('sortOrder', { type: () => Int, nullable: true }) sortOrder?: number,
+  ): Promise<BlogLinkDTO> {
+    const link = await this.blogService.updateLink({
+      id,
       title,
       url,
       description,

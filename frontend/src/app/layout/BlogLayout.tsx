@@ -1,15 +1,12 @@
 // src/app/layout/BlogLayout.tsx
 
-import { type ReactNode,useEffect, useState } from 'react';
-import { MenuOutlined } from '@ant-design/icons';
-import { Button,Drawer, Layout } from 'antd';
-import { Link, Outlet, useLocation } from 'react-router';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { HomeOutlined, MenuOutlined, MoonOutlined, SunOutlined } from '@ant-design/icons';
+import { Button, Drawer, Segmented, Tabs, Tooltip } from 'antd';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 
-const { Header, Content, Footer } = Layout;
-
-type BlogLayoutProps = {
-  children?: ReactNode;
-};
+import { FONT_SCALE_OPTIONS, useTheme } from '@/app/providers';
+import { APP_THEME_CSS_VAR_KEY } from '@/app/theme';
 
 const navItems = [
   { label: '首页', path: '/blog' },
@@ -19,14 +16,26 @@ const navItems = [
   { label: '关于', path: '/blog/about' },
 ];
 
+type BlogLayoutProps = {
+  children?: ReactNode;
+};
+
 export function BlogLayout({ children }: BlogLayoutProps = {}) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { fontScale, isDark, setFontScale, setIsDark } = useTheme();
 
-  // 响应式通过 Tailwind CSS 类处理，此处保留空 effect 作为扩展点
+  const navigationTabs = useMemo(
+    () => navItems.map((item) => ({ key: item.path, label: item.label })),
+    [],
+  );
+
+  const activeKey = navItems.find((item) => item.path === location.pathname)?.path ?? location.pathname;
+
   useEffect(() => {
     const handleResize = () => {
-      // 响应式通过 Tailwind CSS 类处理
+      // 响应式通过 CSS 处理
     };
 
     window.addEventListener('resize', handleResize);
@@ -34,81 +43,97 @@ export function BlogLayout({ children }: BlogLayoutProps = {}) {
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <Layout>
-        <Header>
-          <div className="bg-white border-b">
-            <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
-              <Link to="/blog" className="text-xl font-bold text-gray-900 hover:text-gray-700">
-                AIGC Blog
-              </Link>
+    <div className={`app-shell ${APP_THEME_CSS_VAR_KEY}`}>
+      <header className="app-header">
+        <div className="flex min-w-0 items-center gap-2">
+          <Tooltip title="返回工作台">
+            <Link to="/">
+              <Button type="text" icon={<HomeOutlined />} shape="circle" />
+            </Link>
+          </Tooltip>
+          <Link to="/blog" className="brand-title">
+            AIGC Blog
+          </Link>
+        </div>
 
-              {/* 桌面端导航 */}
-              <nav className="hidden md:flex gap-6">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`${
-                      location.pathname === item.path
-                        ? 'text-gray-900 font-medium'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
+        <nav aria-label="博客导航" className="app-nav">
+          <Tabs
+            activeKey={activeKey}
+            items={navigationTabs}
+            onChange={(path) => navigate(path)}
+            size="small"
+            tabBarGutter={32}
+          />
+        </nav>
 
-              {/* 移动端菜单按钮 */}
-              <div className="md:hidden">
+        <div className="app-header-actions">
+          <div className="app-appearance-controls">
+            <div className="app-font-scale-control">
+              <Segmented
+                onChange={(value) => {
+                  if (value === 'compact' || value === 'standard' || value === 'comfortable') {
+                    setFontScale(value);
+                  }
+                }}
+                options={FONT_SCALE_OPTIONS}
+                size="small"
+                value={fontScale}
+              />
+            </div>
+            <Tooltip title={isDark ? '切换浅色模式' : '切换深色模式'}>
+              <span className="app-color-scheme-control">
                 <Button
-                  icon={<MenuOutlined />}
-                  onClick={() => setIsDrawerOpen(true)}
+                  aria-label={isDark ? '切换浅色模式' : '切换深色模式'}
+                  icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+                  shape="circle"
+                  type="text"
+                  onClick={() => setIsDark((previousValue) => !previousValue)}
                 />
-              </div>
-            </div>
+              </span>
+            </Tooltip>
           </div>
-        </Header>
 
-        {/* 移动端抽屉导航 */}
-        <Drawer
-          placement="right"
-          onClose={() => setIsDrawerOpen(false)}
-          open={isDrawerOpen}
-        >
-          <div className="md:hidden" style={{ padding: 16 }}>
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsDrawerOpen(false)}
-                className={`block py-3 px-4 rounded-lg mb-2 ${
-                  location.pathname === item.path
-                    ? 'bg-blue-50 text-blue-600 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          {/* 移动端菜单按钮 */}
+          <div className="blog-mobile-menu-btn">
+            <Button
+              icon={<MenuOutlined />}
+              onClick={() => setIsDrawerOpen(true)}
+            />
           </div>
-        </Drawer>
+        </div>
+      </header>
 
-        <Content>
-          <div className="max-w-6xl mx-auto w-full py-8 px-4">
-            {children ?? <Outlet />}
-          </div>
-        </Content>
+      {/* 移动端抽屉导航 */}
+      <Drawer
+        placement="right"
+        onClose={() => setIsDrawerOpen(false)}
+        open={isDrawerOpen}
+      >
+        <div style={{ padding: 16 }}>
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsDrawerOpen(false)}
+              className={`block py-3 px-4 rounded-lg mb-2 ${
+                location.pathname === item.path
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-text-secondary hover:bg-fill-secondary'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </Drawer>
 
-        <Footer>
-          <div className="bg-gray-50 border-t py-6">
-            <div className="max-w-6xl mx-auto text-center text-gray-500">
-              © 2024 AIGC Blog. All rights reserved.
-            </div>
-          </div>
-        </Footer>
-      </Layout>
+      <main className="app-main">{children ?? <Outlet />}</main>
+
+      <footer className="blog-footer">
+        <div className="blog-footer-inner">
+          © {new Date().getFullYear()} AIGC Blog. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }

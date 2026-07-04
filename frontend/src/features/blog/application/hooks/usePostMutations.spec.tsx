@@ -235,10 +235,7 @@ describe('usePublishPost', () => {
           },
           result: {
             data: {
-              publishPost: {
-                id: mockPost.id,
-                status: PostStatus.PUBLISHED,
-              },
+              publishPost: true,
             },
           },
         },
@@ -250,14 +247,11 @@ describe('usePublishPost', () => {
         ),
       });
 
-      const published = await result.current.publishPost(mockPost.id);
+      await result.current.publishPost(mockPost.id);
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
-
-      expect(published?.id).toBe(mockPost.id);
-      expect(published?.status).toBe(PostStatus.PUBLISHED);
     });
   });
 });
@@ -273,10 +267,7 @@ describe('useUnpublishPost', () => {
           },
           result: {
             data: {
-              unpublishPost: {
-                id: mockPost.id,
-                status: PostStatus.DRAFT,
-              },
+              unpublishPost: true,
             },
           },
         },
@@ -288,14 +279,11 @@ describe('useUnpublishPost', () => {
         ),
       });
 
-      const unpublished = await result.current.unpublishPost(mockPost.id);
+      await result.current.unpublishPost(mockPost.id);
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
-
-      expect(unpublished?.id).toBe(mockPost.id);
-      expect(unpublished?.status).toBe(PostStatus.DRAFT);
     });
   });
 });

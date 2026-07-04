@@ -398,6 +398,71 @@ describe('BlogQueryService', () => {
     });
   });
 
+  describe('getPostStats', () => {
+    it('should return total, published, and draft counts', async () => {
+      jest.spyOn(postRepository, 'count').mockResolvedValueOnce(20) // total
+        .mockResolvedValueOnce(15) // published
+        .mockResolvedValueOnce(5); // draft
+
+      const result = await service.getPostStats({});
+
+      expect(result.total).toBe(20);
+      expect(result.published).toBe(15);
+      expect(result.draft).toBe(5);
+      expect(postRepository.count).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('getCommentStats', () => {
+    it('should return total, pending, approved, and rejected counts', async () => {
+      jest.spyOn(commentRepository, 'count').mockResolvedValueOnce(50) // total
+        .mockResolvedValueOnce(10) // pending
+        .mockResolvedValueOnce(35) // approved
+        .mockResolvedValueOnce(5); // rejected
+
+      const result = await service.getCommentStats({});
+
+      expect(result.total).toBe(50);
+      expect(result.pending).toBe(10);
+      expect(result.approved).toBe(35);
+      expect(result.rejected).toBe(5);
+      expect(commentRepository.count).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  describe('getCategoryStats', () => {
+    it('should return total count', async () => {
+      jest.spyOn(categoryRepository, 'count').mockResolvedValue(8);
+
+      const result = await service.getCategoryStats({});
+
+      expect(result.total).toBe(8);
+      expect(categoryRepository.count).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getTagStats', () => {
+    it('should return total count', async () => {
+      jest.spyOn(tagRepository, 'count').mockResolvedValue(12);
+
+      const result = await service.getTagStats({});
+
+      expect(result.total).toBe(12);
+      expect(tagRepository.count).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getLinkStats', () => {
+    it('should return total count', async () => {
+      jest.spyOn(linkRepository, 'count').mockResolvedValue(5);
+
+      const result = await service.getLinkStats({});
+
+      expect(result.total).toBe(5);
+      expect(linkRepository.count).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('getAllLinks', () => {
     it('should return active links sorted', async () => {
       const mockLinks: Partial<BlogLinkEntity>[] = [

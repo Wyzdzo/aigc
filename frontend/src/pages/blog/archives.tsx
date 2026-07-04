@@ -196,7 +196,7 @@ export function ArchivesPage() {
                       {/* 文章标题 */}
                       <Link
                         to={`/blog/${post.slug}`}
-                        className="flex-1 text-gray-800 no-underline min-w-[120px]"
+                        className="flex-1 text-text no-underline min-w-[120px]"
                       >
                         <Text strong>{post.title}</Text>
                       </Link>

@@ -7,6 +7,8 @@ import { BlogLinkDTO } from './blog-link.dto';
 import { BlogPostDTO } from './blog-post.dto';
 import { BlogPostsArgs } from './blog-posts.args';
 import { BlogPostsResult } from './blog-posts.result';
+import { BlogCommentsResult } from './blog-comments.result';
+import { PostStatsDTO, CommentStatsDTO, CategoryStatsDTO, TagStatsDTO, LinkStatsDTO } from './blog-stats.dto';
 import { BlogTagDTO } from './blog-tag.dto';
 import { CreateBlogCommentInput } from './create-blog-comment.input';
 import { CreateBlogPostInput } from './create-blog-post.input';
@@ -289,6 +291,112 @@ describe('Blog GraphQL DTOs', () => {
       result.pageSize = 10;
       expect(result.items.length).toBe(2);
       expect(result.total).toBe(100);
+    });
+  });
+
+  describe('BlogCommentsResult', () => {
+    it('should have all pagination result fields', () => {
+      const result = new BlogCommentsResult();
+      expect(result).toHaveProperty('items');
+      expect(result).toHaveProperty('total');
+      expect(result).toHaveProperty('page');
+      expect(result).toHaveProperty('pageSize');
+    });
+
+    it('should accept valid result data', () => {
+      const result = new BlogCommentsResult();
+      const comment1 = new BlogCommentDTO();
+      comment1.id = 1;
+      comment1.content = 'Comment 1';
+      const comment2 = new BlogCommentDTO();
+      comment2.id = 2;
+      comment2.content = 'Comment 2';
+      result.items = [comment1, comment2];
+      result.total = 50;
+      result.page = 1;
+      result.pageSize = 20;
+      expect(result.items.length).toBe(2);
+      expect(result.total).toBe(50);
+    });
+  });
+
+  describe('PostStatsDTO', () => {
+    it('should have total, published, and draft fields', () => {
+      const dto = new PostStatsDTO();
+      expect(dto).toHaveProperty('total');
+      expect(dto).toHaveProperty('published');
+      expect(dto).toHaveProperty('draft');
+    });
+
+    it('should accept valid stats data', () => {
+      const dto = new PostStatsDTO();
+      dto.total = 20;
+      dto.published = 15;
+      dto.draft = 5;
+      expect(dto.total).toBe(20);
+      expect(dto.published).toBe(15);
+      expect(dto.draft).toBe(5);
+    });
+  });
+
+  describe('CommentStatsDTO', () => {
+    it('should have total, pending, approved, and rejected fields', () => {
+      const dto = new CommentStatsDTO();
+      expect(dto).toHaveProperty('total');
+      expect(dto).toHaveProperty('pending');
+      expect(dto).toHaveProperty('approved');
+      expect(dto).toHaveProperty('rejected');
+    });
+
+    it('should accept valid stats data', () => {
+      const dto = new CommentStatsDTO();
+      dto.total = 50;
+      dto.pending = 10;
+      dto.approved = 35;
+      dto.rejected = 5;
+      expect(dto.total).toBe(50);
+      expect(dto.pending).toBe(10);
+      expect(dto.approved).toBe(35);
+      expect(dto.rejected).toBe(5);
+    });
+  });
+
+  describe('CategoryStatsDTO', () => {
+    it('should have total field', () => {
+      const dto = new CategoryStatsDTO();
+      expect(dto).toHaveProperty('total');
+    });
+
+    it('should accept valid stats data', () => {
+      const dto = new CategoryStatsDTO();
+      dto.total = 8;
+      expect(dto.total).toBe(8);
+    });
+  });
+
+  describe('TagStatsDTO', () => {
+    it('should have total field', () => {
+      const dto = new TagStatsDTO();
+      expect(dto).toHaveProperty('total');
+    });
+
+    it('should accept valid stats data', () => {
+      const dto = new TagStatsDTO();
+      dto.total = 12;
+      expect(dto.total).toBe(12);
+    });
+  });
+
+  describe('LinkStatsDTO', () => {
+    it('should have total field', () => {
+      const dto = new LinkStatsDTO();
+      expect(dto).toHaveProperty('total');
+    });
+
+    it('should accept valid stats data', () => {
+      const dto = new LinkStatsDTO();
+      dto.total = 5;
+      expect(dto.total).toBe(5);
     });
   });
 });

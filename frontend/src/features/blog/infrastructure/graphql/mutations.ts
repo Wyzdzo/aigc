@@ -61,21 +61,7 @@ export const DELETE_POST = gql`
  */
 export const PUBLISH_POST = gql`
   mutation PublishPost($id: Int!) {
-    publishPost(id: $id) {
-      id
-      title
-      slug
-      content
-      summary
-      coverImage
-      status
-      isTop
-      viewCount
-      likeCount
-      categoryId
-      createdAt
-      updatedAt
-    }
+    publishPost(id: $id)
   }
 `;
 
@@ -84,21 +70,7 @@ export const PUBLISH_POST = gql`
  */
 export const UNPUBLISH_POST = gql`
   mutation UnpublishPost($id: Int!) {
-    unpublishPost(id: $id) {
-      id
-      title
-      slug
-      content
-      summary
-      coverImage
-      status
-      isTop
-      viewCount
-      likeCount
-      categoryId
-      createdAt
-      updatedAt
-    }
+    unpublishPost(id: $id)
   }
 `;
 
@@ -130,21 +102,7 @@ export const VIEW_POST = gql`
  */
 export const LIKE_POST = gql`
   mutation LikePost($id: Int!) {
-    likePost(id: $id) {
-      id
-      title
-      slug
-      content
-      summary
-      coverImage
-      status
-      isTop
-      viewCount
-      likeCount
-      categoryId
-      createdAt
-      updatedAt
-    }
+    likePost(id: $id)
   }
 `;
 
@@ -174,19 +132,7 @@ export const CREATE_COMMENT = gql`
  */
 export const LIKE_COMMENT = gql`
   mutation LikeComment($id: Int!) {
-    likeComment(id: $id) {
-      id
-      postId
-      parentId
-      nickname
-      email
-      avatar
-      content
-      status
-      likeCount
-      createdAt
-      updatedAt
-    }
+    likeComment(id: $id)
   }
 `;
 
@@ -194,8 +140,26 @@ export const LIKE_COMMENT = gql`
  * 创建分类
  */
 export const CREATE_CATEGORY = gql`
-  mutation CreateCategory($input: CreateCategoryInput!) {
-    createCategory(input: $input) {
+  mutation CreateCategory($name: String!, $slug: String!, $description: String, $parentId: Int, $sortOrder: Int) {
+    createCategory(name: $name, slug: $slug, description: $description, parentId: $parentId, sortOrder: $sortOrder) {
+      id
+      name
+      slug
+      description
+      parentId
+      sortOrder
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * 更新分类
+ */
+export const UPDATE_CATEGORY = gql`
+  mutation UpdateCategory($id: Int!, $name: String, $slug: String, $description: String, $parentId: Int, $sortOrder: Int) {
+    updateCategory(id: $id, name: $name, slug: $slug, description: $description, parentId: $parentId, sortOrder: $sortOrder) {
       id
       name
       slug
@@ -221,8 +185,22 @@ export const DELETE_CATEGORY = gql`
  * 创建标签
  */
 export const CREATE_TAG = gql`
-  mutation CreateTag($input: CreateTagInput!) {
-    createTag(input: $input) {
+  mutation CreateTag($name: String!, $slug: String!) {
+    createTag(name: $name, slug: $slug) {
+      id
+      name
+      slug
+      createdAt
+    }
+  }
+`;
+
+/**
+ * 更新标签
+ */
+export const UPDATE_TAG = gql`
+  mutation UpdateTag($id: Int!, $name: String, $slug: String) {
+    updateTag(id: $id, name: $name, slug: $slug) {
       id
       name
       slug
@@ -274,8 +252,27 @@ export const DELETE_COMMENT = gql`
  * 创建友链
  */
 export const CREATE_LINK = gql`
-  mutation CreateLink($input: CreateLinkInput!) {
-    createLink(input: $input) {
+  mutation CreateLink($title: String!, $url: String!, $description: String, $logo: String, $sortOrder: Int) {
+    createLink(title: $title, url: $url, description: $description, logo: $logo, sortOrder: $sortOrder) {
+      id
+      title
+      url
+      description
+      logo
+      status
+      sortOrder
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+/**
+ * 更新友链
+ */
+export const UPDATE_LINK = gql`
+  mutation UpdateLink($id: Int!, $title: String, $url: String, $description: String, $logo: String, $sortOrder: Int) {
+    updateLink(id: $id, title: $title, url: $url, description: $description, logo: $logo, sortOrder: $sortOrder) {
       id
       title
       url

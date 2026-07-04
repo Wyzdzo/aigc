@@ -22,7 +22,7 @@ export function BlogTagsPage() {
         {tags.map((tag: BlogTag) => (
           <span
             key={tag.id}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-fill-tertiary text-text rounded-full hover:bg-fill-secondary transition-colors cursor-pointer"
           >
             {tag.name}
           </span>

@@ -122,7 +122,7 @@ export const GET_POST_TAGS = gql`
  */
 export const GET_COMMENTS = gql`
   ${COMMENT_BASIC_FRAGMENT}
-  query GetComments($postId: Int!, $status: CommentStatus, $page: Int, $pageSize: Int) {
+  query GetComments($postId: Int, $status: CommentStatus, $page: Int, $pageSize: Int) {
     comments(postId: $postId, status: $status, page: $page, pageSize: $pageSize) {
       items {
         ...CommentBasic

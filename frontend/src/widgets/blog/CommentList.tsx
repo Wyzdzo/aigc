@@ -72,7 +72,7 @@ function CommentItem({
             <div style={{ marginTop: 8 }}>
               <button
                 type="button"
-                className="text-gray-400 hover:text-blue-500 bg-transparent border-none cursor-pointer p-0 text-sm"
+                className="text-text-tertiary hover:text-primary bg-transparent border-none cursor-pointer p-0 text-sm"
                 onClick={handleReply}
               >
                 回复

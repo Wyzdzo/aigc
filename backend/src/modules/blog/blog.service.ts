@@ -236,6 +236,28 @@ export class BlogService {
     return await repository.save(tag);
   }
 
+  async updateTag(params: {
+    id: number;
+    name?: string;
+    slug?: string;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<BlogTagEntity> {
+    const { id, transactionContext, ...updateData } = params;
+    const repository = this.getTagRepository(transactionContext);
+
+    const existing = await repository.findOne({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Tag with id ${id} not found`);
+    }
+
+    await repository.update(id, { ...updateData });
+    const updated = await repository.findOne({ where: { id } });
+    if (!updated) {
+      throw new NotFoundException(`Tag with id ${id} not found after update`);
+    }
+    return updated;
+  }
+
   async deleteTag(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;

@@ -2,13 +2,18 @@
 
 import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { render, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { GET_ACTIVE_LINKS } from '@/features/blog/infrastructure/graphql/queries';
+import { CREATE_LINK } from '@/features/blog/infrastructure/graphql/mutations';
 
 import { BlogLinksPage } from './links';
+
+afterEach(() => {
+  cleanup();
+});
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
@@ -170,6 +175,75 @@ describe('BlogLinksPage', () => {
     it('should show loading state initially', () => {
       const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(successMocks) });
       expect(container.querySelector('.ant-spin')).not.toBeNull();
+    });
+  });
+
+  describe('LinkApplyModal', () => {
+    it('should render modal with form fields and call createLink mutation on submission', async () => {
+      const createLinkMocks: MockedResponse[] = [
+        {
+          request: { query: GET_ACTIVE_LINKS },
+          result: {
+            data: {
+              activeLinks: [],
+            },
+          },
+        },
+        {
+          request: {
+            query: CREATE_LINK,
+            variables: {
+              title: 'Test Site',
+              url: 'https://test.com',
+              description: 'A test site',
+              logo: undefined,
+            },
+          },
+          result: {
+            data: {
+              createLink: {
+                __typename: 'BlogLink',
+                id: 3,
+                title: 'Test Site',
+                url: 'https://test.com',
+                description: 'A test site',
+                logo: null,
+                status: 'PENDING',
+                sortOrder: 0,
+                createdAt: '2024-01-20T10:00:00Z',
+                updatedAt: '2024-01-20T10:00:00Z',
+              },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<BlogLinksPage />, { wrapper: createWrapper(createLinkMocks) });
+
+      await waitFor(() => {
+        expect(container.textContent).toContain('申请友链');
+      });
+
+      // Click the "申请友链" button to open the modal
+      const applyBtn = Array.from(container.querySelectorAll('button')).find(
+        (btn) => btn.textContent?.includes('申请友链')
+      );
+      expect(applyBtn).toBeTruthy();
+      fireEvent.click(applyBtn!);
+
+      // Modal renders in a portal (document.body)
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+        expect(document.querySelector('.ant-modal')?.textContent).toContain('友链申请');
+      });
+
+      // Verify the modal contains the form fields
+      const modalEl = document.querySelector('.ant-modal');
+      expect(modalEl?.textContent).toContain('网站名称');
+      expect(modalEl?.textContent).toContain('网站地址');
+      expect(modalEl?.textContent).toContain('网站描述');
+      expect(modalEl?.textContent).toContain('联系邮箱');
+      expect(modalEl?.textContent).toContain('提交申请');
     });
   });
 });

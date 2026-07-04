@@ -22,8 +22,10 @@ import {
 } from '@ant-design/icons';
 
 import {
-  useTags,
+  useCreateTag,
   useDeleteTag,
+  useTags,
+  useUpdateTag,
 } from '@/features/blog';
 import type { BlogTag } from '@/entities/blog';
 
@@ -33,6 +35,8 @@ export function AdminTagsPage() {
   const [form] = Form.useForm();
 
   const { tags, loading, refetch } = useTags();
+  const { createTag, loading: creating } = useCreateTag();
+  const { updateTag, loading: updating } = useUpdateTag();
   const { deleteTag, loading: deleting } = useDeleteTag();
 
   const handleAdd = () => {
@@ -61,11 +65,20 @@ export function AdminTagsPage() {
   };
 
   const handleOk = () => {
-    form.validateFields().then(async () => {
+    form.validateFields().then(async (values) => {
       try {
         if (editingTag) {
+          await updateTag({
+            id: editingTag.id,
+            name: values.name,
+            slug: values.slug,
+          });
           message.success('更新成功');
         } else {
+          await createTag({
+            name: values.name,
+            slug: values.slug,
+          });
           message.success('创建成功');
         }
         setIsModalVisible(false);
@@ -186,7 +199,7 @@ export function AdminTagsPage() {
 
       <Modal
         title={editingTag ? '编辑标签' : '新增标签'}
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         width={450}

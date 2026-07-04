@@ -2,20 +2,15 @@
 import { useMutation } from '@apollo/client/react';
 
 import { UNPUBLISH_POST } from '../../infrastructure/graphql/mutations';
-
-export interface UnpublishPostResult {
-  unpublishPost: {
-    id: number;
-    status: string;
-  };
-}
+import { GET_POSTS } from '../../infrastructure/graphql/queries';
 
 export function useUnpublishPost() {
-  const [mutate, { loading }] = useMutation<UnpublishPostResult>(UNPUBLISH_POST);
+  const [mutate, { loading }] = useMutation(UNPUBLISH_POST, {
+    refetchQueries: [{ query: GET_POSTS }],
+  });
 
   const unpublishPost = async (id: number) => {
-    const result = await mutate({ variables: { id } });
-    return result.data?.unpublishPost;
+    await mutate({ variables: { id } });
   };
 
   return { unpublishPost, loading };

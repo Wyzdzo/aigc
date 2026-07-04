@@ -99,7 +99,7 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
           <Paragraph type="secondary" ellipsis={{ rows: 2 }}>
             {post.summary}
           </Paragraph>
-          <div className="text-gray-400">
+          <div className="text-text-tertiary">
             <Space size="middle">
               <span>
                 <EyeOutlined /> {post.viewCount}
@@ -141,7 +141,7 @@ function PostListItem({
           <button
             type="button"
             key="likes"
-            className="flex items-center gap-1 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none p-0"
+            className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -222,7 +222,7 @@ function SidebarContent({
         styles={{ body: { padding: 16 } }}
       >
         <Link to="/blog/archives" style={{ display: 'block', textAlign: 'center' }}>
-          <CalendarOutlined className="text-2xl text-blue-500 mb-2" />
+          <CalendarOutlined className="text-2xl text-primary mb-2" />
           <Title level={5} style={{ marginBottom: 0 }}>时间归档</Title>
         </Link>
       </Card>
@@ -345,7 +345,7 @@ export function BlogHomePage() {
 
       {/* 移动端筛选按钮 */}
       {isMobile && (
-        <div className="sticky-z bg-white py-3 border-b">
+        <div className="sticky-z bg-bg-container py-3 border-b border-border">
           <div style={{ maxWidth: '100%', margin: '0 auto', padding: '0 16px', display: 'flex', gap: 12 }}>
             <Button
               type="primary"
@@ -411,7 +411,7 @@ export function BlogHomePage() {
             />
             {hasFilters && !loading && (
               <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="text-gray-400">
+                <span className="text-text-tertiary">
                   {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
                 </span>
                 <Tag

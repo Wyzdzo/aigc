@@ -8,6 +8,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { GET_COMMENTS, GET_POST_BY_SLUG, LIKE_POST } from '@/features/blog';
+import { VIEW_POST } from '@/features/blog/infrastructure/graphql/mutations';
 
 import { CommentStatus } from '@/entities/blog';
 
@@ -417,6 +418,43 @@ describe('BlogDetailPage', () => {
 
       await waitFor(() => {
         expect(container.querySelector('.ant-tag')).toBeNull();
+      });
+    });
+  });
+
+  describe('View Post', () => {
+    it('should call viewPost when post is loaded', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_POST_BY_SLUG,
+            variables: { slug: 'react-18-new-features' },
+          },
+          result: {
+            data: { postBySlug: mockPostWithToc },
+          },
+        },
+        {
+          request: {
+            query: VIEW_POST,
+            variables: { id: mockPostWithToc.id },
+          },
+          result: {
+            data: {
+              viewPost: {
+                ...mockPostWithToc,
+                viewCount: mockPostWithToc.viewCount + 1,
+              },
+            },
+          },
+        },
+      ];
+
+      render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
+
+      // Wait for the post to load and viewPost mutation to be called
+      await waitFor(() => {
+        expect(screen.getAllByText('React 18 新特性详解').length).toBeGreaterThan(0);
       });
     });
   });

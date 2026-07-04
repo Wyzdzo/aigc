@@ -782,6 +782,34 @@ body {
   color: color-mix(in srgb, var(--ant-color-text-light-solid) 72%, transparent);
 }
 
+/* ── Blog layout ── */
+
+.blog-footer {
+  background: var(--ant-color-bg-container);
+  border-top: 1px solid var(--ant-color-border-secondary);
+  margin-top: 40px;
+  padding: 24px 0;
+}
+
+.blog-footer-inner {
+  color: var(--ant-color-text-tertiary);
+  font-size: 13px;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.blog-mobile-menu-btn {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .blog-mobile-menu-btn {
+    display: inline-flex;
+  }
+}
+
 @media (max-width: 760px) {
   .app-header {
     align-items: stretch;

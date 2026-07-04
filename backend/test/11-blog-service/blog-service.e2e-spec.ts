@@ -408,6 +408,38 @@ describe('Blog Service E2E', () => {
       expect(response.body.data.categories.length).toBe(2);
     });
 
+    it('should update a category', async () => {
+      const categoryRepo = dataSource.getRepository(BlogCategoryEntity);
+      const saved = await categoryRepo.save({
+        name: 'Original Cat',
+        slug: 'original-cat-e2e',
+        description: 'Old desc',
+        sortOrder: 0,
+      });
+
+      const updateMutation = `
+        mutation {
+          updateCategory(id: ${saved.id}, name: "Updated Cat", description: "New desc", sortOrder: 5) {
+            id
+            name
+            slug
+            description
+            sortOrder
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: updateMutation })
+        .expect(200);
+
+      expect(response.body.data.updateCategory.name).toBe('Updated Cat');
+      expect(response.body.data.updateCategory.slug).toBe('original-cat-e2e');
+      expect(response.body.data.updateCategory.description).toBe('New desc');
+      expect(response.body.data.updateCategory.sortOrder).toBe(5);
+    });
+
     it('should delete a category', async () => {
       const categoryRepo = dataSource.getRepository(BlogCategoryEntity);
       const saved = await categoryRepo.save({ name: 'Delete Cat', slug: 'delete-cat-e2e' });
@@ -470,6 +502,29 @@ describe('Blog Service E2E', () => {
         .expect(200);
 
       expect(response.body.data.tags.length).toBe(2);
+    });
+
+    it('should update a tag', async () => {
+      const tagRepo = dataSource.getRepository(BlogTagEntity);
+      const saved = await tagRepo.save({ name: 'Original Tag', slug: 'original-tag-e2e' });
+
+      const updateMutation = `
+        mutation {
+          updateTag(id: ${saved.id}, name: "Updated Tag") {
+            id
+            name
+            slug
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: updateMutation })
+        .expect(200);
+
+      expect(response.body.data.updateTag.name).toBe('Updated Tag');
+      expect(response.body.data.updateTag.slug).toBe('original-tag-e2e');
     });
 
     it('should delete a tag', async () => {
@@ -775,6 +830,115 @@ describe('Blog Service E2E', () => {
       expect(response.body.data.createComment.nickname).toBe('Anonymous');
       expect(response.body.data.createComment.email).toBeNull();
     });
+
+    it('should update comment status to APPROVED', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Post for Status Update',
+        slug: 'post-status-update-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+
+      const savedComment = await commentRepo.save({
+        postId: savedPost.id,
+        nickname: 'User',
+        content: 'Pending comment',
+        status: CommentStatus.PENDING,
+        likeCount: 0,
+      });
+
+      const updateMutation = `
+        mutation {
+          updateCommentStatus(id: ${savedComment.id}, status: APPROVED) {
+            id
+            status
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: updateMutation })
+        .expect(200);
+
+      expect(response.body.data.updateCommentStatus.id).toBe(savedComment.id);
+      expect(response.body.data.updateCommentStatus.status).toBe('APPROVED');
+    });
+
+    it('should update comment status to REJECTED', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Post for Reject',
+        slug: 'post-reject-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+
+      const savedComment = await commentRepo.save({
+        postId: savedPost.id,
+        nickname: 'Spammer',
+        content: 'Spam comment',
+        status: CommentStatus.PENDING,
+        likeCount: 0,
+      });
+
+      const updateMutation = `
+        mutation {
+          updateCommentStatus(id: ${savedComment.id}, status: REJECTED) {
+            id
+            status
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: updateMutation })
+        .expect(200);
+
+      expect(response.body.data.updateCommentStatus.status).toBe('REJECTED');
+    });
+
+    it('should delete a comment', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Post for Delete Comment',
+        slug: 'post-delete-comment-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+
+      const savedComment = await commentRepo.save({
+        postId: savedPost.id,
+        nickname: 'User',
+        content: 'Comment to delete',
+        status: CommentStatus.PENDING,
+        likeCount: 0,
+      });
+
+      const deleteMutation = `
+        mutation {
+          deleteComment(id: ${savedComment.id})
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: deleteMutation })
+        .expect(200);
+
+      expect(response.body.data.deleteComment).toBe(true);
+
+      const found = await commentRepo.findOne({ where: { id: savedComment.id } });
+      expect(found).toBeNull();
+    });
   });
 
   describe('Link Operations', () => {
@@ -821,6 +985,37 @@ describe('Blog Service E2E', () => {
         .expect(200);
 
       expect(response.body.data.links.length).toBe(2);
+    });
+
+    it('should update a link', async () => {
+      const linkRepo = dataSource.getRepository(BlogLinkEntity);
+      const saved = await linkRepo.save({
+        title: 'Original Link',
+        url: 'https://original.com',
+        status: LinkStatus.ACTIVE,
+      });
+
+      const updateMutation = `
+        mutation {
+          updateLink(id: ${saved.id}, title: "Updated Link", description: "New description", sortOrder: 10) {
+            id
+            title
+            url
+            description
+            sortOrder
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: updateMutation })
+        .expect(200);
+
+      expect(response.body.data.updateLink.title).toBe('Updated Link');
+      expect(response.body.data.updateLink.url).toBe('https://original.com');
+      expect(response.body.data.updateLink.description).toBe('New description');
+      expect(response.body.data.updateLink.sortOrder).toBe(10);
     });
 
     it('should delete a link', async () => {
@@ -978,6 +1173,215 @@ describe('Blog Service E2E', () => {
         .expect(200);
 
       expect(response.body.data.posts.total).toBe(3);
+    });
+  });
+
+  describe('Stats Queries', () => {
+    it('should return postStats with correct structure', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+      await postRepo.save({
+        title: 'Published Stat Post',
+        slug: 'published-stat-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+      await postRepo.save({
+        title: 'Draft Stat Post',
+        slug: 'draft-stat-e2e',
+        content: 'Content',
+        status: PostStatus.DRAFT,
+      });
+
+      const query = `
+        query {
+          postStats {
+            total
+            published
+            draft
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      const stats = response.body.data.postStats;
+      expect(stats).toBeDefined();
+      expect(typeof stats.total).toBe('number');
+      expect(typeof stats.published).toBe('number');
+      expect(typeof stats.draft).toBe('number');
+      expect(stats.total).toBeGreaterThanOrEqual(2);
+      expect(stats.published).toBeGreaterThanOrEqual(1);
+      expect(stats.draft).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return commentStats with correct structure', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      const savedPost = await postRepo.save({
+        title: 'Post for Comment Stats',
+        slug: 'post-comment-stats-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+      });
+      await commentRepo.save({
+        postId: savedPost.id,
+        nickname: 'User 1',
+        content: 'Approved comment',
+        status: CommentStatus.APPROVED,
+      });
+      await commentRepo.save({
+        postId: savedPost.id,
+        nickname: 'User 2',
+        content: 'Pending comment',
+        status: CommentStatus.PENDING,
+      });
+      await commentRepo.save({
+        postId: savedPost.id,
+        nickname: 'User 3',
+        content: 'Rejected comment',
+        status: CommentStatus.REJECTED,
+      });
+
+      const query = `
+        query {
+          commentStats {
+            total
+            pending
+            approved
+            rejected
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      const stats = response.body.data.commentStats;
+      expect(stats).toBeDefined();
+      expect(typeof stats.total).toBe('number');
+      expect(typeof stats.pending).toBe('number');
+      expect(typeof stats.approved).toBe('number');
+      expect(typeof stats.rejected).toBe('number');
+      expect(stats.total).toBeGreaterThanOrEqual(3);
+      expect(stats.pending).toBeGreaterThanOrEqual(1);
+      expect(stats.approved).toBeGreaterThanOrEqual(1);
+      expect(stats.rejected).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return categoryStats with correct structure', async () => {
+      const categoryRepo = dataSource.getRepository(BlogCategoryEntity);
+      await categoryRepo.save({ name: 'Stats Cat 1', slug: 'stats-cat-1-e2e' });
+      await categoryRepo.save({ name: 'Stats Cat 2', slug: 'stats-cat-2-e2e' });
+
+      const query = `
+        query {
+          categoryStats {
+            total
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      const stats = response.body.data.categoryStats;
+      expect(stats).toBeDefined();
+      expect(typeof stats.total).toBe('number');
+      expect(stats.total).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should return tagStats with correct structure', async () => {
+      const tagRepo = dataSource.getRepository(BlogTagEntity);
+      await tagRepo.save({ name: 'Stats Tag 1', slug: 'stats-tag-1-e2e' });
+      await tagRepo.save({ name: 'Stats Tag 2', slug: 'stats-tag-2-e2e' });
+
+      const query = `
+        query {
+          tagStats {
+            total
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      const stats = response.body.data.tagStats;
+      expect(stats).toBeDefined();
+      expect(typeof stats.total).toBe('number');
+      expect(stats.total).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should return linkStats with correct structure', async () => {
+      const linkRepo = dataSource.getRepository(BlogLinkEntity);
+      await linkRepo.save({
+        title: 'Stats Link 1',
+        url: 'https://stats1.com',
+        status: LinkStatus.ACTIVE,
+      });
+      await linkRepo.save({
+        title: 'Stats Link 2',
+        url: 'https://stats2.com',
+        status: LinkStatus.ACTIVE,
+      });
+
+      const query = `
+        query {
+          linkStats {
+            total
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      const stats = response.body.data.linkStats;
+      expect(stats).toBeDefined();
+      expect(typeof stats.total).toBe('number');
+      expect(stats.total).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should return zero stats when no data exists', async () => {
+      const query = `
+        query {
+          postStats { total published draft }
+          commentStats { total pending approved rejected }
+          categoryStats { total }
+          tagStats { total }
+          linkStats { total }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      // After cleanup, all stats should be zero or at least numeric
+      const data = response.body.data;
+      expect(data.postStats.total).toBe(0);
+      expect(data.postStats.published).toBe(0);
+      expect(data.postStats.draft).toBe(0);
+      expect(data.commentStats.total).toBe(0);
+      expect(data.commentStats.pending).toBe(0);
+      expect(data.commentStats.approved).toBe(0);
+      expect(data.commentStats.rejected).toBe(0);
+      expect(data.categoryStats.total).toBe(0);
+      expect(data.tagStats.total).toBe(0);
+      expect(data.linkStats.total).toBe(0);
     });
   });
 });

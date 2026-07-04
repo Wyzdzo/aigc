@@ -199,7 +199,7 @@ export function AdminDashboardPage() {
             <QuickActionCard title="标签管理" icon={UserOutlined} color="#fa8c16" onClick={() => navigate('/admin/tags')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
-            <QuickActionCard title="友链管理" icon={LinkOutlined} color="#13c2c2" />
+            <QuickActionCard title="友链管理" icon={LinkOutlined} color="#13c2c2" onClick={() => navigate('/admin/links')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
             <QuickActionCard title="系统设置" icon={BarChartOutlined} color="#eb2f96" />

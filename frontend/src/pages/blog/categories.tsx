@@ -24,9 +24,9 @@ export function BlogCategoriesPage() {
             key={category.id}
             className="p-4 border rounded-lg hover:shadow-md transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+            <h3 className="text-lg font-semibold text-text">{category.name}</h3>
             {category.description && (
-              <p className="text-gray-600 text-sm mt-1">{category.description}</p>
+              <p className="text-text-secondary text-sm mt-1">{category.description}</p>
             )}
           </div>
         ))}
