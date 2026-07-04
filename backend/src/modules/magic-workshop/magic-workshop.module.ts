@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { MagicItemCraftTask } from './entities/magic-item-craft-task.entity';
 import { MagicWorkshopService } from './magic-workshop.service';
-import { MagicWorkshopResolver } from './magic-workshop.resolver';
 import { MagicItemCraftProcessor } from './magic-item-craft.processor';
 
 @Module({
@@ -11,6 +10,7 @@ import { MagicItemCraftProcessor } from './magic-item-craft.processor';
     TypeOrmModule.forFeature([MagicItemCraftTask]),
     BullModule.registerQueue({ name: 'magic-item-craft' }),
   ],
-  providers: [MagicWorkshopService, MagicWorkshopResolver, MagicItemCraftProcessor],
+  providers: [MagicWorkshopService, MagicItemCraftProcessor],
+  exports: [MagicWorkshopService],
 })
 export class MagicWorkshopModule {}

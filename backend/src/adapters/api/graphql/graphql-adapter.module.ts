@@ -16,6 +16,7 @@ import { VerificationUsecasesModule } from '@src/usecases/verification/verificat
 import { AccountModule } from '@src/modules/account/account.module';
 import { BlogModule } from '@src/modules/blog/blog.module';
 import { SettingsModule } from '@src/modules/settings/settings.module';
+import { MagicWorkshopModule } from '@src/modules/magic-workshop/magic-workshop.module';
 import { SeoModule } from '@src/adapters/api/seo/seo.module';
 
 import { Module } from '@nestjs/common';
@@ -34,6 +35,7 @@ import { ThirdPartyAuthResolver } from './third-party-auth/third-party-auth.reso
 import { VerificationRecordResolver } from './verification-record/verification-record.resolver';
 import { MediaResolver } from './media/media.resolver';
 import { SettingsResolver } from './settings/settings.resolver';
+import { MagicWorkshopResolver } from './magic-workshop/magic-workshop.resolver';
 
 // Guards
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -67,6 +69,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     SeoModule,
     SettingsModule,
     SettingsUsecasesModule,
+    MagicWorkshopModule,
     ThirdPartyAccountsUsecasesModule,
     VerificationRecordUsecasesModule,
     VerificationUsecasesModule,
@@ -114,6 +117,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     UserInfoResolver,
     MediaResolver,
     SettingsResolver,
+    MagicWorkshopResolver,
     // Guards
     QmWorkerEntryGuard,
     JwtAuthGuard,
@@ -133,6 +137,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     UserInfoResolver,
     MediaResolver,
     SettingsResolver,
+    MagicWorkshopResolver,
     QmWorkerEntryGuard,
     JwtAuthGuard,
     RolesGuard,

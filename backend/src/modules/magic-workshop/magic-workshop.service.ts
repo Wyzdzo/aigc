@@ -1,14 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { MagicItemCraftTask } from './entities/magic-item-craft-task.entity';
 import {
-  MagicItemCraftTask,
   TaskStatus,
   QualityLevel,
-} from './entities/magic-item-craft-task.entity';
-import { CreateMagicItemCraftTaskInput } from './dto/create-magic-item-craft-task.input';
+  ItemType,
+} from '@app-types/models/magic-workshop/magic-workshop.types';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+
+export interface CreateMagicItemCraftTaskParams {
+  itemName: string;
+  itemType: ItemType;
+  materialLevel: number;
+  requestNote?: string;
+}
 
 @Injectable()
 export class MagicWorkshopService {
@@ -18,7 +25,7 @@ export class MagicWorkshopService {
     @InjectQueue('magic-item-craft') private craftQueue: Queue,
   ) {}
 
-  async createTask(input: CreateMagicItemCraftTaskInput): Promise<MagicItemCraftTask> {
+  async createTask(input: CreateMagicItemCraftTaskParams): Promise<MagicItemCraftTask> {
     if (input.materialLevel < 1 || input.materialLevel > 5) {
       throw new Error('materialLevel must be between 1 and 5');
     }

@@ -21,6 +21,7 @@ export * from './application/hooks/useTags';
 export * from './application/hooks/useUnpublishPost';
 export * from './application/hooks/useCreatePost';
 export * from './application/hooks/useUpdatePost';
+export * from './application/hooks/useDashboardStats';
 
 // Infrastructure - GraphQL (for testing only)
 // Note: These are exported for testing purposes only. Production code should use hooks from application layer.

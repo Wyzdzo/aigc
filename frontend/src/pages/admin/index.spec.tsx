@@ -3,7 +3,6 @@
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { useQuery } from '@apollo/client/react';
 
 import { AdminDashboardPage } from './index';
 
@@ -30,21 +29,22 @@ beforeAll(() => {
   window.ResizeObserver = ResizeObserverMock;
 });
 
-vi.mock('@apollo/client/react', () => ({
-  useQuery: vi.fn(() => ({
-    data: {
-      postStats: { total: 10, published: 8, draft: 2 },
-      commentStats: { total: 50, pending: 3, approved: 45, rejected: 2 },
-      categoryStats: { total: 5 },
-      tagStats: { total: 20 },
-      linkStats: { total: 15 },
-    },
+vi.mock('@/features/blog', () => ({
+  useDashboardStats: vi.fn(() => ({
+    postStats: { total: 10, published: 8, draft: 2 },
+    commentStats: { total: 50, pending: 3, approved: 45, rejected: 2 },
+    categoryStats: { total: 5 },
+    tagStats: { total: 20 },
+    linkStats: { total: 15 },
     loading: false,
-    error: null,
+    error: undefined,
+    refetch: vi.fn(),
   })),
 }));
 
-const mockedUseQuery = vi.mocked(useQuery);
+import { useDashboardStats } from '@/features/blog';
+
+const mockedUseDashboardStats = vi.mocked(useDashboardStats);
 
 describe('AdminDashboardPage', () => {
   describe('Happy Path', () => {
@@ -167,21 +167,15 @@ describe('AdminDashboardPage', () => {
 
   describe('Error Path', () => {
     it('should display loading state when data is loading', async () => {
-      mockedUseQuery.mockReturnValue({
-        data: null,
+      mockedUseDashboardStats.mockReturnValue({
+        postStats: { total: 0, published: 0, draft: 0 },
+        commentStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+        categoryStats: { total: 0 },
+        tagStats: { total: 0 },
+        linkStats: { total: 0 },
         loading: true,
         error: undefined,
-        client: {} as any,
-        observable: {} as any,
-        networkStatus: 1,
-        startPolling: vi.fn(),
-        stopPolling: vi.fn(),
         refetch: vi.fn(),
-        fetchMore: vi.fn(),
-        updateQuery: vi.fn(),
-        variables: {},
-        subscribeToMore: vi.fn(),
-        dataState: 'complete' as const,
       });
 
       const { container } = render(
@@ -194,21 +188,15 @@ describe('AdminDashboardPage', () => {
     });
 
     it('should display error state when query fails', async () => {
-      mockedUseQuery.mockReturnValue({
-        data: null,
+      mockedUseDashboardStats.mockReturnValue({
+        postStats: { total: 0, published: 0, draft: 0 },
+        commentStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+        categoryStats: { total: 0 },
+        tagStats: { total: 0 },
+        linkStats: { total: 0 },
         loading: false,
         error: new Error('Network error'),
-        client: {} as any,
-        observable: {} as any,
-        networkStatus: 7,
-        startPolling: vi.fn(),
-        stopPolling: vi.fn(),
         refetch: vi.fn(),
-        fetchMore: vi.fn(),
-        updateQuery: vi.fn(),
-        variables: {},
-        subscribeToMore: vi.fn(),
-        dataState: 'complete' as const,
       });
 
       const { container } = render(

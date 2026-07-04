@@ -2,69 +2,10 @@
 
 import { BarChartOutlined, FileTextOutlined, LinkOutlined, MessageOutlined, WarningOutlined, UserOutlined } from '@ant-design/icons';
 import { Card, Row, Col, Statistic, Spin, Typography } from 'antd';
-import { useQuery } from '@apollo/client/react';
-import { gql } from '@apollo/client';
 import { useNavigate } from 'react-router';
+import { useDashboardStats } from '@/features/blog';
 
 const { Title, Paragraph } = Typography;
-
-const GET_DASHBOARD_STATS = gql`
-  query GetDashboardStats {
-    postStats {
-      total
-      published
-      draft
-    }
-    commentStats {
-      total
-      pending
-      approved
-      rejected
-    }
-    categoryStats {
-      total
-    }
-    tagStats {
-      total
-    }
-    linkStats {
-      total
-    }
-  }
-`;
-
-interface PostStats {
-  total: number;
-  published: number;
-  draft: number;
-}
-
-interface CommentStats {
-  total: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-}
-
-interface CategoryStats {
-  total: number;
-}
-
-interface TagStats {
-  total: number;
-}
-
-interface LinkStats {
-  total: number;
-}
-
-interface DashboardStatsData {
-  postStats: PostStats;
-  commentStats: CommentStats;
-  categoryStats: CategoryStats;
-  tagStats: TagStats;
-  linkStats: LinkStats;
-}
 
 /**
  * 统计卡片组件
@@ -137,13 +78,7 @@ function QuickActionCard({ title, icon: Icon, color, onClick }: { title: string;
  */
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const { data, loading, error } = useQuery<DashboardStatsData>(GET_DASHBOARD_STATS);
-
-  const postStats = data?.postStats || { total: 0, published: 0, draft: 0 };
-  const commentStats = data?.commentStats || { total: 0, pending: 0, approved: 0, rejected: 0 };
-  const categoryStats = data?.categoryStats || { total: 0 };
-  const tagStats = data?.tagStats || { total: 0 };
-  const linkStats = data?.linkStats || { total: 0 };
+  const { postStats, commentStats, categoryStats, tagStats, linkStats, loading, error } = useDashboardStats();
 
   if (loading) {
     return (

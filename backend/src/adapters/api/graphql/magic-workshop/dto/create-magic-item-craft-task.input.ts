@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { ItemType } from '../entities/magic-item-craft-task.entity';
+import { ItemType } from '@app-types/models/magic-workshop/magic-workshop.types';
 
 @InputType()
 export class CreateMagicItemCraftTaskInput {

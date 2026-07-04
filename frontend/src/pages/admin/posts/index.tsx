@@ -12,6 +12,7 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
 } from 'antd';
 import type { Key } from 'react';
 import { useNavigate } from 'react-router';
@@ -97,13 +98,9 @@ export function AdminPostsPage() {
         showTitle: false,
       },
       render: (text: string) => (
-        <span
-          className="ant-tooltip"
-          title={text}
-          style={{ cursor: 'help' }}
-        >
+        <Tooltip title={text}>
           {text}
-        </span>
+        </Tooltip>
       ),
     },
     {

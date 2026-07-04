@@ -1,7 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
 import { MagicWorkshopService } from './magic-workshop.service';
-import { TaskStatus, QualityLevel } from './entities/magic-item-craft-task.entity';
+import { TaskStatus, QualityLevel } from '@app-types/models/magic-workshop/magic-workshop.types';
 
 @Processor('magic-item-craft')
 export class MagicItemCraftProcessor {

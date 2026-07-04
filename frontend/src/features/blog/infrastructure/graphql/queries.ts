@@ -171,3 +171,31 @@ export const GET_ACTIVE_LINKS = gql`
     }
   }
 `;
+
+/**
+ * 获取仪表盘统计数据
+ */
+export const GET_DASHBOARD_STATS = gql`
+  query GetDashboardStats {
+    postStats {
+      total
+      published
+      draft
+    }
+    commentStats {
+      total
+      pending
+      approved
+      rejected
+    }
+    categoryStats {
+      total
+    }
+    tagStats {
+      total
+    }
+    linkStats {
+      total
+    }
+  }
+`;

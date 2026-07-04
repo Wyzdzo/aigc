@@ -3,11 +3,11 @@
   "description": "博客开发每日提示词计划",
   "totalDays": 35,
   "currentProgress": {
-    "completedDays": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34],
-    "currentDay": 34,
+    "completedDays": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
+    "currentDay": 35,
     "status": "completed",
-    "lastUpdated": "2026-07-03",
-    "note": "Day 34 完成：测试完善 - 三轮补充 + 已知问题修复。第一轮：修复blog.query.service.spec.ts类型错误、新增4后端+3前端单元测试。第二轮：新增2个auth单元测试(validate-access-token-session 3t、login-with-password 7t含5个error path)、2个hook测试(usePost 5t、usePostMutations 7t)、1个后端E2E(media 2t)+2个前端E2E。第三轮：修复已有测试(blog/index搜索输入Ant Design受控组件、LazyImage waitFor) + 新增register-with-email 6t(含3个error path) + execute-login-flow 6t(含3个error path) + useBlogQueryHooks 12t + settings E2E 3t + blog/categories E2E 2t。已知问题修复：vitest.config.ts添加pool:'forks'隔离进程解决Apollo Client全局缓存干扰、.gitignore添加coverage目录。最终：后端45 suites/451 tests全通过，前端48 suites/474 tests全通过。核心blog usecases覆盖率91.15%超80%目标。"
+    "lastUpdated": "2026-07-04",
+    "note": "Day 35 完成：最终全局Review。架构审查：后端发现8严重+5中问题，前端3严重+150+中问题。修复：magic-workshop实体剥离GraphQL装饰器+DTO/Resolver移至adapters层+registerEnumType去重、admin/index.tsx内联gql重构为useDashboardStats hook、2处ant-tooltip替换为Tooltip组件。部署文档：docs/deployment.md 11章节（系统要求/环境变量/构建/启动/Nginx/Docker/PM2/迁移/健康检查/监控/安全检查清单）。生产配置：backend/env/.env.production + frontend/env/.env.production + ecosystem.config.js + nginx/aigc-blog.conf。遗留问题：BlogResolver 6个写操作绕过Usecase、5处Resolver吞灭DomainError、BlogService/MediaService使用NotFoundException、前端150+内联样式和硬编码颜色、7处测试内联mock数据。"
   },
   "weeks": [
     {

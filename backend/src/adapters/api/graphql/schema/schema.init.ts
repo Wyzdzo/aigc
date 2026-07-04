@@ -77,6 +77,10 @@ export function initGraphQLSchema(): {
       'PostStatus',
       'CommentStatus',
       'LinkStatus',
+      // Magic Workshop enums
+      'TaskStatus',
+      'ItemType',
+      'QualityLevel',
     ];
 
     // 生成 Schema 指纹

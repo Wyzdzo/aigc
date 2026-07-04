@@ -12,6 +12,7 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
 } from 'antd';
 import {
   CheckCircleOutlined,
@@ -93,13 +94,9 @@ export function AdminCommentsPage() {
         showTitle: false,
       },
       render: (text: string) => (
-        <span
-          className="ant-tooltip"
-          title={text}
-          style={{ cursor: 'help' }}
-        >
+        <Tooltip title={text}>
           {text}
-        </span>
+        </Tooltip>
       ),
     },
     {

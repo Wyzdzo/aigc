@@ -1,9 +1,9 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { TaskStatus, QualityLevel, ItemType } from '../entities/magic-item-craft-task.entity';
-
-registerEnumType(TaskStatus, { name: 'TaskStatus' });
-registerEnumType(QualityLevel, { name: 'QualityLevel' });
-registerEnumType(ItemType, { name: 'ItemType' });
+import { Field, ObjectType } from '@nestjs/graphql';
+import {
+  TaskStatus,
+  QualityLevel,
+  ItemType,
+} from '@app-types/models/magic-workshop/magic-workshop.types';
 
 @ObjectType()
 export class MagicItemCraftTaskModel {

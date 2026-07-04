@@ -23,6 +23,11 @@ import { GqlPaginationMode, GqlSortDirection } from '@src/adapters/api/graphql/p
 import { OrderDirection } from '@app-types/common/sort.types';
 import { CommentStatus, LinkStatus, PostStatus } from '@app-types/models/blog/blog.types';
 import { ChangeFreq } from '@app-types/common/seo.types';
+import {
+  TaskStatus,
+  ItemType,
+  QualityLevel,
+} from '@app-types/models/magic-workshop/magic-workshop.types';
 
 export function registerEnums(): void {
   registerEnumType(AccountStatus, { name: 'AccountStatus' });
@@ -48,4 +53,8 @@ export function registerEnums(): void {
   registerEnumType(LinkStatus, { name: 'LinkStatus' });
   // SEO enums
   registerEnumType(ChangeFreq, { name: 'ChangeFreq' });
+  // Magic Workshop enums
+  registerEnumType(TaskStatus, { name: 'TaskStatus' });
+  registerEnumType(ItemType, { name: 'ItemType' });
+  registerEnumType(QualityLevel, { name: 'QualityLevel' });
 }
