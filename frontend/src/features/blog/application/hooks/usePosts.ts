@@ -26,7 +26,7 @@ export interface PostsQueryVariables {
 export function usePosts(variables: PostsQueryVariables = {}) {
   const { categoryId, tagId, status, keyword, page = 1, pageSize = 10 } = variables;
 
-  const { data, loading, error, refetch } = useQuery<PostsQueryResult, PostsQueryVariables>(
+  const { data, loading, error, refetch, fetchMore } = useQuery<PostsQueryResult, PostsQueryVariables>(
     GET_POSTS,
     {
       variables: {
@@ -41,13 +41,35 @@ export function usePosts(variables: PostsQueryVariables = {}) {
     },
   );
 
+  const posts = data?.posts?.items || [];
+  const total = data?.posts?.total || 0;
+  const hasMore = posts.length < total;
+
+  const loadMore = async () => {
+    if (!hasMore) return;
+    await fetchMore({
+      variables: { page: Math.floor(posts.length / pageSize) + 1 },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          posts: {
+            ...fetchMoreResult.posts,
+            items: [...prev.posts.items, ...fetchMoreResult.posts.items],
+          },
+        };
+      },
+    });
+  };
+
   return {
-    posts: data?.posts?.items || [],
-    total: data?.posts?.total || 0,
+    posts,
+    total,
     currentPage: data?.posts?.page || page,
     pageSize: data?.posts?.pageSize || pageSize,
     loading,
     error,
     refetch,
+    hasMore,
+    loadMore,
   };
 }

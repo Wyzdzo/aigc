@@ -25,7 +25,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+    <div className="flex min-h-screen items-center justify-center bg-bg-layout">
       <div className="w-full max-w-md">
         <Card title="管理员登录">
           <Form form={form} layout="vertical" onFinish={handleSubmit}>

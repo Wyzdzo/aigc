@@ -50,7 +50,7 @@ function createWrapper(mocks: MockedResponse[], categoryId = '1') {
 
 const mockCategories = [
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 1,
     name: '前端开发',
     slug: 'frontend',
@@ -64,7 +64,7 @@ const mockCategories = [
 
 const mockPostsItems = [
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 1,
     title: 'React 18 新特性详解',
     slug: 'react-18-new-features',

@@ -79,7 +79,7 @@ function createWrapper(mocks: MockedResponse[] = []) {
 
 const mockLinks = [
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 1,
     title: 'React 官方文档',
     url: 'https://react.dev',
@@ -91,7 +91,7 @@ const mockLinks = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 2,
     title: 'Vue 官方文档',
     url: 'https://vuejs.org',
@@ -202,7 +202,7 @@ describe('BlogLinksPage', () => {
           result: {
             data: {
               createLink: {
-                __typename: 'BlogLink',
+                __typename: 'BlogLinkDTO',
                 id: 3,
                 title: 'Test Site',
                 url: 'https://test.com',

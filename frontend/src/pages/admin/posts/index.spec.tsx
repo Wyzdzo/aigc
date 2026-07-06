@@ -115,7 +115,7 @@ describe('AdminPostsPage', () => {
               posts: {
                 items: [
                   {
-                    __typename: 'BlogPost',
+                    __typename: 'BlogPostDTO',
                     id: 1,
                     title: '测试文章标题',
                     slug: 'test-post',
@@ -161,7 +161,7 @@ describe('AdminPostsPage', () => {
               posts: {
                 items: [
                   {
-                    __typename: 'BlogPost',
+                    __typename: 'BlogPostDTO',
                     id: 1,
                     title: '草稿文章',
                     slug: 'draft-post',
@@ -177,7 +177,7 @@ describe('AdminPostsPage', () => {
                     updatedAt: '2024-01-15T10:00:00Z',
                   },
                   {
-                    __typename: 'BlogPost',
+                    __typename: 'BlogPostDTO',
                     id: 2,
                     title: '已发布文章',
                     slug: 'published-post',
@@ -277,7 +277,7 @@ describe('AdminPostsPage', () => {
               posts: {
                 items: [
                   {
-                    __typename: 'BlogPost',
+                    __typename: 'BlogPostDTO',
                     id: 1,
                     title: '分页测试文章',
                     slug: 'pagination-test',
@@ -322,7 +322,7 @@ describe('AdminPostsPage', () => {
               posts: {
                 items: [
                   {
-                    __typename: 'BlogPost',
+                    __typename: 'BlogPostDTO',
                     id: 1,
                     title: '测试文章',
                     slug: 'test',

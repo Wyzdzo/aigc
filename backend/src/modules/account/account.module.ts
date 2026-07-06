@@ -15,6 +15,7 @@ import { AccountEntity } from './base/entities/account.entity';
 import { UserInfoEntity } from './base/entities/user-info.entity';
 import { AccountSecurityService } from './base/services/account-security.service';
 import { AccountService } from './base/services/account.service';
+import { UserInfoService } from './base/services/user-info.service';
 import { AccountQueryService } from './queries/account.query.service';
 
 @Module({})
@@ -32,10 +33,17 @@ export class AccountModule {
       providers: [
         AccountFieldEncryptionRegistrar,
         AccountService,
+        UserInfoService,
         AccountQueryService,
         AccountSecurityService,
       ],
-      exports: [TypeOrmModule, AccountService, AccountQueryService, AccountSecurityService],
+      exports: [
+        TypeOrmModule,
+        AccountService,
+        UserInfoService,
+        AccountQueryService,
+        AccountSecurityService,
+      ],
     };
   }
 }

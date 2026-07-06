@@ -24,8 +24,8 @@ export function useAdminComments(variables: AdminCommentsVariables = {}) {
       pageSize: number;
     };
   }>(GET_COMMENTS, {
-    variables: { postId: undefined, status, page, pageSize },
-    fetchPolicy: 'cache-first',
+    variables: { status, page, pageSize },
+    fetchPolicy: 'network-only',
   });
 
   return {

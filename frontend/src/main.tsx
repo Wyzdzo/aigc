@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { bootstrapGraphQLRuntime } from '@/app/bootstrap';
+import { AuthProvider } from '@/features/auth';
 import { GraphQLProvider, ThemeProvider } from '@/app/providers';
 import { App } from '@/app/router';
 
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <GraphQLProvider>
       <ThemeProvider>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </ThemeProvider>
     </GraphQLProvider>
   </React.StrictMode>,

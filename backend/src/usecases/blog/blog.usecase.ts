@@ -1,7 +1,7 @@
 // src/usecases/blog/blog.usecase.ts
 
 import type { PersistenceTransactionContext } from '@app-types/common/transaction.types';
-import { PostStatus } from '@app-types/models/blog/blog.types';
+import { PostStatus, CommentStatus } from '@app-types/models/blog/blog.types';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   BlogService,
@@ -23,7 +23,21 @@ import {
 } from './notification';
 
 export interface CreatePostResult {
-  post: { id: number; title: string; slug: string };
+  post: {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    summary: string | null;
+    coverImage: string | null;
+    status: PostStatus;
+    isTop: boolean;
+    viewCount: number;
+    likeCount: number;
+    categoryId: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 
 export interface UpdatePostResult {
@@ -34,8 +48,64 @@ export interface DeletePostResult {
   success: boolean;
 }
 
+export interface CommentResult {
+  id: number;
+  postId: number;
+  parentId: number | null;
+  nickname: string;
+  email: string | null;
+  avatar: string | null;
+  content: string;
+  status: string;
+  likeCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CategoryResult {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  parentId: number | null;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TagResult {
+  id: number;
+  name: string;
+  slug: string;
+  createdAt: Date;
+}
+
+export interface LinkResult {
+  id: number;
+  title: string;
+  url: string;
+  description: string | null;
+  logo: string | null;
+  sortOrder: number;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface CreateCommentResult {
-  comment: { id: number; nickname: string; email: string | null; content: string; createdAt: Date };
+  comment: {
+    id: number;
+    postId: number;
+    parentId: number | null;
+    nickname: string;
+    email: string | null;
+    avatar: string | null;
+    content: string;
+    status: string;
+    likeCount: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 
 @Injectable()
@@ -61,7 +131,7 @@ export class BlogUsecase {
         data: params.data,
         transactionContext: activeTransactionContext,
       });
-      return { post: { id: post.id, title: post.title, slug: post.slug } };
+      return { post };
     };
 
     return params.transactionContext
@@ -218,10 +288,16 @@ export class BlogUsecase {
       // 准备返回的视图
       const commentView: CreateCommentResult['comment'] = {
         id: comment.id,
+        postId: comment.postId,
+        parentId: comment.parentId,
         nickname: comment.nickname,
         email: comment.email,
+        avatar: comment.avatar,
         content: comment.content,
+        status: comment.status,
+        likeCount: comment.likeCount,
         createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
       };
 
       // 准备文章视图用于通知
@@ -251,6 +327,170 @@ export class BlogUsecase {
     await this.blogService.incrementCommentLikeCount({
       id: params.id,
       transactionContext: params.transactionContext,
+    });
+  }
+
+  async updateCommentStatus(params: {
+    id: number;
+    status: string;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<CommentResult> {
+    const comment = await this.blogService.updateCommentStatus({
+      id: params.id,
+      status: params.status as CommentStatus,
+      transactionContext: params.transactionContext,
+    });
+
+    return {
+      id: comment.id,
+      postId: comment.postId,
+      parentId: comment.parentId,
+      nickname: comment.nickname,
+      email: comment.email,
+      avatar: comment.avatar,
+      content: comment.content,
+      status: comment.status,
+      likeCount: comment.likeCount,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    };
+  }
+
+  async deleteComment(params: {
+    id: number;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<boolean> {
+    return this.blogService.deleteComment({
+      id: params.id,
+      transactionContext: params.transactionContext,
+    });
+  }
+
+  // ==================== Category Operations ====================
+
+  async createCategory(params: {
+    name: string;
+    slug: string;
+    description?: string | null;
+    parentId?: number | null;
+    sortOrder?: number;
+  }): Promise<CategoryResult> {
+    const category = await this.blogService.createCategory(params);
+    return {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      parentId: category.parentId,
+      sortOrder: category.sortOrder,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+    };
+  }
+
+  async updateCategory(params: {
+    id: number;
+    name?: string;
+    slug?: string;
+    description?: string | null;
+    parentId?: number | null;
+    sortOrder?: number;
+  }): Promise<CategoryResult> {
+    const category = await this.blogService.updateCategory(params);
+    return {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      parentId: category.parentId,
+      sortOrder: category.sortOrder,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+    };
+  }
+
+  async deleteCategory(params: { id: number }): Promise<boolean> {
+    return this.blogService.deleteCategory({
+      id: params.id,
+    });
+  }
+
+  // ==================== Tag Operations ====================
+
+  async createTag(params: { name: string; slug: string }): Promise<TagResult> {
+    const tag = await this.blogService.createTag(params);
+    return {
+      id: tag.id,
+      name: tag.name,
+      slug: tag.slug,
+      createdAt: tag.createdAt,
+    };
+  }
+
+  async updateTag(params: { id: number; name?: string; slug?: string }): Promise<TagResult> {
+    const tag = await this.blogService.updateTag(params);
+    return {
+      id: tag.id,
+      name: tag.name,
+      slug: tag.slug,
+      createdAt: tag.createdAt,
+    };
+  }
+
+  async deleteTag(params: { id: number }): Promise<boolean> {
+    return this.blogService.deleteTag({
+      id: params.id,
+    });
+  }
+
+  // ==================== Link Operations ====================
+
+  async createLink(params: {
+    title: string;
+    url: string;
+    description?: string | null;
+    logo?: string | null;
+    sortOrder?: number;
+  }): Promise<LinkResult> {
+    const link = await this.blogService.createLink(params);
+    return {
+      id: link.id,
+      title: link.title,
+      url: link.url,
+      description: link.description,
+      logo: link.logo,
+      sortOrder: link.sortOrder,
+      status: link.status,
+      createdAt: link.createdAt,
+      updatedAt: link.updatedAt,
+    };
+  }
+
+  async updateLink(params: {
+    id: number;
+    title?: string;
+    url?: string;
+    description?: string | null;
+    logo?: string | null;
+    sortOrder?: number;
+  }): Promise<LinkResult> {
+    const link = await this.blogService.updateLink(params);
+    return {
+      id: link.id,
+      title: link.title,
+      url: link.url,
+      description: link.description,
+      logo: link.logo,
+      sortOrder: link.sortOrder,
+      status: link.status,
+      createdAt: link.createdAt,
+      updatedAt: link.updatedAt,
+    };
+  }
+
+  async deleteLink(params: { id: number }): Promise<boolean> {
+    return this.blogService.deleteLink({
+      id: params.id,
     });
   }
 

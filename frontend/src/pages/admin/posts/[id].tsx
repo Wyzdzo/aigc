@@ -92,7 +92,9 @@ export function AdminPostEditPage() {
         return;
       }
     } catch (err) {
-      message.error('保存失败，请重试');
+      console.error('保存文章失败:', err);
+      const msg = err instanceof Error ? err.message : '保存失败，请重试';
+      message.error(msg);
     }
   };
 
@@ -174,7 +176,7 @@ export function AdminPostEditPage() {
                 <Input placeholder="请输入文章标题" size="large" />
               </Form.Item>
 
-              <div style={{ height: 'calc(100vh - 300px)', minHeight: '500px', border: '1px solid #e8e8e8', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: 'calc(100vh - 300px)', minHeight: '500px', border: '1px solid var(--ant-color-border-secondary, #f0f0f0)', borderRadius: 4, overflow: 'hidden' }}>
                 <PostEditor
                   value={content}
                   onChange={setContent}

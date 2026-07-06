@@ -136,6 +136,11 @@ export class AccountService {
     await repository.update(id, updateData);
   }
 
+  async existsById(id: number): Promise<boolean> {
+    const count = await this.accountRepository.count({ where: { id } });
+    return count > 0;
+  }
+
   async updateAccountPasswordHash(params: {
     accountId: number;
     passwordHash: string;
@@ -146,6 +151,46 @@ export class AccountService {
       loginPassword: params.passwordHash,
       updatedAt: new Date(),
     });
+  }
+
+  /**
+   * 修改密码：验证旧密码 → 哈希新密码 → 更新
+   * @returns loginName 供审计日志使用
+   */
+  async changePassword(params: {
+    accountId: number;
+    oldPassword: string;
+    newPassword: string;
+  }): Promise<{ loginName: string | null }> {
+    const account = await this.accountRepository.findOne({
+      where: { id: params.accountId },
+    });
+
+    if (!account) {
+      throw new DomainError(ACCOUNT_ERROR.ACCOUNT_NOT_FOUND, '账户不存在');
+    }
+
+    const isValid = AccountService.verifyPassword(
+      params.oldPassword,
+      account.loginPassword,
+      account.createdAt,
+    );
+
+    if (!isValid) {
+      throw new DomainError(AUTH_ERROR.INVALID_PASSWORD, '旧密码不正确');
+    }
+
+    const newPasswordHash = AccountService.hashPasswordWithTimestamp(
+      params.newPassword,
+      account.createdAt,
+    );
+
+    await this.updateAccountPasswordHash({
+      accountId: account.id,
+      passwordHash: newPasswordHash,
+    });
+
+    return { loginName: account.loginName };
   }
 
   /**

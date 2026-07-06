@@ -3,7 +3,7 @@ import { MockedProvider } from '@apollo/client/testing/react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { PostStatus } from '@/entities/blog';
+import { CommentStatus, PostStatus } from '@/entities/blog';
 
 import {
   CREATE_POST,
@@ -352,7 +352,7 @@ describe('Blog Hooks', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 1, page: 1, pageSize: 10 },
+            variables: { postId: 1, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -384,7 +384,7 @@ describe('Blog Hooks', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 999, page: 1, pageSize: 10 },
+            variables: { postId: 999, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -416,7 +416,7 @@ describe('Blog Hooks', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 1, page: 1, pageSize: 10 },
+            variables: { postId: 1, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           error: new Error('Network error'),
         },

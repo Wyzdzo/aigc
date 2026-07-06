@@ -2,14 +2,8 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { InjectRepository } from '@nestjs/typeorm';
-
-import { Repository } from 'typeorm';
-
-import { AccountEntity } from '@modules/account/base/entities/account.entity';
-
-import { UserInfoEntity } from '@modules/account/base/entities/user-info.entity';
 import { AccountService } from '@modules/account/base/services/account.service';
+import { UserInfoService } from '@modules/account/base/services/user-info.service';
 import { AuditService } from '@modules/audit/audit.service';
 import { SettingsService, SiteSettingData } from '@modules/settings/settings.service';
 
@@ -49,10 +43,7 @@ export interface BloggerInfo {
 export class SettingsUsecase {
   constructor(
     private readonly settingsService: SettingsService,
-    @InjectRepository(AccountEntity)
-    private readonly accountRepository: Repository<AccountEntity>,
-    @InjectRepository(UserInfoEntity)
-    private readonly userInfoRepository: Repository<UserInfoEntity>,
+    private readonly userInfoService: UserInfoService,
     private readonly accountService: AccountService,
     private readonly auditService: AuditService,
   ) {}
@@ -75,9 +66,21 @@ export class SettingsUsecase {
   }
 
   async getBloggerInfo(accountId: number): Promise<BloggerInfo | null> {
-    const userInfo = await this.userInfoRepository.findOne({
-      where: { accountId },
-    });
+    const userInfo = await this.userInfoService.findByAccountId(accountId);
+
+    if (!userInfo) {
+      return null;
+    }
+
+    return {
+      nickname: userInfo.nickname,
+      avatar: userInfo.avatarUrl,
+      bio: userInfo.signature,
+    };
+  }
+
+  async getFirstBloggerInfo(): Promise<BloggerInfo | null> {
+    const userInfo = await this.userInfoService.findFirst();
 
     if (!userInfo) {
       return null;
@@ -93,33 +96,12 @@ export class SettingsUsecase {
   async updateBloggerInfo(params: UpdateBloggerInfoParams): Promise<void> {
     const { accountId, nickname, bio, avatar, ipAddress } = params;
 
-    let userInfo = await this.userInfoRepository.findOne({
-      where: { accountId },
+    const { userInfoId } = await this.userInfoService.upsertBloggerInfo({
+      accountId,
+      nickname,
+      signature: bio || null,
+      avatarUrl: avatar || null,
     });
-
-    if (!userInfo) {
-      const account = await this.accountRepository.findOne({
-        where: { id: accountId },
-      });
-
-      if (!account) {
-        throw new Error('账户不存在');
-      }
-
-      userInfo = this.userInfoRepository.create({
-        accountId: account.id,
-        nickname,
-        signature: bio || null,
-        avatarUrl: avatar || null,
-      });
-      await this.userInfoRepository.save(userInfo);
-    } else {
-      await this.userInfoRepository.update(userInfo.id, {
-        nickname,
-        signature: bio || userInfo.signature,
-        avatarUrl: avatar || userInfo.avatarUrl,
-      });
-    }
 
     // 记录审计日志
     await this.auditService.createLog({
@@ -128,7 +110,7 @@ export class SettingsUsecase {
       operationType: 'UPDATE_BLOGGER_INFO',
       operationDesc: '更新博主信息',
       targetType: 'USER_INFO',
-      targetId: userInfo.id,
+      targetId: userInfoId,
       operationDetail: JSON.stringify({ nickname, bio, avatar }),
       ipAddress: ipAddress,
     });
@@ -137,40 +119,16 @@ export class SettingsUsecase {
   async updatePassword(params: UpdatePasswordParams): Promise<void> {
     const { accountId, oldPassword, newPassword, ipAddress } = params;
 
-    const account = await this.accountRepository.findOne({
-      where: { id: accountId },
-    });
-
-    if (!account) {
-      throw new Error('账户不存在');
-    }
-
-    // 使用 AccountService 的密码验证方法
-    const isValid = AccountService.verifyPassword(
+    const { loginName } = await this.accountService.changePassword({
+      accountId,
       oldPassword,
-      account.loginPassword,
-      account.createdAt,
-    );
-
-    if (!isValid) {
-      throw new Error('旧密码不正确');
-    }
-
-    // 生成新密码哈希
-    const newPasswordHash = AccountService.hashPasswordWithTimestamp(
       newPassword,
-      account.createdAt,
-    );
-
-    await this.accountService.updateAccountPasswordHash({
-      accountId: account.id,
-      passwordHash: newPasswordHash,
     });
 
     // 记录审计日志
     await this.auditService.createLog({
       operatorId: accountId,
-      operatorName: account.loginName ?? String(accountId),
+      operatorName: loginName ?? String(accountId),
       operationType: 'UPDATE_PASSWORD',
       operationDesc: '修改密码',
       targetType: 'ACCOUNT',

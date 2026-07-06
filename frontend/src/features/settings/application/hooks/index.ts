@@ -7,3 +7,5 @@ export {
   type UpdateBloggerInfoInput,
   type UpdatePasswordInput,
 } from './useSettings';
+
+export { usePublicBloggerInfo, type PublicBloggerInfo } from './usePublicBloggerInfo';

@@ -1,6 +1,6 @@
 // src/modules/blog/entities/blog-comment.entity.ts
 import { BlogCommentModel, CommentStatus } from '@app-types/models/blog/blog.types';
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('blog_comment')
 @Index('idx_comment_post', ['postId'])
@@ -42,4 +42,7 @@ export class BlogCommentEntity implements BlogCommentModel {
 
   @CreateDateColumn({ name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', comment: '更新时间' })
+  updatedAt!: Date;
 }

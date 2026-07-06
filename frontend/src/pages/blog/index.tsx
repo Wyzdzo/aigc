@@ -1,12 +1,13 @@
 // src/pages/blog/index.tsx
 
-import { useEffect, useState } from 'react';
-import { CalendarOutlined, EyeOutlined, FilterOutlined, LikeOutlined } from '@ant-design/icons';
+import { useEffect, useRef, useState } from 'react';
+import { CalendarOutlined, EyeOutlined, FilterOutlined, LikeOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { Link } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
 import { SeoMeta } from '@/widgets/seo';
+import { usePublicBloggerInfo } from '@/features/settings';
 import { useCategoryTree, useLikePost, usePosts, useTags } from '@/features/blog';
 
 import { type BlogPost, PostStatus } from '@/entities/blog';
@@ -29,43 +30,44 @@ function formatDate(date: Date): string {
 /**
  * 博主简介卡片
  */
-function AuthorCard() {
-  const { posts } = usePosts({ status: PostStatus.PUBLISHED });
-  const { categoryTree } = useCategoryTree();
-  const { tags } = useTags();
+function AuthorCard({ postCount, categoryCount, tagCount }: {
+  postCount: number;
+  categoryCount: number;
+  tagCount: number;
+}) {
+  const { bloggerInfo } = usePublicBloggerInfo();
 
-  const postCount = posts.length;
-  const categoryCount = categoryTree.length;
-  const tagCount = tags.length;
+  const nickname = bloggerInfo?.nickname || 'AIGC Blog';
+  const avatar = bloggerInfo?.avatar || undefined;
+  const bio = bloggerInfo?.bio || '全栈开发者，热爱技术，专注于 React、TypeScript、Node.js 等前端技术。';
 
   return (
-    <Card
-      style={{
-        marginBottom: 24,
-        borderRadius: 8,
-      }}
-      styles={{ body: { padding: 24 } }}
-    >
-      <Space align="start" size={16}>
-        <Avatar
-          size={80}
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=aigc"
-          style={{ flexShrink: 0 }}
-        />
-        <div style={{ flex: 1 }}>
-          <Title level={4} style={{ marginBottom: 8 }}>AIGC Blog</Title>
-          <Paragraph type="secondary" style={{ marginBottom: 12 }}>
-            全栈开发者，热爱技术，专注于 React、TypeScript、Node.js 等前端技术。
-            分享工作中的技术积累和最佳实践，希望与大家一起成长。
-          </Paragraph>
-          <Space size="middle">
-            <span>文章 {postCount}</span>
-            <span>分类 {categoryCount}</span>
-            <span>标签 {tagCount}</span>
-          </Space>
-        </div>
-      </Space>
-    </Card>
+    <div className="mb-6">
+      <Card
+        style={{ borderRadius: 'var(--radius-card)' }}
+        styles={{ body: { padding: 24 } }}
+      >
+        <Space align="start" size={16}>
+          <Avatar
+            size={80}
+            src={avatar}
+            icon={!avatar ? <UserOutlined /> : undefined}
+            className="shrink-0"
+          />
+          <div className="flex-1">
+            <Title level={4} className="mb-2">{nickname}</Title>
+            <Paragraph type="secondary" className="mb-3">
+              {bio}
+            </Paragraph>
+            <Space size="middle">
+              <span>文章 {postCount}</span>
+              <span>分类 {categoryCount}</span>
+              <span>标签 {tagCount}</span>
+            </Space>
+          </div>
+        </Space>
+      </Card>
+    </div>
   );
 }
 
@@ -75,45 +77,43 @@ function AuthorCard() {
 function FeaturedPostCard({ post }: { post: BlogPost }) {
   return (
     <Link to={`/blog/${post.slug}`}>
-      <Card
-        hoverable
-        style={{
-          marginBottom: 24,
-          borderRadius: 8,
-          overflow: 'hidden',
-        }}
-        styles={{ body: { padding: 0 } }}
-      >
-        {post.coverImage && (
-          <div style={{ height: 200 }}>
-            <LazyImage
-              src={post.coverImage}
-              alt={post.title}
-              style={{ width: '100%', height: '100%' }}
-            />
-          </div>
-        )}
-        <Card style={{ borderRadius: 0 }} styles={{ body: { padding: 20 } }}>
-          <Tag color="gold" style={{ marginBottom: 12 }}>置顶</Tag>
-          <Title level={4} style={{ marginBottom: 8 }}>{post.title}</Title>
-          <Paragraph type="secondary" ellipsis={{ rows: 2 }}>
-            {post.summary}
-          </Paragraph>
-          <div className="text-text-tertiary">
-            <Space size="middle">
-              <span>
-                <EyeOutlined /> {post.viewCount}
-              </span>
-              <span>
-                <LikeOutlined /> {post.likeCount}
-              </span>
-              <span>
-                <CalendarOutlined /> {formatDate(post.createdAt)}
-              </span>
-            </Space>
-          </div>
+      <div className="mb-6">
+        <Card
+          hoverable
+          style={{ borderRadius: 'var(--radius-card)', overflow: 'hidden' }}
+          styles={{ body: { padding: 0 } }}
+        >
+          {post.coverImage && (
+            <div className="h-[200px]">
+              <LazyImage
+                src={post.coverImage}
+                alt={post.title}
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+          )}
+          <Card style={{ borderRadius: 0 }} styles={{ body: { padding: 20 } }}>
+            <Tag color="gold" className="mb-3">置顶</Tag>
+            <Title level={4} className="mb-2">{post.title}</Title>
+            <Paragraph type="secondary" ellipsis={{ rows: 2 }}>
+              {post.summary}
+            </Paragraph>
+            <div className="text-text-tertiary">
+              <Space size="middle">
+                <span>
+                  <EyeOutlined /> {post.viewCount}
+                </span>
+                <span>
+                  <LikeOutlined /> {post.likeCount}
+                </span>
+                <span>
+                  <CalendarOutlined /> {formatDate(post.createdAt)}
+                </span>
+              </Space>
+            </div>
+          </Card>
         </Card>
-      </Card>
+      </div>
     </Link>
   );
 }
@@ -132,7 +132,7 @@ function PostListItem({
 
   return (
     <List.Item
-      style={{ padding: '16px 0' }}
+      className="py-4"
       actions={[
         <span key="views">
           <EyeOutlined /> {post.viewCount}
@@ -157,7 +157,7 @@ function PostListItem({
       <List.Item.Meta
         title={
           <Link to={`/blog/${post.slug}`}>
-            <Title level={5} style={{ marginBottom: 0 }}>
+            <Title level={5} className="mb-0">
               <SearchHighlight text={post.title} keyword={keyword ?? ''} />
             </Title>
           </Link>
@@ -167,7 +167,7 @@ function PostListItem({
             <Paragraph
               type="secondary"
               ellipsis={{ rows: 2 }}
-              style={{ marginBottom: 8 }}
+              className="mb-2"
             >
               <SearchHighlight text={post.summary ?? ''} keyword={keyword ?? ''} />
             </Paragraph>
@@ -198,32 +198,36 @@ function SidebarContent({
   return (
     <>
       {/* 分类树 */}
-      <Card
-        style={{ marginBottom: 24, borderRadius: 8 }}
-        styles={{ body: { padding: 16 } }}
-      >
-        <CategoryTree
-          selectedId={categoryId}
-          onChange={onCategoryChange}
-        />
-      </Card>
+      <div className="mb-6">
+        <Card
+          style={{ borderRadius: 'var(--radius-card)' }}
+          styles={{ body: { padding: 16 } }}
+        >
+          <CategoryTree
+            selectedId={categoryId}
+            onChange={onCategoryChange}
+          />
+        </Card>
+      </div>
 
       {/* 标签云 */}
-      <Card
-        style={{ marginBottom: 24, borderRadius: 8 }}
-        styles={{ body: { padding: 16 } }}
-      >
-        <TagCloud selectedId={tagId} onChange={onTagChange} />
-      </Card>
+      <div className="mb-6">
+        <Card
+          style={{ borderRadius: 'var(--radius-card)' }}
+          styles={{ body: { padding: 16 } }}
+        >
+          <TagCloud selectedId={tagId} onChange={onTagChange} />
+        </Card>
+      </div>
 
       {/* 归档链接 */}
       <Card
-        style={{ borderRadius: 8 }}
+        style={{ borderRadius: 'var(--radius-card)' }}
         styles={{ body: { padding: 16 } }}
       >
-        <Link to="/blog/archives" style={{ display: 'block', textAlign: 'center' }}>
+        <Link to="/blog/archives" className="block text-center">
           <CalendarOutlined className="text-2xl text-primary mb-2" />
-          <Title level={5} style={{ marginBottom: 0 }}>时间归档</Title>
+          <Title level={5} className="mb-0">时间归档</Title>
         </Link>
       </Card>
     </>
@@ -237,10 +241,10 @@ export function BlogHomePage() {
   const [keyword, setKeyword] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>();
   const [tagId, setTagId] = useState<number | undefined>();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // 检测是否为移动端
   useEffect(() => {
@@ -253,25 +257,45 @@ export function BlogHomePage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const { posts, total, loading, error } = usePosts({
+  const { posts, total, loading, error, hasMore, loadMore } = usePosts({
     status: PostStatus.PUBLISHED,
     keyword: keyword || undefined,
     categoryId,
     tagId,
-    page: currentPage,
-    pageSize,
+    page: 1,
+    pageSize: 10,
   });
+
+  const { categoryTree } = useCategoryTree();
+  const { tags } = useTags();
 
   // 分离置顶文章和非置顶文章
   const featuredPost = posts.find((post) => post.isTop);
   const regularPosts = posts.filter((post) => !post.isTop);
+
+  // 无限滚动：IntersectionObserver 监听哨兵元素
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loading && !loadingMore) {
+          setLoadingMore(true);
+          loadMore().finally(() => setLoadingMore(false));
+        }
+      },
+      { rootMargin: '200px' },
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, loadMore]);
 
   /**
    * 搜索处理
    */
   const handleSearch = (searchKeyword: string) => {
     setKeyword(searchKeyword);
-    setCurrentPage(1);
   };
 
   /**
@@ -279,7 +303,6 @@ export function BlogHomePage() {
    */
   const handleClear = () => {
     setKeyword('');
-    setCurrentPage(1);
   };
 
   /**
@@ -287,7 +310,6 @@ export function BlogHomePage() {
    */
   const handleCategoryChange = (newCategoryId: number | undefined) => {
     setCategoryId(newCategoryId);
-    setCurrentPage(1);
     if (isMobile) {
       setIsDrawerOpen(false);
     }
@@ -298,7 +320,6 @@ export function BlogHomePage() {
    */
   const handleTagChange = (newTagId: number | undefined) => {
     setTagId(newTagId);
-    setCurrentPage(1);
     if (isMobile) {
       setIsDrawerOpen(false);
     }
@@ -311,19 +332,6 @@ export function BlogHomePage() {
     setCategoryId(undefined);
     setTagId(undefined);
     setKeyword('');
-    setCurrentPage(1);
-  };
-
-  /**
-   * 分页切换
-   */
-  const handlePageChange = (page: number, newPageSize: number) => {
-    if (newPageSize !== pageSize) {
-      setPageSize(newPageSize);
-      setCurrentPage(1);
-    } else {
-      setCurrentPage(page);
-    }
   };
 
   // 检查是否有任何筛选条件
@@ -333,7 +341,7 @@ export function BlogHomePage() {
     return (
       <Empty
         description="加载失败，请稍后重试"
-        style={{ marginTop: 100 }}
+        className="mt-[100px]"
       />
     );
   }
@@ -346,12 +354,12 @@ export function BlogHomePage() {
       {/* 移动端筛选按钮 */}
       {isMobile && (
         <div className="sticky-z bg-bg-container py-3 border-b border-border">
-          <div style={{ maxWidth: '100%', margin: '0 auto', padding: '0 16px', display: 'flex', gap: 12 }}>
+          <div className="max-w-full mx-auto px-4 flex gap-3">
             <Button
               type="primary"
               icon={<FilterOutlined />}
               onClick={() => setIsDrawerOpen(true)}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               筛选
             </Button>
@@ -364,9 +372,9 @@ export function BlogHomePage() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 24 }}>
+      <div className="flex gap-6">
         {/* 桌面端侧边栏 */}
-        <aside style={{ width: 260, flexShrink: 0, display: isMobile ? 'none' : 'block' }}>
+        <aside className={`w-[260px] shrink-0 ${isMobile ? 'hidden' : 'block'}`}>
           <SidebarContent
             categoryId={categoryId}
             tagId={tagId}
@@ -393,42 +401,44 @@ export function BlogHomePage() {
         </Drawer>
 
         {/* 主内容区 */}
-        <main style={{ flex: 1 }}>
+        <main className="flex-1">
           {/* 博主简介（仅桌面端显示） */}
-          {!isMobile && <AuthorCard />}
+          {!isMobile && <AuthorCard postCount={total} categoryCount={categoryTree.length} tagCount={tags.length} />}
 
           {/* 搜索框 */}
-          <Card
-            style={{ marginBottom: 24, borderRadius: 8 }}
-            styles={{ body: { padding: 16 } }}
-          >
-            <SearchInput
-              value={keyword}
-              onSearch={handleSearch}
-              onClear={handleClear}
-              loading={loading}
-              placeholder="搜索文章标题或摘要..."
-            />
-            {hasFilters && !loading && (
-              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="text-text-tertiary">
-                  {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
-                </span>
-                <Tag
-                  closable
-                  onClose={handleClearFilters}
-                  color="blue"
-                  style={{ cursor: 'pointer' }}
-                >
-                  清除筛选
-                </Tag>
-              </div>
-            )}
-          </Card>
+          <div className="mb-6">
+            <Card
+              style={{ borderRadius: 'var(--radius-card)' }}
+              styles={{ body: { padding: 16 } }}
+            >
+              <SearchInput
+                value={keyword}
+                onSearch={handleSearch}
+                onClear={handleClear}
+                loading={loading}
+                placeholder="搜索文章标题或摘要..."
+              />
+              {hasFilters && !loading && (
+                <div className="mt-3 flex items-center gap-3">
+                  <span className="text-text-tertiary">
+                    {total > 0 ? `找到 ${total} 篇相关文章` : '未找到相关文章'}
+                  </span>
+                  <Tag
+                    closable
+                    onClose={handleClearFilters}
+                    color="blue"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    清除筛选
+                  </Tag>
+                </div>
+              )}
+            </Card>
+          </div>
 
-          {/* 加载状态 */}
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 40 }}>
+          {/* 加载状态（首次加载） */}
+          {loading && posts.length === 0 ? (
+            <div className="text-center py-10">
               <Spin size="large" />
             </div>
           ) : (
@@ -437,27 +447,31 @@ export function BlogHomePage() {
               {featuredPost && <FeaturedPostCard post={featuredPost} />}
 
               {/* 文章列表 */}
-              <Card style={{ borderRadius: 8 }}>
+              <Card style={{ borderRadius: 'var(--radius-card)' }}>
                 <List
                   dataSource={regularPosts}
                   renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
-                  pagination={{
-                    current: currentPage,
-                    pageSize: pageSize,
-                    total: total,
-                    onChange: handlePageChange,
-                    showSizeChanger: true,
-                    pageSizeOptions: ['10', '20', '50'],
-                    showTotal: (total) => `共 ${total} 篇文章`,
-                  }}
                 />
+
+                {/* 无限滚动哨兵 + 加载更多 */}
+                <div ref={sentinelRef} className="text-center py-6">
+                  {loadingMore && <Spin />}
+                  {!hasMore && posts.length > 0 && (
+                    <span className="text-text-tertiary">—— 已加载全部 {total} 篇文章 ——</span>
+                  )}
+                  {hasMore && !loadingMore && (
+                    <Button type="link" onClick={() => { setLoadingMore(true); loadMore().finally(() => setLoadingMore(false)); }}>
+                      加载更多
+                    </Button>
+                  )}
+                </div>
               </Card>
 
               {/* 空状态 */}
               {posts.length === 0 && (
                 <Empty
                   description="暂无文章"
-                  style={{ marginTop: 50 }}
+                  className="mt-[50px]"
                 />
               )}
             </>

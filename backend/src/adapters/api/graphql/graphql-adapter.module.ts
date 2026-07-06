@@ -5,6 +5,7 @@ import { AiQueueUsecasesModule } from '@src/usecases/ai-queue/ai-queue-usecases.
 import { AuditUsecasesModule } from '@src/usecases/audit/audit-usecases.module';
 import { AuthUsecasesModule } from '@src/usecases/auth/auth-usecases.module';
 import { AsyncTaskRecordUsecasesModule } from '@src/usecases/async-task-record/async-task-record-usecases.module';
+import { BlogUsecasesModule } from '@src/usecases/blog/blog-usecases.module';
 import { EmailQueueUsecasesModule } from '@src/usecases/email-queue/email-queue-usecases.module';
 import { MediaUsecasesModule } from '@src/usecases/media/media-usecases.module';
 import { RegistrationUsecasesModule } from '@src/usecases/registration/registration-usecases.module';
@@ -36,6 +37,7 @@ import { VerificationRecordResolver } from './verification-record/verification-r
 import { MediaResolver } from './media/media.resolver';
 import { SettingsResolver } from './settings/settings.resolver';
 import { MagicWorkshopResolver } from './magic-workshop/magic-workshop.resolver';
+import { BlogResolver } from './blog/blog.resolver';
 
 // Guards
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -62,6 +64,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     AsyncTaskRecordUsecasesModule,
     AuthUsecasesModule,
     BlogModule.forRoot(),
+    BlogUsecasesModule,
     EmailQueueUsecasesModule,
     MediaUsecasesModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -118,6 +121,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     MediaResolver,
     SettingsResolver,
     MagicWorkshopResolver,
+    BlogResolver,
     // Guards
     QmWorkerEntryGuard,
     JwtAuthGuard,
@@ -138,6 +142,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     MediaResolver,
     SettingsResolver,
     MagicWorkshopResolver,
+    BlogResolver,
     QmWorkerEntryGuard,
     JwtAuthGuard,
     RolesGuard,

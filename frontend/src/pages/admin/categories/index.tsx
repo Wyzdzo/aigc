@@ -8,6 +8,7 @@ import {
   Empty,
   Form,
   Input,
+  InputNumber,
   message,
   Modal,
   Popconfirm,
@@ -72,27 +73,29 @@ export function AdminCategoriesPage() {
     }
   };
 
+  const cleanFormValues = (values: Record<string, unknown>) => {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(values)) {
+      if (value === '' || value === undefined || value === null) {
+        continue;
+      }
+      cleaned[key] = value;
+    }
+    return cleaned;
+  };
+
   const handleOk = () => {
     form.validateFields().then(async (values) => {
       try {
+        const cleaned = cleanFormValues(values);
         if (editingCategory) {
           await updateCategory({
             id: editingCategory.id,
-            name: values.name,
-            slug: values.slug,
-            description: values.description,
-            parentId: values.parentId,
-            sortOrder: values.sortOrder,
+            ...cleaned,
           });
           message.success('更新成功');
         } else {
-          await createCategory({
-            name: values.name,
-            slug: values.slug,
-            description: values.description,
-            parentId: values.parentId,
-            sortOrder: values.sortOrder,
-          });
+          await createCategory(cleaned as Parameters<typeof createCategory>[0]);
           message.success('创建成功');
         }
         setIsModalVisible(false);
@@ -196,6 +199,7 @@ export function AdminCategoriesPage() {
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
+        confirmLoading={creating || updating}
         width={500}
       >
         <Form form={form} layout="vertical">
@@ -216,17 +220,18 @@ export function AdminCategoriesPage() {
           <Form.Item name="description" label="分类描述">
             <Input.TextArea placeholder="请输入分类描述" rows={3} />
           </Form.Item>
-          <Form.Item name="parentId" label="父分类">
-            <Input
-              type="number"
+          <Form.Item name="parentId" label="父分类ID">
+            <InputNumber
+              min={1}
+              style={{ width: '100%' }}
               placeholder="请输入父分类ID（可选）"
             />
           </Form.Item>
-          <Form.Item name="sortOrder" label="排序顺序">
-            <Input
-              type="number"
+          <Form.Item name="sortOrder" label="排序顺序" initialValue={0}>
+            <InputNumber
+              min={0}
+              style={{ width: '100%' }}
               placeholder="请输入排序顺序"
-              defaultValue={0}
             />
           </Form.Item>
         </Form>

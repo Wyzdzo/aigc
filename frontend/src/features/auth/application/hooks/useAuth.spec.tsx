@@ -5,10 +5,10 @@ import { describe, expect, it, vi, beforeAll, afterEach } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing/react';
 import type { MockedResponse } from '@apollo/client/testing';
 
-import { useAuth } from '@/features/auth';
+import { useAuth, AuthProvider } from '@/features/auth';
 import type { DocumentNode } from 'graphql';
 
-// Mock LOGIN
+// Mock LOGIN to avoid GraphQL parsing issues in tests
 vi.mock('@/features/auth', async () => {
   const actual = await vi.importActual('@/features/auth');
   return {
@@ -41,6 +41,7 @@ beforeAll(() => {
       getItem: vi.fn(),
       setItem: vi.fn(),
       removeItem: vi.fn(),
+      clear: vi.fn(),
     },
     writable: true,
   });
@@ -52,7 +53,11 @@ afterEach(() => {
 
 function createWrapper(mocks: MockedResponse[] = []) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return <MockedProvider mocks={mocks}>{children}</MockedProvider>;
+    return (
+      <MockedProvider mocks={mocks}>
+        <AuthProvider>{children}</AuthProvider>
+      </MockedProvider>
+    );
   };
 }
 

@@ -104,7 +104,7 @@ describe('GraphQL Client', () => {
       const mockData = {
         posts: {
           items: [
-            { id: 1, title: 'Test Post', __typename: 'BlogPost' },
+            { id: 1, title: 'Test Post', __typename: 'BlogPostDTO' },
           ],
           total: 1,
           page: 1,
@@ -156,51 +156,51 @@ describe('GraphQL Client', () => {
       const cache = client.cache as InMemoryCache;
 
       // Write a post to cache
-      const post = { id: 1, title: 'Test Post', __typename: 'BlogPost' };
+      const post = { id: 1, title: 'Test Post', __typename: 'BlogPostDTO' };
       const cacheId = cache.identify(post);
 
       // Cache ID format includes the key fields
-      expect(cacheId).toContain('BlogPost');
+      expect(cacheId).toContain('BlogPostDTO');
     });
 
     it('should normalize category by id', () => {
       const client = getGraphQLClient();
       const cache = client.cache as InMemoryCache;
 
-      const category = { id: 1, name: 'Test Category', __typename: 'BlogCategory' };
+      const category = { id: 1, name: 'Test Category', __typename: 'BlogCategoryDTO' };
       const cacheId = cache.identify(category);
 
-      expect(cacheId).toContain('BlogCategory');
+      expect(cacheId).toContain('BlogCategoryDTO');
     });
 
     it('should normalize tag by id', () => {
       const client = getGraphQLClient();
       const cache = client.cache as InMemoryCache;
 
-      const tag = { id: 1, name: 'Test Tag', __typename: 'BlogTag' };
+      const tag = { id: 1, name: 'Test Tag', __typename: 'BlogTagDTO' };
       const cacheId = cache.identify(tag);
 
-      expect(cacheId).toContain('BlogTag');
+      expect(cacheId).toContain('BlogTagDTO');
     });
 
     it('should normalize comment by id', () => {
       const client = getGraphQLClient();
       const cache = client.cache as InMemoryCache;
 
-      const comment = { id: 1, content: 'Test Comment', __typename: 'BlogComment' };
+      const comment = { id: 1, content: 'Test Comment', __typename: 'BlogCommentDTO' };
       const cacheId = cache.identify(comment);
 
-      expect(cacheId).toContain('BlogComment');
+      expect(cacheId).toContain('BlogCommentDTO');
     });
 
     it('should normalize link by id', () => {
       const client = getGraphQLClient();
       const cache = client.cache as InMemoryCache;
 
-      const link = { id: 1, title: 'Test Link', __typename: 'BlogLink' };
+      const link = { id: 1, title: 'Test Link', __typename: 'BlogLinkDTO' };
       const cacheId = cache.identify(link);
 
-      expect(cacheId).toContain('BlogLink');
+      expect(cacheId).toContain('BlogLinkDTO');
     });
 
     it('should return undefined for entity without typename', () => {
@@ -220,8 +220,8 @@ describe('GraphQL Client', () => {
       const page1 = {
         posts: {
           items: [
-            { id: 1, title: 'Post 1', __typename: 'BlogPost' },
-            { id: 2, title: 'Post 2', __typename: 'BlogPost' },
+            { id: 1, title: 'Post 1', __typename: 'BlogPostDTO' },
+            { id: 2, title: 'Post 2', __typename: 'BlogPostDTO' },
           ],
           total: 4,
           page: 1,

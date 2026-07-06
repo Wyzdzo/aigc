@@ -1,7 +1,8 @@
 // src/features/blog/application/hooks/useComments.ts
 import { useQuery } from '@apollo/client/react';
 
-import type { BlogComment, CommentStatus } from '@/entities/blog';
+import { CommentStatus } from '@/entities/blog';
+import type { BlogComment } from '@/entities/blog';
 
 import { GET_COMMENT_STATS,GET_COMMENTS } from '../../infrastructure/graphql/queries';
 
@@ -31,7 +32,7 @@ export interface CommentsVariables {
 }
 
 export function useComments(variables: CommentsVariables = {}) {
-  const { postId, status, page = 1, pageSize = 10 } = variables;
+  const { postId, status = CommentStatus.APPROVED, page = 1, pageSize = 10 } = variables;
 
   const { data, loading, error, refetch } = useQuery<CommentsResult, CommentsVariables>(
     GET_COMMENTS,

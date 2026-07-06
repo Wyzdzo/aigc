@@ -34,7 +34,7 @@ beforeAll(() => {
 
 const mockCategories = [
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 1,
     name: '前端技术',
     slug: 'frontend',
@@ -45,7 +45,7 @@ const mockCategories = [
     updatedAt: new Date('2024-01-01'),
     children: [
       {
-        __typename: 'BlogCategory',
+        __typename: 'BlogCategoryDTO',
         id: 3,
         name: 'React',
         slug: 'react',
@@ -57,7 +57,7 @@ const mockCategories = [
         children: [],
       },
       {
-        __typename: 'BlogCategory',
+        __typename: 'BlogCategoryDTO',
         id: 4,
         name: 'Vue',
         slug: 'vue',
@@ -71,7 +71,7 @@ const mockCategories = [
     ],
   },
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 2,
     name: '后端技术',
     slug: 'backend',

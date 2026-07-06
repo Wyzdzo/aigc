@@ -78,7 +78,7 @@ describe('AdminCategoriesPage', () => {
             data: {
               categories: [
                 {
-                  __typename: 'BlogCategory',
+                  __typename: 'BlogCategoryDTO',
                   id: 1,
                   name: '技术博客',
                   slug: 'tech',
@@ -89,7 +89,7 @@ describe('AdminCategoriesPage', () => {
                   updatedAt: '2024-01-15T10:00:00Z',
                 },
                 {
-                  __typename: 'BlogCategory',
+                  __typename: 'BlogCategoryDTO',
                   id: 2,
                   name: '前端开发',
                   slug: 'frontend',
@@ -188,7 +188,7 @@ describe('AdminCategoriesPage', () => {
             data: {
               categories: [
                 {
-                  __typename: 'BlogCategory',
+                  __typename: 'BlogCategoryDTO',
                   id: 1,
                   name: 'Level 1',
                   slug: 'level1',
@@ -199,7 +199,7 @@ describe('AdminCategoriesPage', () => {
                   updatedAt: '2024-01-15T10:00:00Z',
                 },
                 {
-                  __typename: 'BlogCategory',
+                  __typename: 'BlogCategoryDTO',
                   id: 2,
                   name: 'Level 2',
                   slug: 'level2',
@@ -210,7 +210,7 @@ describe('AdminCategoriesPage', () => {
                   updatedAt: '2024-01-15T11:00:00Z',
                 },
                 {
-                  __typename: 'BlogCategory',
+                  __typename: 'BlogCategoryDTO',
                   id: 3,
                   name: 'Level 3',
                   slug: 'level3',
@@ -243,7 +243,7 @@ describe('AdminCategoriesPage', () => {
             data: {
               categories: [
                 {
-                  __typename: 'BlogCategory',
+                  __typename: 'BlogCategoryDTO',
                   id: 1,
                   name: '测试分类',
                   slug: 'test',
@@ -270,7 +270,7 @@ describe('AdminCategoriesPage', () => {
 
   describe('Mutation Interactions', () => {
     const categoryBase = {
-      __typename: 'BlogCategory',
+      __typename: 'BlogCategoryDTO',
       id: 1,
       name: '测试分类',
       slug: 'test',
@@ -295,15 +295,13 @@ describe('AdminCategoriesPage', () => {
             variables: {
               name: '新分类',
               slug: 'new-category',
-              description: undefined,
-              parentId: undefined,
-              sortOrder: undefined,
+              sortOrder: 0,
             },
           },
           result: {
             data: {
               createCategory: {
-                __typename: 'BlogCategory',
+                __typename: 'BlogCategoryDTO',
                 id: 2,
                 name: '新分类',
                 slug: 'new-category',
@@ -374,14 +372,13 @@ describe('AdminCategoriesPage', () => {
               name: '更新分类',
               slug: 'updated-category',
               description: '测试描述',
-              parentId: null,
               sortOrder: 0,
             },
           },
           result: {
             data: {
               updateCategory: {
-                __typename: 'BlogCategory',
+                __typename: 'BlogCategoryDTO',
                 id: 1,
                 name: '更新分类',
                 slug: 'updated-category',
@@ -451,9 +448,7 @@ describe('AdminCategoriesPage', () => {
             variables: {
               name: '新分类',
               slug: 'new-category',
-              description: undefined,
-              parentId: undefined,
-              sortOrder: undefined,
+              sortOrder: 0,
             },
           },
           error: new Error('Network error'),

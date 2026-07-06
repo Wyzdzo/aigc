@@ -32,7 +32,7 @@ describe('GraphQL Fragments', () => {
 
       expect(fragment.kind).toBe('FragmentDefinition');
       expect(fragment.name.value).toBe('PostBasic');
-      expect(fragment.typeCondition.name.value).toBe('BlogPost');
+      expect(fragment.typeCondition.name.value).toBe('BlogPostDTO');
     });
 
     it('POST_FULL_FRAGMENT should contain all detail fields', () => {
@@ -40,7 +40,7 @@ describe('GraphQL Fragments', () => {
 
       expect(fragment.kind).toBe('FragmentDefinition');
       expect(fragment.name.value).toBe('PostFull');
-      expect(fragment.typeCondition.name.value).toBe('BlogPost');
+      expect(fragment.typeCondition.name.value).toBe('BlogPostDTO');
     });
 
     it('POST_BASIC_FRAGMENT should not include content field', () => {
@@ -80,7 +80,7 @@ describe('GraphQL Fragments', () => {
 
       expect(fragment.kind).toBe('FragmentDefinition');
       expect(fragment.name.value).toBe('CategoryBasic');
-      expect(fragment.typeCondition.name.value).toBe('BlogCategory');
+      expect(fragment.typeCondition.name.value).toBe('BlogCategoryDTO');
     });
 
     it('CATEGORY_BASIC_FRAGMENT should include parentId field', () => {
@@ -105,7 +105,7 @@ describe('GraphQL Fragments', () => {
 
       expect(fragment.kind).toBe('FragmentDefinition');
       expect(fragment.name.value).toBe('TagBasic');
-      expect(fragment.typeCondition.name.value).toBe('BlogTag');
+      expect(fragment.typeCondition.name.value).toBe('BlogTagDTO');
     });
 
     it('TAG_BASIC_FRAGMENT should include id field', () => {
@@ -125,7 +125,7 @@ describe('GraphQL Fragments', () => {
 
       expect(fragment.kind).toBe('FragmentDefinition');
       expect(fragment.name.value).toBe('CommentBasic');
-      expect(fragment.typeCondition.name.value).toBe('BlogComment');
+      expect(fragment.typeCondition.name.value).toBe('BlogCommentDTO');
     });
 
     it('COMMENT_BASIC_FRAGMENT should include parentId field for nested comments', () => {
@@ -150,7 +150,7 @@ describe('GraphQL Fragments', () => {
 
       expect(fragment.kind).toBe('FragmentDefinition');
       expect(fragment.name.value).toBe('LinkBasic');
-      expect(fragment.typeCondition.name.value).toBe('BlogLink');
+      expect(fragment.typeCondition.name.value).toBe('BlogLinkDTO');
     });
 
     it('LINK_BASIC_FRAGMENT should include logo field', () => {

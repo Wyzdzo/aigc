@@ -48,8 +48,10 @@ export interface UpdatePasswordInput {
   newPassword: string;
 }
 
-export function useSettings() {
-  const { data, loading, refetch } = useQuery<{ settings: SettingsData }>(GET_SETTINGS);
+export function useSettings(options?: { skip?: boolean }) {
+  const { data, loading, refetch } = useQuery<{ settings: SettingsData }>(GET_SETTINGS, {
+    skip: options?.skip,
+  });
 
   const [updateSiteSettings, { loading: updateSiteSettingsLoading }] = useMutation<{ updateSiteSettings: boolean }, { input: UpdateSiteSettingsInput }>(
     UPDATE_SITE_SETTINGS,

@@ -78,14 +78,14 @@ describe('AdminTagsPage', () => {
             data: {
               tags: [
                 {
-                  __typename: 'BlogTag',
+                  __typename: 'BlogTagDTO',
                   id: 1,
                   name: 'React',
                   slug: 'react',
                   createdAt: '2024-01-15T10:00:00Z',
                 },
                 {
-                  __typename: 'BlogTag',
+                  __typename: 'BlogTagDTO',
                   id: 2,
                   name: 'TypeScript',
                   slug: 'typescript',
@@ -184,7 +184,7 @@ describe('AdminTagsPage', () => {
             data: {
               tags: [
                 {
-                  __typename: 'BlogTag',
+                  __typename: 'BlogTagDTO',
                   id: 1,
                   name: '测试标签',
                   slug: 'test-tag',
@@ -212,14 +212,14 @@ describe('AdminTagsPage', () => {
             data: {
               tags: [
                 {
-                  __typename: 'BlogTag',
+                  __typename: 'BlogTagDTO',
                   id: 1,
                   name: 'AI & Machine Learning',
                   slug: 'ai-ml',
                   createdAt: '2024-01-15T10:00:00Z',
                 },
                 {
-                  __typename: 'BlogTag',
+                  __typename: 'BlogTagDTO',
                   id: 2,
                   name: 'Web 前端开发',
                   slug: 'web-frontend',
@@ -242,7 +242,7 @@ describe('AdminTagsPage', () => {
 
   describe('Mutation Interactions', () => {
     const tagBase = {
-      __typename: 'BlogTag',
+      __typename: 'BlogTagDTO',
       id: 1,
       name: '测试标签',
       slug: 'test-tag',
@@ -265,7 +265,7 @@ describe('AdminTagsPage', () => {
           result: {
             data: {
               createTag: {
-                __typename: 'BlogTag',
+                __typename: 'BlogTagDTO',
                 id: 2,
                 name: '新标签',
                 slug: 'new-tag',
@@ -332,7 +332,7 @@ describe('AdminTagsPage', () => {
           result: {
             data: {
               updateTag: {
-                __typename: 'BlogTag',
+                __typename: 'BlogTagDTO',
                 id: 1,
                 name: '更新标签',
                 slug: 'updated-tag',

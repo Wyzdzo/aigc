@@ -1,11 +1,20 @@
 // src/app/layout/app-layout.tsx
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MoonOutlined, SunOutlined } from '@ant-design/icons';
-import { Button, Segmented, Tabs, Tooltip } from 'antd';
+import {
+  LockOutlined,
+  LogoutOutlined,
+  MoonOutlined,
+  SettingOutlined,
+  SunOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { Avatar, Button, Dropdown, Form, Input, Modal, Segmented, Tabs, Tooltip, message } from 'antd';
 import type { ReactNode } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 
+import { useAuth } from '@/features/auth';
+import { useSettings, type UpdateBloggerInfoInput } from '@/features/settings';
 import { getNavigationItems } from '@/app/navigation';
 import { FONT_SCALE_OPTIONS, useTheme } from '@/app/providers';
 import { APP_THEME_CSS_VAR_KEY } from '@/app/theme';
@@ -61,6 +70,78 @@ export function AppLayout({ children }: AppLayoutProps = {}) {
     () => navigationItems.map((item) => toRouteCandidate(item)),
     [navigationItems],
   );
+
+  const { isAuthenticated, user, logout } = useAuth();
+  const { settings, updateBloggerInfo, updateBloggerInfoLoading, updatePassword, updatePasswordLoading } = useSettings({ skip: !isAuthenticated });
+  const [bloggerModalOpen, setBloggerModalOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [bloggerForm] = Form.useForm<UpdateBloggerInfoInput>();
+  const [passwordForm] = Form.useForm<{ oldPassword: string; newPassword: string; confirmPassword: string }>();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleOpenBloggerModal = () => {
+    if (settings?.bloggerInfo) {
+      bloggerForm.setFieldsValue({
+        nickname: settings.bloggerInfo.nickname ?? '',
+        bio: settings.bloggerInfo.bio ?? '',
+        avatar: settings.bloggerInfo.avatar ?? '',
+      });
+    }
+    setBloggerModalOpen(true);
+  };
+
+  const handleBloggerSubmit = async () => {
+    try {
+      const values = await bloggerForm.validateFields();
+      const success = await updateBloggerInfo(values);
+      if (success) {
+        message.success('博主信息更新成功');
+        setBloggerModalOpen(false);
+      } else {
+        message.error('更新失败，请重试');
+      }
+    } catch (error) {
+      if ((error as { errorFields?: unknown })?.errorFields) {
+        return; // 表单验证失败，由 Ant Design 自动提示
+      }
+      message.error('更新失败，请重试');
+    }
+  };
+
+  const handlePasswordSubmit = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      const success = await updatePassword({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+      });
+      if (success) {
+        message.success('密码修改成功');
+        setPasswordModalOpen(false);
+        passwordForm.resetFields();
+      } else {
+        message.error('密码修改失败，请重试');
+      }
+    } catch (error) {
+      if ((error as { errorFields?: unknown })?.errorFields) {
+        return; // 表单验证失败，由 Ant Design 自动提示
+      }
+      message.error('密码修改失败，请重试');
+    }
+  };
+
+  const userMenuItems = [
+    { key: 'blog', icon: <></>, label: '前往博客', onClick: () => navigate('/blog') },
+    { key: 'admin', icon: <SettingOutlined />, label: '后台管理', onClick: () => navigate('/admin') },
+    { key: 'blogger', icon: <UserOutlined />, label: '修改博主信息', onClick: handleOpenBloggerModal },
+    { key: 'password', icon: <LockOutlined />, label: '修改密码', onClick: () => setPasswordModalOpen(true) },
+    { type: 'divider' as const },
+    { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', danger: true, onClick: handleLogout },
+  ];
 
   useEffect(() => {
     if (wasSidecarOpenRef.current && !isSidecarOpen) {
@@ -145,6 +226,21 @@ export function AppLayout({ children }: AppLayoutProps = {}) {
               </span>
             </Tooltip>
           </div>
+
+          {isAuthenticated && user ? (
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+              <div className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded-md">
+                <Avatar size="small" src={user.avatarUrl} icon={!user.avatarUrl ? <UserOutlined /> : undefined} />
+                <span className="max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{user.nickname}</span>
+              </div>
+            </Dropdown>
+          ) : (
+            <Link to="/login">
+              <Button type="primary" size="small" icon={<UserOutlined />}>
+                登录
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -178,6 +274,68 @@ export function AppLayout({ children }: AppLayoutProps = {}) {
         open={isSidecarOpen}
         routeCandidates={routeCandidates}
       />
+
+      {/* 修改博主信息弹窗 */}
+      <Modal
+        title="修改博主信息"
+        open={bloggerModalOpen}
+        onOk={handleBloggerSubmit}
+        onCancel={() => setBloggerModalOpen(false)}
+        confirmLoading={updateBloggerInfoLoading}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={bloggerForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item name="nickname" label="昵称" rules={[{ required: true, message: '请输入昵称' }]}>
+            <Input placeholder="博主昵称" />
+          </Form.Item>
+          <Form.Item name="avatar" label="头像URL">
+            <Input placeholder="头像图片地址" />
+          </Form.Item>
+          <Form.Item name="bio" label="个人简介">
+            <Input.TextArea rows={4} placeholder="简单介绍自己" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 修改密码弹窗 */}
+      <Modal
+        title="修改密码"
+        open={passwordModalOpen}
+        onOk={handlePasswordSubmit}
+        onCancel={() => {
+          setPasswordModalOpen(false);
+          passwordForm.resetFields();
+        }}
+        confirmLoading={updatePasswordLoading}
+        okText="确认修改"
+        cancelText="取消"
+      >
+        <Form form={passwordForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item name="oldPassword" label="当前密码" rules={[{ required: true, message: '请输入当前密码' }]}>
+            <Input.Password placeholder="输入当前密码" />
+          </Form.Item>
+          <Form.Item name="newPassword" label="新密码" rules={[
+            { required: true, message: '请输入新密码' },
+            { min: 8, message: '密码至少8个字符' },
+          ]}>
+            <Input.Password placeholder="输入新密码" />
+          </Form.Item>
+          <Form.Item name="confirmPassword" label="确认新密码" dependencies={['newPassword']} rules={[
+            { required: true, message: '请确认新密码' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('newPassword') === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error('两次输入的密码不一致'));
+              },
+            }),
+          ]}>
+            <Input.Password placeholder="再次输入新密码" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

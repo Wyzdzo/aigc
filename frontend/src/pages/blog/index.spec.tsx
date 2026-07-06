@@ -6,7 +6,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { GET_POSTS } from '@/features/blog';
+import { GET_CATEGORY_TREE, GET_POSTS, GET_TAGS } from '@/features/blog';
 
 import type { BlogPost } from '@/entities/blog';
 import { PostStatus } from '@/entities/blog';
@@ -52,7 +52,7 @@ beforeAll(() => {
 
 const mockPosts: BlogPost[] = [
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 1,
     title: 'React 18 新特性详解',
     slug: 'react-18-new-features',
@@ -68,7 +68,7 @@ const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-15'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 2,
     title: 'TypeScript 高级类型技巧',
     slug: 'typescript-advanced-types',
@@ -84,7 +84,7 @@ const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-10'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 3,
     title: 'Next.js 14 全栈开发指南',
     slug: 'nextjs-14-fullstack-guide',
@@ -234,7 +234,7 @@ describe('BlogHomePage', () => {
       expect(screen.getAllByText(/876/).length).toBeGreaterThan(0);
     });
 
-    it('should render pagination when total > pageSize', async () => {
+    it('should show "Load More" button when there are more posts', async () => {
       const manyPosts = Array.from({ length: 15 }, (_, i) => ({
         ...mockPosts[0],
         id: i + 1,
@@ -260,13 +260,11 @@ describe('BlogHomePage', () => {
         },
       ];
 
-      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+      render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.querySelector('.ant-pagination')).toBeTruthy();
+        expect(screen.getByText('加载更多')).toBeTruthy();
       });
-
-      expect(screen.getByText('共 15 篇文章')).toBeTruthy();
     });
   });
 
@@ -279,6 +277,14 @@ describe('BlogHomePage', () => {
             variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
           },
           error: new Error('Network error'),
+        },
+        {
+          request: { query: GET_CATEGORY_TREE },
+          result: { data: { categoryTree: [] } },
+        },
+        {
+          request: { query: GET_TAGS },
+          result: { data: { tags: [] } },
         },
       ];
 
@@ -622,11 +628,11 @@ describe('BlogHomePage', () => {
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        // 检查侧边栏是否通过 CSS 隐藏（display: none）
+        // 检查侧边栏是否通过 Tailwind hidden class 隐藏
         const aside = container.querySelector('aside');
         expect(aside).toBeTruthy();
         // 侧边栏在移动端应该被隐藏
-        expect(aside?.getAttribute('style')).toContain('display: none');
+        expect(aside?.classList.contains('hidden')).toBe(true);
       });
     });
 
@@ -699,13 +705,12 @@ describe('BlogHomePage', () => {
     });
   });
 
-  describe('Pagination Feature', () => {
-    it('should change page when pagination is clicked', async () => {
+  describe('Infinite Scroll Feature', () => {
+    it('should show loading spinner when "Load More" is clicked', async () => {
       const manyPosts = Array.from({ length: 15 }, (_, i) => ({
         ...mockPosts[0],
         id: i + 1,
         slug: `post-${i + 1}`,
-        title: `文章 ${i + 1}`,
       }));
 
       const mocks = [
@@ -725,50 +730,30 @@ describe('BlogHomePage', () => {
             },
           },
         },
-        {
-          request: {
-            query: GET_POSTS,
-            variables: { status: PostStatus.PUBLISHED, page: 2, pageSize: 10 },
-          },
-          result: {
-            data: {
-              posts: {
-                items: manyPosts.slice(10, 15),
-                total: 15,
-                page: 2,
-                pageSize: 10,
-              },
-            },
-          },
-        },
       ];
 
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
+      // 等待"加载更多"按钮出现
       await waitFor(() => {
-        expect(container.querySelector('.ant-pagination')).toBeTruthy();
+        expect(screen.getByText('加载更多')).toBeTruthy();
       });
 
-      // 找到分页按钮并点击第2页
-      const pagination = container.querySelector('.ant-pagination');
-      if (pagination) {
-        const page2Button = pagination.querySelector('li.ant-pagination-item-2');
-        if (page2Button) {
-          fireEvent.click(page2Button);
+      // 点击"加载更多"
+      fireEvent.click(screen.getByText('加载更多'));
 
-          await waitFor(() => {
-            expect(screen.getAllByText('文章 11').length).toBeGreaterThan(0);
-          });
-        }
-      }
+      // 验证加载状态（Spin组件出现，"加载更多"按钮消失）
+      await waitFor(() => {
+        expect(container.querySelector('.ant-spin')).toBeTruthy();
+        expect(screen.queryByText('加载更多')).toBeNull();
+      });
     });
 
-    it('should reset page to 1 when pageSize changes', async () => {
-      const manyPosts = Array.from({ length: 25 }, (_, i) => ({
+    it('should show loaded-all message when all posts are loaded', async () => {
+      const allPosts = Array.from({ length: 5 }, (_, i) => ({
         ...mockPosts[0],
         id: i + 1,
         slug: `post-${i + 1}`,
-        title: `文章 ${i + 1}`,
       }));
 
       const mocks = [
@@ -780,80 +765,22 @@ describe('BlogHomePage', () => {
           result: {
             data: {
               posts: {
-                items: manyPosts.slice(0, 10),
-                total: 25,
+                items: allPosts,
+                total: 5,
                 page: 1,
                 pageSize: 10,
-              },
-            },
-          },
-        },
-        {
-          request: {
-            query: GET_POSTS,
-            variables: { status: PostStatus.PUBLISHED, page: 2, pageSize: 10 },
-          },
-          result: {
-            data: {
-              posts: {
-                items: manyPosts.slice(10, 20),
-                total: 25,
-                page: 2,
-                pageSize: 10,
-              },
-            },
-          },
-        },
-        {
-          request: {
-            query: GET_POSTS,
-            variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 20 },
-          },
-          result: {
-            data: {
-              posts: {
-                items: manyPosts.slice(0, 20),
-                total: 25,
-                page: 1,
-                pageSize: 20,
               },
             },
           },
         },
       ];
 
-      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+      render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
+      // 所有文章已加载，应显示"已加载全部"提示
       await waitFor(() => {
-        expect(container.querySelector('.ant-pagination')).toBeTruthy();
+        expect(screen.getByText(/已加载全部 5 篇文章/)).toBeTruthy();
       });
-
-      // 点击第2页
-      const pagination = container.querySelector('.ant-pagination');
-      if (pagination) {
-        const page2Button = pagination.querySelector('li.ant-pagination-item-2');
-        if (page2Button) {
-          fireEvent.click(page2Button);
-
-          await waitFor(() => {
-            expect(screen.getAllByText('文章 11').length).toBeGreaterThan(0);
-          });
-
-          // 更改pageSize应该重置回第1页
-          const pageSizeSelector = container.querySelector('.ant-pagination-options-size-changer');
-          if (pageSizeSelector) {
-            const select = pageSizeSelector.querySelector('select');
-            if (select) {
-              fireEvent.change(select, { target: { value: '20' } });
-
-              await waitFor(() => {
-                // 应该回到第1页的内容
-                expect(screen.getAllByText('文章 1').length).toBeGreaterThan(0);
-              });
-            }
-          }
-        }
-      }
     });
   });
 });

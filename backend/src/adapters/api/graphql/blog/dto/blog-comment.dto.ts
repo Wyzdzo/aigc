@@ -33,4 +33,7 @@ export class BlogCommentDTO {
 
   @Field(() => Date, { description: '创建时间' })
   createdAt!: Date;
+
+  @Field(() => Date, { description: '更新时间' })
+  updatedAt!: Date;
 }

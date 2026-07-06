@@ -5,9 +5,12 @@ import { GeographicInfo } from '@app-types/models/user-info.types';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { CompleteUserData, FetchUserInfoUsecase } from '@usecases/account/fetch-user-info.usecase';
 import { LoginWithPasswordUsecase } from '@usecases/auth/login-with-password.usecase';
+import { RefreshTokenUsecase } from '@usecases/auth/refresh-token.usecase';
 import { LoginResult } from '../account/dto/login-result.dto';
 import { UserInfoDTO } from '../account/dto/user-info.dto';
 import { AuthLoginInput } from './dto/auth-login.input';
+import { RefreshTokenInput } from './dto/refresh-token.input';
+import { RefreshTokenResult } from './dto/refresh-token-result.dto';
 
 /**
  * 认证相关的 GraphQL Resolver
@@ -17,6 +20,7 @@ export class AuthResolver {
   constructor(
     private readonly loginWithPasswordUsecase: LoginWithPasswordUsecase,
     private readonly fetchUserInfoUsecase: FetchUserInfoUsecase,
+    private readonly refreshTokenUsecase: RefreshTokenUsecase,
   ) {}
 
   @Mutation(() => LoginResult)
@@ -46,6 +50,15 @@ export class AuthResolver {
     };
 
     return loginResult;
+  }
+
+  @Mutation(() => RefreshTokenResult)
+  async refreshToken(@Args('input') input: RefreshTokenInput): Promise<RefreshTokenResult> {
+    const result = await this.refreshTokenUsecase.execute(input.refreshToken, input.audience);
+    return {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    };
   }
 
   /**

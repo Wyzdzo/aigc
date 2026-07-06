@@ -167,6 +167,19 @@ export type InputNormalizeErrorCode =
   (typeof INPUT_NORMALIZE_ERROR)[keyof typeof INPUT_NORMALIZE_ERROR];
 
 // 分页相关错误码
+export const BLOG_ERROR = {
+  POST_NOT_FOUND: 'BLOG_POST_NOT_FOUND',
+  CATEGORY_NOT_FOUND: 'BLOG_CATEGORY_NOT_FOUND',
+  TAG_NOT_FOUND: 'BLOG_TAG_NOT_FOUND',
+  COMMENT_NOT_FOUND: 'BLOG_COMMENT_NOT_FOUND',
+  LINK_NOT_FOUND: 'BLOG_LINK_NOT_FOUND',
+  CATEGORY_SLUG_EXISTS: 'BLOG_CATEGORY_SLUG_EXISTS',
+  TAG_SLUG_EXISTS: 'BLOG_TAG_SLUG_EXISTS',
+} as const;
+Object.freeze(BLOG_ERROR);
+
+export type BlogErrorCode = (typeof BLOG_ERROR)[keyof typeof BLOG_ERROR];
+
 export const PAGINATION_ERROR = {
   INVALID_PAGE_SIZE: 'PAGINATION_INVALID_PAGE_SIZE',
   INVALID_CURSOR: 'PAGINATION_INVALID_CURSOR',
@@ -186,6 +199,7 @@ export type DomainErrorCode =
   | AsyncTaskRecordErrorCode
   | TimeErrorCode
   | InputNormalizeErrorCode
+  | BlogErrorCode
   | PaginationErrorCode;
 
 // 类型守卫：统一判断是否为领域错误（兼容多包/反序列化场景）

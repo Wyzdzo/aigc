@@ -1,15 +1,86 @@
 // src/shared/graphql/client.ts
 
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
+import { ApolloClient, HttpLink, InMemoryCache, Observable } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { onError } from '@apollo/client/link/error';
+import type { GraphQLFormattedError } from 'graphql';
 
 import { getGraphQLEndpoint } from '@/shared/env';
+
+import { REFRESH_TOKEN_KEY, REFRESH_TOKEN_MUTATION_STRING, TOKEN_KEY } from './auth-constants';
 
 type GraphQLRuntimeConfig = {
   getAccessToken?: () => string | null | undefined;
   refreshSession?: () => Promise<void>;
   onAuthFailure?: () => void;
 };
+
+// Token 刷新锁，防止并发请求同时触发多次刷新
+let isRefreshing = false;
+let pendingRequests: Array<(token: string | null) => void> = [];
+
+function resolvePendingRequests(token: string | null) {
+  pendingRequests.forEach((cb) => cb(token));
+  pendingRequests = [];
+}
+
+function isJwtAuthError(graphQLErrors: ReadonlyArray<GraphQLFormattedError>): boolean {
+  return graphQLErrors.some(
+    (err) =>
+      err.extensions?.code === 'UNAUTHENTICATED' ||
+      (typeof err.message === 'string' && err.message.includes('JWT 认证失败')),
+  );
+}
+
+async function tryRefreshToken(): Promise<string | null> {
+  if (isRefreshing) {
+    return new Promise<string | null>((resolve) => {
+      pendingRequests.push(resolve);
+    });
+  }
+
+  isRefreshing = true;
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+  if (!refreshToken) {
+    resolvePendingRequests(null);
+    isRefreshing = false;
+    return null;
+  }
+
+  try {
+    const response = await fetch(getGraphQLEndpoint(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: REFRESH_TOKEN_MUTATION_STRING,
+        variables: { input: { refreshToken } },
+      }),
+    });
+
+    const result = await response.json() as {
+      data?: { refreshToken?: { accessToken: string; refreshToken: string } };
+      errors?: { message: string }[];
+    };
+
+    if (result.errors || !result.data?.refreshToken) {
+      resolvePendingRequests(null);
+      isRefreshing = false;
+      return null;
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } = result.data.refreshToken;
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+    resolvePendingRequests(accessToken);
+    isRefreshing = false;
+    return accessToken;
+  } catch {
+    resolvePendingRequests(null);
+    isRefreshing = false;
+    return null;
+  }
+}
 
 let runtimeConfig: GraphQLRuntimeConfig = {};
 let graphQLClient: ApolloClient | null = null;
@@ -163,9 +234,43 @@ function createApolloClient() {
     };
   });
 
+  // Error link: 拦截 JWT 认证失败错误，自动刷新 token
+  const errorLink = onError(({ graphQLErrors, operation, forward }) => {
+    if (graphQLErrors && isJwtAuthError(graphQLErrors)) {
+      return new Observable((observer) => {
+        tryRefreshToken()
+          .then((newToken) => {
+            if (!newToken) {
+              // 刷新失败，跳转登录
+              runtimeConfig.onAuthFailure?.();
+              observer.error(graphQLErrors);
+              return;
+            }
+            // 用新 token 重试原请求
+            const oldHeaders = operation.getContext().headers;
+            operation.setContext({
+              headers: {
+                ...oldHeaders,
+                Authorization: `Bearer ${newToken}`,
+              },
+            });
+            forward(operation).subscribe({
+              next: observer.next.bind(observer),
+              error: observer.error.bind(observer),
+              complete: observer.complete.bind(observer),
+            });
+          })
+          .catch(() => {
+            runtimeConfig.onAuthFailure?.();
+            observer.error(graphQLErrors);
+          });
+      });
+    }
+  });
+
   return new ApolloClient({
     cache: createCacheConfig(),
-    link: authLink.concat(httpLink),
+    link: errorLink.concat(authLink.concat(httpLink)),
     // 默认查询选项
     defaultOptions: {
       watchQuery: {

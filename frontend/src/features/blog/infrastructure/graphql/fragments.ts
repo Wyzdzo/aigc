@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
  * 文章基础字段片段 - 用于列表展示
  */
 export const POST_BASIC_FRAGMENT = gql`
-  fragment PostBasic on BlogPost {
+  fragment PostBasic on BlogPostDTO {
     id
     title
     slug
@@ -25,7 +25,7 @@ export const POST_BASIC_FRAGMENT = gql`
  * 文章完整字段片段 - 用于详情页
  */
 export const POST_FULL_FRAGMENT = gql`
-  fragment PostFull on BlogPost {
+  fragment PostFull on BlogPostDTO {
     id
     title
     slug
@@ -46,7 +46,7 @@ export const POST_FULL_FRAGMENT = gql`
  * 分类基础字段片段
  */
 export const CATEGORY_BASIC_FRAGMENT = gql`
-  fragment CategoryBasic on BlogCategory {
+  fragment CategoryBasic on BlogCategoryDTO {
     id
     name
     slug
@@ -62,7 +62,7 @@ export const CATEGORY_BASIC_FRAGMENT = gql`
  * 标签基础字段片段
  */
 export const TAG_BASIC_FRAGMENT = gql`
-  fragment TagBasic on BlogTag {
+  fragment TagBasic on BlogTagDTO {
     id
     name
     slug
@@ -74,7 +74,7 @@ export const TAG_BASIC_FRAGMENT = gql`
  * 评论基础字段片段
  */
 export const COMMENT_BASIC_FRAGMENT = gql`
-  fragment CommentBasic on BlogComment {
+  fragment CommentBasic on BlogCommentDTO {
     id
     postId
     parentId
@@ -93,7 +93,7 @@ export const COMMENT_BASIC_FRAGMENT = gql`
  * 友链基础字段片段
  */
 export const LINK_BASIC_FRAGMENT = gql`
-  fragment LinkBasic on BlogLink {
+  fragment LinkBasic on BlogLinkDTO {
     id
     title
     url

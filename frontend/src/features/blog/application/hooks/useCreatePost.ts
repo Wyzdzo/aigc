@@ -30,19 +30,26 @@ export function useCreatePost() {
     {
       update(cache, { data }) {
         if (data?.createPost) {
-          const existingPosts = cache.readQuery({ query: GET_POSTS }) as {
-            posts: { items: unknown[] };
-          };
+          try {
+            const existingPosts = cache.readQuery({ query: GET_POSTS }) as {
+              posts: { items: unknown[]; total: number; page: number; pageSize: number };
+            } | null;
 
-          cache.writeQuery({
-            query: GET_POSTS,
-            data: {
-              posts: {
-                ...existingPosts?.posts,
-                items: [data.createPost, ...(existingPosts?.posts?.items || [])],
-              },
-            },
-          });
+            if (existingPosts?.posts) {
+              cache.writeQuery({
+                query: GET_POSTS,
+                data: {
+                  posts: {
+                    ...existingPosts.posts,
+                    total: existingPosts.posts.total + 1,
+                    items: [data.createPost, ...existingPosts.posts.items],
+                  },
+                },
+              });
+            }
+          } catch {
+            // 缓存更新失败不影响主流程
+          }
         }
       },
     },

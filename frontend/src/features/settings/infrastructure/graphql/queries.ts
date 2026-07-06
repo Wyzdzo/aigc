@@ -19,3 +19,13 @@ export const GET_SETTINGS = gql`
     }
   }
 `;
+
+export const GET_PUBLIC_BLOGGER_INFO = gql`
+  query GetPublicBloggerInfo {
+    publicBloggerInfo {
+      nickname
+      avatar
+      bio
+    }
+  }
+`;

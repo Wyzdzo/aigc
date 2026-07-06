@@ -85,15 +85,16 @@ export function PostEditor({
       }),
     ],
     onUpdate: ({ editor }) => {
+      if (editor.isDestroyed) return;
       const html = editor.getHTML();
       onChange(html);
     },
   });
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
+    if (editor && !editor.isDestroyed && value !== editor.getHTML()) {
       const timeoutId = setTimeout(() => {
-        if (editor && value !== editor.getHTML()) {
+        if (editor && !editor.isDestroyed && value !== editor.getHTML()) {
           editor.commands.setContent(value);
         }
       }, 100);
@@ -150,7 +151,7 @@ export function PostEditor({
     }
   };
 
-  if (!editor) {
+  if (!editor || editor.isDestroyed) {
     return null;
   }
 
@@ -350,7 +351,7 @@ export function PostEditor({
             </ReactMarkdown>
           </div>
         ) : (
-          <EditorContent editor={editor} className="h-full min-h-[500px] p-6" />
+          <EditorContent editor={editor} className="h-full p-6" />
         )}
       </div>
     </div>

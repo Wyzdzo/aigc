@@ -167,6 +167,8 @@ body {
 
 .app-shell {
   background: var(--ant-color-bg-layout);
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
@@ -282,9 +284,11 @@ body {
 }
 
 .app-main {
+  flex: 1;
   margin: 0 auto;
   max-width: 1180px;
   padding: 40px 24px 56px;
+  width: 100%;
 }
 
 .page-stack {
@@ -784,10 +788,44 @@ body {
 
 /* ── Blog layout ── */
 
+/* TipTap editor: make ProseMirror fill its container */
+.tiptap,
+.tiptap > div,
+.tiptap .ProseMirror {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.tiptap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tiptap .ProseMirror {
+  flex: 1;
+  min-height: 0;
+  caret-color: auto;
+}
+
+.tiptap .ProseMirror:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.tiptap .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--ant-color-text-quaternary);
+  float: none;
+  pointer-events: none;
+}
+
 .blog-footer {
   background: var(--ant-color-bg-container);
   border-top: 1px solid var(--ant-color-border-secondary);
-  margin-top: 40px;
+  flex-shrink: 0;
+  margin-top: auto;
   padding: 24px 0;
 }
 

@@ -11,7 +11,7 @@ import { useComments,useCommentStats } from './useComments';
 // 内联mock数据，避免Apollo Client缓存问题
 const createMockComments = () => [
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 1,
     postId: 1,
     parentId: null,
@@ -25,7 +25,7 @@ const createMockComments = () => [
     updatedAt: new Date('2024-01-16').toISOString(),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 2,
     postId: 1,
     parentId: 1,
@@ -39,7 +39,7 @@ const createMockComments = () => [
     updatedAt: new Date('2024-01-16').toISOString(),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 3,
     postId: 1,
     parentId: null,
@@ -62,7 +62,7 @@ describe('useComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 1, page: 1, pageSize: 10 },
+            variables: { postId: 1, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -98,7 +98,7 @@ describe('useComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 999, page: 1, pageSize: 10 },
+            variables: { postId: 999, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -170,7 +170,7 @@ describe('useComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 1, page: 2, pageSize: 2 },
+            variables: { postId: 1, status: CommentStatus.APPROVED, page: 2, pageSize: 2 },
           },
           result: {
             data: {
@@ -204,7 +204,7 @@ describe('useComments', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: 1, page: 1, pageSize: 10 },
+            variables: { postId: 1, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           error: new Error('Network error'),
         },

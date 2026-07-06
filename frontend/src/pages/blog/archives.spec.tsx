@@ -29,7 +29,7 @@ beforeAll(() => {
 
 const mockPosts = [
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 1,
     title: 'React 18 新特性详解',
     slug: 'react-18-features',

@@ -1,7 +1,7 @@
 // src/modules/blog/blog.service.ts
 import type { PersistenceTransactionContext } from '@app-types/common/transaction.types';
-import { BlogPostModel, PostStatus, CommentStatus } from '@app-types/models/blog/blog.types';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { PostStatus, CommentStatus } from '@app-types/models/blog/blog.types';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getTypeOrmEntityManager } from '@src/infrastructure/database/transaction/typeorm-persistence-transaction-context';
 import { Repository, In } from 'typeorm';
@@ -11,6 +11,7 @@ import { BlogLinkEntity } from './entities/blog-link.entity';
 import { BlogPostEntity } from './entities/blog-post.entity';
 import { BlogPostTagEntity } from './entities/blog-post-tag.entity';
 import { BlogTagEntity } from './entities/blog-tag.entity';
+import { BLOG_ERROR, DomainError } from '@core/common/errors';
 
 export interface CreatePostData {
   title: string;
@@ -108,7 +109,7 @@ export class BlogService {
 
     const existingPost = await repository.findOne({ where: { id } });
     if (!existingPost) {
-      throw new NotFoundException(`Post with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.POST_NOT_FOUND, `Post with id ${id} not found`);
     }
 
     await repository.update(id, {
@@ -118,7 +119,7 @@ export class BlogService {
 
     const updated = await repository.findOne({ where: { id } });
     if (!updated) {
-      throw new NotFoundException(`Post with id ${id} not found after update`);
+      throw new DomainError(BLOG_ERROR.POST_NOT_FOUND, `Post with id ${id} not found after update`);
     }
     return updated;
   }
@@ -132,7 +133,7 @@ export class BlogService {
 
     const existingPost = await repository.findOne({ where: { id } });
     if (!existingPost) {
-      throw new NotFoundException(`Post with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.POST_NOT_FOUND, `Post with id ${id} not found`);
     }
 
     await repository.softDelete(id);
@@ -170,6 +171,11 @@ export class BlogService {
     const { name, slug, description, parentId, sortOrder, transactionContext } = params;
     const repository = this.getCategoryRepository(transactionContext);
 
+    const existing = await repository.findOne({ where: { slug } });
+    if (existing) {
+      throw new DomainError(BLOG_ERROR.CATEGORY_SLUG_EXISTS, '分类别名已存在');
+    }
+
     const category = repository.create({
       name,
       slug,
@@ -195,13 +201,16 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Category with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.CATEGORY_NOT_FOUND, `Category with id ${id} not found`);
     }
 
     await repository.update(id, { ...updateData, updatedAt: new Date() });
     const updated = await repository.findOne({ where: { id } });
     if (!updated) {
-      throw new NotFoundException(`Category with id ${id} not found after update`);
+      throw new DomainError(
+        BLOG_ERROR.CATEGORY_NOT_FOUND,
+        `Category with id ${id} not found after update`,
+      );
     }
     return updated;
   }
@@ -215,7 +224,7 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Category with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.CATEGORY_NOT_FOUND, `Category with id ${id} not found`);
     }
 
     await repository.delete(id);
@@ -232,6 +241,11 @@ export class BlogService {
     const { name, slug, transactionContext } = params;
     const repository = this.getTagRepository(transactionContext);
 
+    const existing = await repository.findOne({ where: { slug } });
+    if (existing) {
+      throw new DomainError(BLOG_ERROR.TAG_SLUG_EXISTS, '标签别名已存在');
+    }
+
     const tag = repository.create({ name, slug });
     return await repository.save(tag);
   }
@@ -247,13 +261,13 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Tag with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.TAG_NOT_FOUND, `Tag with id ${id} not found`);
     }
 
     await repository.update(id, { ...updateData });
     const updated = await repository.findOne({ where: { id } });
     if (!updated) {
-      throw new NotFoundException(`Tag with id ${id} not found after update`);
+      throw new DomainError(BLOG_ERROR.TAG_NOT_FOUND, `Tag with id ${id} not found after update`);
     }
     return updated;
   }
@@ -267,7 +281,7 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Tag with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.TAG_NOT_FOUND, `Tag with id ${id} not found`);
     }
 
     await repository.delete(id);
@@ -342,13 +356,16 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Comment with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.COMMENT_NOT_FOUND, `Comment with id ${id} not found`);
     }
 
     await repository.update(id, { status });
     const updated = await repository.findOne({ where: { id } });
     if (!updated) {
-      throw new NotFoundException(`Comment with id ${id} not found after update`);
+      throw new DomainError(
+        BLOG_ERROR.COMMENT_NOT_FOUND,
+        `Comment with id ${id} not found after update`,
+      );
     }
     return updated;
   }
@@ -362,7 +379,7 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Comment with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.COMMENT_NOT_FOUND, `Comment with id ${id} not found`);
     }
 
     await repository.delete(id);
@@ -416,13 +433,13 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Link with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.LINK_NOT_FOUND, `Link with id ${id} not found`);
     }
 
     await repository.update(id, { ...updateData, updatedAt: new Date() });
     const updated = await repository.findOne({ where: { id } });
     if (!updated) {
-      throw new NotFoundException(`Link with id ${id} not found after update`);
+      throw new DomainError(BLOG_ERROR.LINK_NOT_FOUND, `Link with id ${id} not found after update`);
     }
     return updated;
   }
@@ -436,7 +453,7 @@ export class BlogService {
 
     const existing = await repository.findOne({ where: { id } });
     if (!existing) {
-      throw new NotFoundException(`Link with id ${id} not found`);
+      throw new DomainError(BLOG_ERROR.LINK_NOT_FOUND, `Link with id ${id} not found`);
     }
 
     await repository.delete(id);

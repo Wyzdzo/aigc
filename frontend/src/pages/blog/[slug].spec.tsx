@@ -87,7 +87,7 @@ function createWrapper(mocks: MockedResponse[], slug = 'react-18-new-features') 
  * 带目录的 Markdown 内容
  */
 const mockPostWithToc = {
-  __typename: 'BlogPost',
+  __typename: 'BlogPostDTO',
   id: 1,
   title: 'React 18 新特性详解',
   slug: 'react-18-new-features',
@@ -118,7 +118,7 @@ Suspense 在 React 18 中得到了显著改进。
  * 不带目录的 Markdown 内容
  */
 const mockPostWithoutToc = {
-  __typename: 'BlogPost',
+  __typename: 'BlogPostDTO',
   id: 2,
   title: 'TypeScript 高级类型技巧',
   slug: 'typescript-advanced-types',
@@ -579,7 +579,7 @@ describe('BlogDetailPage', () => {
   describe('Comment Section', () => {
     const mockBlogComments = [
       {
-        __typename: 'BlogComment',
+        __typename: 'BlogCommentDTO',
         id: 1,
         postId: 1,
         parentId: null,
@@ -593,7 +593,7 @@ describe('BlogDetailPage', () => {
         updatedAt: new Date('2024-01-16'),
       },
       {
-        __typename: 'BlogComment',
+        __typename: 'BlogCommentDTO',
         id: 2,
         postId: 1,
         parentId: 1,
@@ -622,7 +622,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -658,7 +658,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -695,7 +695,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -732,7 +732,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -773,7 +773,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -809,7 +809,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -845,7 +845,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {
@@ -882,7 +882,7 @@ describe('BlogDetailPage', () => {
         {
           request: {
             query: GET_COMMENTS,
-            variables: { postId: mockPostWithToc.id, page: 1, pageSize: 10 },
+            variables: { postId: mockPostWithToc.id, status: CommentStatus.APPROVED, page: 1, pageSize: 10 },
           },
           result: {
             data: {

@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
  * 创建文章
  */
 export const CREATE_POST = gql`
-  mutation CreatePost($input: CreatePostInput!) {
+  mutation CreatePost($input: CreateBlogPostInput!) {
     createPost(input: $input) {
       id
       title
@@ -28,7 +28,7 @@ export const CREATE_POST = gql`
  * 更新文章
  */
 export const UPDATE_POST = gql`
-  mutation UpdatePost($id: Int!, $input: UpdatePostInput!) {
+  mutation UpdatePost($id: Int!, $input: UpdateBlogPostInput!) {
     updatePost(id: $id, input: $input) {
       id
       title
@@ -110,7 +110,7 @@ export const LIKE_POST = gql`
  * 创建评论
  */
 export const CREATE_COMMENT = gql`
-  mutation CreateComment($input: CreateCommentInput!) {
+  mutation CreateComment($input: CreateBlogCommentInput!) {
     createComment(input: $input) {
       id
       postId

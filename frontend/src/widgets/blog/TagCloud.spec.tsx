@@ -34,28 +34,28 @@ beforeAll(() => {
 
 const mockTags = [
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 1,
     name: 'React',
     slug: 'react',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 2,
     name: 'TypeScript',
     slug: 'typescript',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 3,
     name: 'Vue',
     slug: 'vue',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 4,
     name: 'Node.js',
     slug: 'nodejs',

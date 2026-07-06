@@ -1,6 +1,8 @@
 // src/features/settings/index.ts
 
 export {
+  usePublicBloggerInfo,
+  type PublicBloggerInfo,
   useSettings,
   type SettingsData,
   type UpdateSiteSettingsInput,

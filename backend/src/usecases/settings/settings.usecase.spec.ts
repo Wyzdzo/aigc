@@ -1,13 +1,14 @@
 // src/usecases/settings/settings.usecase.spec.ts
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 import { SettingsService, SiteSettingData } from '@modules/settings/settings.service';
-import { AccountEntity } from '@modules/account/base/entities/account.entity';
-import { UserInfoEntity } from '@modules/account/base/entities/user-info.entity';
+import { DomainError } from '@core/common/errors/domain-error';
 import { AccountService } from '@modules/account/base/services/account.service';
+import {
+  UserInfoService,
+  type UserInfoSnapshot,
+} from '@modules/account/base/services/user-info.service';
 import { AuditService } from '@modules/audit/audit.service';
 
 import { SettingsUsecase } from './settings.usecase';
@@ -15,8 +16,8 @@ import { SettingsUsecase } from './settings.usecase';
 describe('SettingsUsecase', () => {
   let usecase: SettingsUsecase;
   let settingsService: SettingsService;
-  let accountRepository: Repository<AccountEntity>;
-  let userInfoRepository: Repository<UserInfoEntity>;
+  let userInfoService: UserInfoService;
+  let accountService: AccountService;
   let auditService: AuditService;
 
   beforeEach(async () => {
@@ -31,26 +32,17 @@ describe('SettingsUsecase', () => {
           },
         },
         {
-          provide: getRepositoryToken(AccountEntity),
+          provide: UserInfoService,
           useValue: {
-            findOne: jest.fn(),
-          },
-        },
-        {
-          provide: getRepositoryToken(UserInfoEntity),
-          useValue: {
-            findOne: jest.fn(),
-            create: jest.fn(),
-            save: jest.fn(),
-            update: jest.fn(),
+            findByAccountId: jest.fn(),
+            findFirst: jest.fn(),
+            upsertBloggerInfo: jest.fn(),
           },
         },
         {
           provide: AccountService,
           useValue: {
-            verifyPassword: jest.fn(),
-            hashPasswordWithTimestamp: jest.fn(),
-            updateAccountPasswordHash: jest.fn(),
+            changePassword: jest.fn(),
           },
         },
         {
@@ -64,8 +56,8 @@ describe('SettingsUsecase', () => {
 
     usecase = module.get<SettingsUsecase>(SettingsUsecase);
     settingsService = module.get<SettingsService>(SettingsService);
-    accountRepository = module.get<Repository<AccountEntity>>(getRepositoryToken(AccountEntity));
-    userInfoRepository = module.get<Repository<UserInfoEntity>>(getRepositoryToken(UserInfoEntity));
+    userInfoService = module.get<UserInfoService>(UserInfoService);
+    accountService = module.get<AccountService>(AccountService);
     auditService = module.get<AuditService>(AuditService);
   });
 
@@ -116,7 +108,7 @@ describe('SettingsUsecase', () => {
 
   describe('getBloggerInfo', () => {
     it('should return blogger info when found', async () => {
-      const mockUserInfo = {
+      const mockSnapshot: UserInfoSnapshot = {
         id: 1,
         accountId: 10,
         nickname: '博主',
@@ -124,11 +116,11 @@ describe('SettingsUsecase', () => {
         signature: '这是简介',
       };
 
-      (userInfoRepository.findOne as jest.Mock).mockResolvedValue(mockUserInfo);
+      (userInfoService.findByAccountId as jest.Mock).mockResolvedValue(mockSnapshot);
 
       const result = await usecase.getBloggerInfo(10);
 
-      expect(userInfoRepository.findOne).toHaveBeenCalledWith({ where: { accountId: 10 } });
+      expect(userInfoService.findByAccountId).toHaveBeenCalledWith(10);
       expect(result).toEqual({
         nickname: '博主',
         avatar: 'https://example.com/avatar.png',
@@ -137,7 +129,7 @@ describe('SettingsUsecase', () => {
     });
 
     it('should return null when not found', async () => {
-      (userInfoRepository.findOne as jest.Mock).mockResolvedValue(null);
+      (userInfoService.findByAccountId as jest.Mock).mockResolvedValue(null);
 
       const result = await usecase.getBloggerInfo(999);
 
@@ -146,17 +138,8 @@ describe('SettingsUsecase', () => {
   });
 
   describe('updateBloggerInfo', () => {
-    it('should update existing user info', async () => {
-      const existingUserInfo = {
-        id: 1,
-        accountId: 10,
-        nickname: '旧昵称',
-        signature: '旧简介',
-        avatarUrl: '旧头像',
-      };
-
-      (userInfoRepository.findOne as jest.Mock).mockResolvedValue(existingUserInfo);
-      (userInfoRepository.update as jest.Mock).mockResolvedValue(undefined);
+    it('should delegate to userInfoService and create audit log', async () => {
+      (userInfoService.upsertBloggerInfo as jest.Mock).mockResolvedValue({ userInfoId: 1 });
       (auditService.createLog as jest.Mock).mockResolvedValue(undefined);
 
       await usecase.updateBloggerInfo({
@@ -166,7 +149,8 @@ describe('SettingsUsecase', () => {
         avatar: '新头像',
       });
 
-      expect(userInfoRepository.update).toHaveBeenCalledWith(1, {
+      expect(userInfoService.upsertBloggerInfo).toHaveBeenCalledWith({
+        accountId: 10,
         nickname: '新昵称',
         signature: '新简介',
         avatarUrl: '新头像',
@@ -181,14 +165,39 @@ describe('SettingsUsecase', () => {
   });
 
   describe('updatePassword', () => {
-    it('should throw Error when account not found', async () => {
-      (accountRepository.findOne as jest.Mock).mockResolvedValue(null);
+    it('should delegate to accountService and create audit log', async () => {
+      (accountService.changePassword as jest.Mock).mockResolvedValue({ loginName: 'testuser' });
+      (auditService.createLog as jest.Mock).mockResolvedValue(undefined);
+
+      await usecase.updatePassword({
+        accountId: 10,
+        oldPassword: 'old',
+        newPassword: 'newPassword123',
+      });
+
+      expect(accountService.changePassword).toHaveBeenCalledWith({
+        accountId: 10,
+        oldPassword: 'old',
+        newPassword: 'newPassword123',
+      });
+      expect(auditService.createLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          operatorId: 10,
+          operationType: 'UPDATE_PASSWORD',
+        }),
+      );
+    });
+
+    it('should propagate error when changePassword fails', async () => {
+      (accountService.changePassword as jest.Mock).mockRejectedValue(
+        new DomainError('ACCOUNT_NOT_FOUND', '账户不存在'),
+      );
 
       await expect(
         usecase.updatePassword({
           accountId: 999,
           oldPassword: 'old',
-          newPassword: 'new',
+          newPassword: 'newPassword123',
         }),
       ).rejects.toThrow('账户不存在');
     });

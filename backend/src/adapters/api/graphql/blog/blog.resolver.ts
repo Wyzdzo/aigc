@@ -10,9 +10,14 @@ import { UpdateBlogPostInput } from './dto/update-blog-post.input';
 import { CreateBlogCommentInput } from './dto/create-blog-comment.input';
 import { BlogPostsArgs } from './dto/blog-posts.args';
 import { BlogPostsResult } from './dto/blog-posts.result';
-import { BlogService } from '@src/modules/blog/blog.service';
 import { BlogQueryService } from '@src/modules/blog/queries/blog.query.service';
-import { BlogUsecase } from '@src/usecases/blog/blog.usecase';
+import {
+  BlogUsecase,
+  type CategoryResult,
+  type TagResult,
+  type CommentResult,
+  type LinkResult,
+} from '@src/usecases/blog/blog.usecase';
 import { PostStatsDTO, CommentStatsDTO, CategoryStatsDTO, TagStatsDTO, LinkStatsDTO } from './dto/blog-stats.dto';
 import { BlogCommentsResult } from './dto/blog-comments.result';
 import { PostStatus, CommentStatus, LinkStatus } from '@app-types/models/blog/blog.types';
@@ -23,7 +28,6 @@ type OrderDirectionType = 'ASC' | 'DESC';
 @Resolver(() => BlogPostDTO)
 export class BlogResolver {
   constructor(
-    private readonly blogService: BlogService,
     private readonly blogQueryService: BlogQueryService,
     private readonly blogUsecase: BlogUsecase,
   ) {}
@@ -129,7 +133,7 @@ export class BlogResolver {
     const result = await this.blogQueryService.getComments({
       options: {
         postId,
-        status: status ?? CommentStatus.APPROVED,
+        status,
         page,
         pageSize,
       },
@@ -284,13 +288,13 @@ export class BlogResolver {
     @Args('id', { type: () => Int }) id: number,
     @Args('status', { type: () => CommentStatus }) status: CommentStatus,
   ): Promise<BlogCommentDTO> {
-    const comment = await this.blogService.updateCommentStatus({ id, status });
+    const comment = await this.blogUsecase.updateCommentStatus({ id, status });
     return this.toCommentDTO(comment);
   }
 
   @Mutation(() => Boolean, { description: '删除评论' })
   async deleteComment(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
-    await this.blogService.deleteComment({ id });
+    await this.blogUsecase.deleteComment({ id });
     return true;
   }
 
@@ -304,7 +308,7 @@ export class BlogResolver {
     @Args('parentId', { type: () => Int, nullable: true }) parentId?: number,
     @Args('sortOrder', { type: () => Int, defaultValue: 0 }) sortOrder?: number,
   ): Promise<BlogCategoryDTO> {
-    const category = await this.blogService.createCategory({
+    const category = await this.blogUsecase.createCategory({
       name,
       slug,
       description,
@@ -323,7 +327,7 @@ export class BlogResolver {
     @Args('parentId', { type: () => Int, nullable: true }) parentId?: number,
     @Args('sortOrder', { type: () => Int, nullable: true }) sortOrder?: number,
   ): Promise<BlogCategoryDTO> {
-    const category = await this.blogService.updateCategory({
+    const category = await this.blogUsecase.updateCategory({
       id,
       name,
       slug,
@@ -336,7 +340,7 @@ export class BlogResolver {
 
   @Mutation(() => Boolean, { description: '删除分类' })
   async deleteCategory(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
-    await this.blogService.deleteCategory({ id });
+    await this.blogUsecase.deleteCategory({ id });
     return true;
   }
 
@@ -344,7 +348,7 @@ export class BlogResolver {
 
   @Mutation(() => BlogTagDTO, { description: '创建标签' })
   async createTag(@Args('name') name: string, @Args('slug') slug: string): Promise<BlogTagDTO> {
-    const tag = await this.blogService.createTag({ name, slug });
+    const tag = await this.blogUsecase.createTag({ name, slug });
     return this.toTagDTO(tag);
   }
 
@@ -354,13 +358,13 @@ export class BlogResolver {
     @Args('name', { nullable: true }) name?: string,
     @Args('slug', { nullable: true }) slug?: string,
   ): Promise<BlogTagDTO> {
-    const tag = await this.blogService.updateTag({ id, name, slug });
+    const tag = await this.blogUsecase.updateTag({ id, name, slug });
     return this.toTagDTO(tag);
   }
 
   @Mutation(() => Boolean, { description: '删除标签' })
   async deleteTag(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
-    await this.blogService.deleteTag({ id });
+    await this.blogUsecase.deleteTag({ id });
     return true;
   }
 
@@ -374,7 +378,7 @@ export class BlogResolver {
     @Args('logo', { nullable: true }) logo?: string,
     @Args('sortOrder', { type: () => Int, defaultValue: 0 }) sortOrder?: number,
   ): Promise<BlogLinkDTO> {
-    const link = await this.blogService.createLink({
+    const link = await this.blogUsecase.createLink({
       title,
       url,
       description,
@@ -393,7 +397,7 @@ export class BlogResolver {
     @Args('logo', { nullable: true }) logo?: string,
     @Args('sortOrder', { type: () => Int, nullable: true }) sortOrder?: number,
   ): Promise<BlogLinkDTO> {
-    const link = await this.blogService.updateLink({
+    const link = await this.blogUsecase.updateLink({
       id,
       title,
       url,
@@ -406,7 +410,7 @@ export class BlogResolver {
 
   @Mutation(() => Boolean, { description: '删除友链' })
   async deleteLink(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
-    await this.blogService.deleteLink({ id });
+    await this.blogUsecase.deleteLink({ id });
     return true;
   }
 
@@ -430,7 +434,7 @@ export class BlogResolver {
     };
   }
 
-  private toCategoryDTO(entity: any): BlogCategoryDTO {
+  private toCategoryDTO(entity: CategoryResult): BlogCategoryDTO {
     return {
       id: entity.id,
       name: entity.name,
@@ -443,7 +447,7 @@ export class BlogResolver {
     };
   }
 
-  private toTagDTO(entity: any): BlogTagDTO {
+  private toTagDTO(entity: TagResult): BlogTagDTO {
     return {
       id: entity.id,
       name: entity.name,
@@ -452,7 +456,7 @@ export class BlogResolver {
     };
   }
 
-  private toCommentDTO(entity: any): BlogCommentDTO {
+  private toCommentDTO(entity: CommentResult): BlogCommentDTO {
     return {
       id: entity.id,
       postId: entity.postId,
@@ -464,10 +468,11 @@ export class BlogResolver {
       status: entity.status as CommentStatus,
       likeCount: entity.likeCount,
       createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     };
   }
 
-  private toLinkDTO(entity: any): BlogLinkDTO {
+  private toLinkDTO(entity: LinkResult): BlogLinkDTO {
     return {
       id: entity.id,
       title: entity.title,

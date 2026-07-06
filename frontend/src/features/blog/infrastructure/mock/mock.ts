@@ -7,7 +7,7 @@ import { CommentStatus, LinkStatus, PostStatus } from '@/entities/blog';
  */
 export const mockPosts: BlogPost[] = [
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 1,
     title: 'React 18 新特性详解',
     slug: 'react-18-new-features',
@@ -23,7 +23,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-15'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 2,
     title: 'TypeScript 高级类型技巧',
     slug: 'typescript-advanced-types',
@@ -39,7 +39,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-10'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 3,
     title: 'Next.js 14 全栈开发指南',
     slug: 'nextjs-14-fullstack-guide',
@@ -55,7 +55,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-08'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 4,
     title: 'GraphQL 最佳实践',
     slug: 'graphql-best-practices',
@@ -71,7 +71,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-05'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 5,
     title: 'Docker 容器化部署实战',
     slug: 'docker-containerization-deployment',
@@ -87,7 +87,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-03'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 6,
     title: 'Vue 3 Composition API 入门',
     slug: 'vue3-composition-api',
@@ -103,7 +103,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2024-01-02'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 7,
     title: 'Node.js 性能优化指南',
     slug: 'nodejs-performance-optimization',
@@ -119,7 +119,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2023-12-28'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 8,
     title: 'Git 工作流最佳实践',
     slug: 'git-workflow-best-practices',
@@ -135,7 +135,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2023-12-25'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 9,
     title: 'CSS Grid 布局完全指南',
     slug: 'css-grid-complete-guide',
@@ -151,7 +151,7 @@ export const mockPosts: BlogPost[] = [
     updatedAt: new Date('2023-12-20'),
   },
   {
-    __typename: 'BlogPost',
+    __typename: 'BlogPostDTO',
     id: 10,
     title: 'Jest 测试入门教程',
     slug: 'jest-testing-tutorial',
@@ -173,7 +173,7 @@ export const mockPosts: BlogPost[] = [
  */
 export const mockCategories: BlogCategory[] = [
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 1,
     name: '前端开发',
     slug: 'frontend',
@@ -184,7 +184,7 @@ export const mockCategories: BlogCategory[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 2,
     name: '后端开发',
     slug: 'backend',
@@ -195,7 +195,7 @@ export const mockCategories: BlogCategory[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 3,
     name: '运维部署',
     slug: 'devops',
@@ -206,7 +206,7 @@ export const mockCategories: BlogCategory[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 4,
     name: 'React',
     slug: 'react',
@@ -217,7 +217,7 @@ export const mockCategories: BlogCategory[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogCategory',
+    __typename: 'BlogCategoryDTO',
     id: 5,
     name: 'Vue',
     slug: 'vue',
@@ -234,70 +234,70 @@ export const mockCategories: BlogCategory[] = [
  */
 export const mockTags: BlogTag[] = [
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 1,
     name: 'React',
     slug: 'react',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 2,
     name: 'TypeScript',
     slug: 'typescript',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 3,
     name: 'Next.js',
     slug: 'nextjs',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 4,
     name: 'GraphQL',
     slug: 'graphql',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 5,
     name: 'Docker',
     slug: 'docker',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 6,
     name: 'Node.js',
     slug: 'nodejs',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 7,
     name: 'Vue',
     slug: 'vue',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 8,
     name: '性能优化',
     slug: 'performance',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 9,
     name: '最佳实践',
     slug: 'best-practices',
     createdAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogTag',
+    __typename: 'BlogTagDTO',
     id: 10,
     name: '教程',
     slug: 'tutorial',
@@ -310,7 +310,7 @@ export const mockTags: BlogTag[] = [
  */
 export const mockComments: BlogComment[] = [
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 1,
     postId: 1,
     parentId: null,
@@ -324,7 +324,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-16'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 2,
     postId: 1,
     parentId: 1,
@@ -338,7 +338,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-16'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 3,
     postId: 1,
     parentId: null,
@@ -352,7 +352,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-17'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 4,
     postId: 2,
     parentId: null,
@@ -366,7 +366,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-11'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 5,
     postId: 2,
     parentId: null,
@@ -380,7 +380,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-12'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 6,
     postId: 3,
     parentId: null,
@@ -394,7 +394,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-09'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 7,
     postId: 3,
     parentId: 6,
@@ -408,7 +408,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-09'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 8,
     postId: 4,
     parentId: null,
@@ -422,7 +422,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-06'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 9,
     postId: 5,
     parentId: null,
@@ -436,7 +436,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-04'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 10,
     postId: 6,
     parentId: null,
@@ -450,7 +450,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2024-01-03'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 11,
     postId: 7,
     parentId: null,
@@ -464,7 +464,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2023-12-29'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 12,
     postId: 8,
     parentId: null,
@@ -478,7 +478,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2023-12-26'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 13,
     postId: 10,
     parentId: null,
@@ -492,7 +492,7 @@ export const mockComments: BlogComment[] = [
     updatedAt: new Date('2023-12-19'),
   },
   {
-    __typename: 'BlogComment',
+    __typename: 'BlogCommentDTO',
     id: 14,
     postId: 10,
     parentId: null,
@@ -512,7 +512,7 @@ export const mockComments: BlogComment[] = [
  */
 export const mockLinks: BlogLink[] = [
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 1,
     title: 'React 官方文档',
     url: 'https://react.dev',
@@ -524,7 +524,7 @@ export const mockLinks: BlogLink[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 2,
     title: 'Vue 官方文档',
     url: 'https://vuejs.org',
@@ -536,7 +536,7 @@ export const mockLinks: BlogLink[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 3,
     title: 'Next.js 官方文档',
     url: 'https://nextjs.org',
@@ -548,7 +548,7 @@ export const mockLinks: BlogLink[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 4,
     title: 'TypeScript 官方文档',
     url: 'https://www.typescriptlang.org',
@@ -560,7 +560,7 @@ export const mockLinks: BlogLink[] = [
     updatedAt: new Date('2024-01-01'),
   },
   {
-    __typename: 'BlogLink',
+    __typename: 'BlogLinkDTO',
     id: 5,
     title: 'MDN Web Docs',
     url: 'https://developer.mozilla.org',

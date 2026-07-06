@@ -17,14 +17,14 @@ import { useActiveLinks, useLinks } from './useLinks';
 import { usePostTags, useTags } from './useTags';
 
 const mockTags = [
-  { __typename: 'BlogTag', id: 1, name: 'React', slug: 'react' },
-  { __typename: 'BlogTag', id: 2, name: 'Vue', slug: 'vue' },
+  { __typename: 'BlogTagDTO', id: 1, name: 'React', slug: 'react' },
+  { __typename: 'BlogTagDTO', id: 2, name: 'Vue', slug: 'vue' },
 ];
 const mockCategories = [
-  { __typename: 'BlogCategory', id: 1, name: 'Tech', slug: 'tech', parentId: null, children: [] },
+  { __typename: 'BlogCategoryDTO', id: 1, name: 'Tech', slug: 'tech', parentId: null, children: [] },
 ];
 const mockLinks = [
-  { __typename: 'BlogLink', id: 1, name: 'GitHub', url: 'https://github.com', status: 'ACTIVE' },
+  { __typename: 'BlogLinkDTO', id: 1, name: 'GitHub', url: 'https://github.com', status: 'ACTIVE' },
 ];
 
 describe('useTags', () => {

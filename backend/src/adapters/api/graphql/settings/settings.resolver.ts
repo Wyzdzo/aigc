@@ -7,6 +7,7 @@ import { currentUser } from '@src/adapters/api/graphql/decorators/current-user.d
 import { JwtPayload } from '@app-types/jwt.types';
 import { SettingsUsecase } from '@src/usecases/settings/settings.usecase';
 import {
+  BloggerInfoGql,
   SettingsResultGql,
   UpdateSiteSettingsInput,
   UpdateBloggerInfoInput,
@@ -16,6 +17,17 @@ import {
 @Resolver()
 export class SettingsResolver {
   constructor(private readonly settingsUsecase: SettingsUsecase) {}
+
+  @Query(() => BloggerInfoGql, { nullable: true })
+  async publicBloggerInfo(): Promise<BloggerInfoGql | null> {
+    const bloggerInfo = await this.settingsUsecase.getFirstBloggerInfo();
+    if (!bloggerInfo) return null;
+    return {
+      nickname: bloggerInfo.nickname,
+      avatar: bloggerInfo.avatar,
+      bio: bloggerInfo.bio,
+    };
+  }
 
   @Query(() => SettingsResultGql)
   @UseGuards(JwtAuthGuard)

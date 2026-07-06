@@ -3,10 +3,17 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MockedProvider } from '@apollo/client/testing/react';
 
 import { ThemeProvider } from '@/app/providers';
+import { AuthProvider } from '@/features/auth';
 
 import { BlogLayout } from './BlogLayout';
+
+// Mock configureGraphQLRuntime since AuthProvider calls it
+vi.mock('@/shared/graphql/client', () => ({
+  configureGraphQLRuntime: vi.fn(),
+}));
 
 // Mock matchMedia & ResizeObserver (required by Ant Design components)
 beforeEach(() => {
@@ -34,7 +41,11 @@ beforeEach(() => {
 function wrapper({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <MemoryRouter>{children}</MemoryRouter>
+      <MockedProvider mocks={[]}>
+        <AuthProvider>
+          <MemoryRouter>{children}</MemoryRouter>
+        </AuthProvider>
+      </MockedProvider>
     </ThemeProvider>
   );
 }
