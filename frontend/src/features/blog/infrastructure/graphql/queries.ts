@@ -64,6 +64,23 @@ export const GET_TOP_POSTS = gql`
 `;
 
 /**
+ * 获取相邻文章（上一篇/下一篇）
+ */
+export const GET_ADJACENT_POSTS = gql`
+  ${POST_BASIC_FRAGMENT}
+  query GetAdjacentPosts($slug: String!) {
+    adjacentPosts(slug: $slug) {
+      prev {
+        ...PostBasic
+      }
+      next {
+        ...PostBasic
+      }
+    }
+  }
+`;
+
+/**
  * 获取分类列表
  */
 export const GET_CATEGORIES = gql`
@@ -76,19 +93,13 @@ export const GET_CATEGORIES = gql`
 `;
 
 /**
- * 获取分类树
+ * 获取分类树（返回扁平列表，前端根据 parentId 构建树）
  */
 export const GET_CATEGORY_TREE = gql`
   ${CATEGORY_BASIC_FRAGMENT}
   query GetCategoryTree {
     categoryTree {
       ...CategoryBasic
-      children {
-        ...CategoryBasic
-        children {
-          ...CategoryBasic
-        }
-      }
     }
   }
 `;
@@ -181,6 +192,8 @@ export const GET_DASHBOARD_STATS = gql`
       total
       published
       draft
+      totalViewCount
+      totalLikeCount
     }
     commentStats {
       total

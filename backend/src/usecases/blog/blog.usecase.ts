@@ -496,6 +496,16 @@ export class BlogUsecase {
 
   // ==================== Query Operations ====================
 
+  async getAdjacentPosts(params: {
+    slug: string;
+    transactionContext?: PersistenceTransactionContext;
+  }) {
+    return this.blogQueryService.getAdjacentPosts({
+      slug: params.slug,
+      transactionContext: params.transactionContext,
+    });
+  }
+
   async getPostById(params: {
     id: number;
     transactionContext?: PersistenceTransactionContext;

@@ -8,7 +8,7 @@ import { GET_DASHBOARD_STATS } from '../../infrastructure/graphql/queries';
 import { useDashboardStats } from './useDashboardStats';
 
 const mockDashboardData = {
-  postStats: { __typename: 'PostStats', total: 10, published: 8, draft: 2 },
+  postStats: { __typename: 'PostStats', total: 10, published: 8, draft: 2, totalViewCount: 1500, totalLikeCount: 320 },
   commentStats: { __typename: 'CommentStats', total: 30, pending: 5, approved: 20, rejected: 5 },
   categoryStats: { __typename: 'CategoryStats', total: 4 },
   tagStats: { __typename: 'TagStats', total: 12 },
@@ -16,7 +16,7 @@ const mockDashboardData = {
 };
 
 describe('useDashboardStats', () => {
-  it('should return dashboard stats when data loaded', async () => {
+  it('should return dashboard stats with view/like counts when data loaded', async () => {
     const mocks = [
       {
         request: { query: GET_DASHBOARD_STATS },
@@ -32,7 +32,14 @@ describe('useDashboardStats', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.postStats).toEqual({ __typename: 'PostStats', total: 10, published: 8, draft: 2 });
+    expect(result.current.postStats).toEqual({
+      __typename: 'PostStats',
+      total: 10,
+      published: 8,
+      draft: 2,
+      totalViewCount: 1500,
+      totalLikeCount: 320,
+    });
     expect(result.current.commentStats).toEqual({ __typename: 'CommentStats', total: 30, pending: 5, approved: 20, rejected: 5 });
     expect(result.current.categoryStats).toEqual({ __typename: 'CategoryStats', total: 4 });
     expect(result.current.tagStats).toEqual({ __typename: 'TagStats', total: 12 });
@@ -40,7 +47,7 @@ describe('useDashboardStats', () => {
     expect(result.current.error).toBeUndefined();
   });
 
-  it('should return zero defaults when no data', async () => {
+  it('should return zero defaults including view/like when no data', async () => {
     const mocks = [
       {
         request: { query: GET_DASHBOARD_STATS },
@@ -56,14 +63,14 @@ describe('useDashboardStats', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.postStats).toEqual({ total: 0, published: 0, draft: 0 });
+    expect(result.current.postStats).toEqual({ total: 0, published: 0, draft: 0, totalViewCount: 0, totalLikeCount: 0 });
     expect(result.current.commentStats).toEqual({ total: 0, pending: 0, approved: 0, rejected: 0 });
     expect(result.current.categoryStats).toEqual({ total: 0 });
     expect(result.current.tagStats).toEqual({ total: 0 });
     expect(result.current.linkStats).toEqual({ total: 0 });
   });
 
-  it('should expose error when query fails', async () => {
+  it('should expose error when query fails and return zero defaults', async () => {
     const mocks = [
       {
         request: { query: GET_DASHBOARD_STATS },
@@ -80,7 +87,6 @@ describe('useDashboardStats', () => {
     });
 
     expect(result.current.error).toBeTruthy();
-    // Should still return defaults on error
-    expect(result.current.postStats).toEqual({ total: 0, published: 0, draft: 0 });
+    expect(result.current.postStats).toEqual({ total: 0, published: 0, draft: 0, totalViewCount: 0, totalLikeCount: 0 });
   });
 });

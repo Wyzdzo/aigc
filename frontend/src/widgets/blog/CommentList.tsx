@@ -1,17 +1,33 @@
+// src/widgets/blog/CommentList.tsx
+
 import { useCallback, useMemo, useState } from 'react';
-import { Avatar, Empty, List, Space, Spin, Typography } from 'antd';
+import { Avatar, Empty, List, Spin, Typography } from 'antd';
 
 import type { BlogComment } from '@/entities/blog';
 
 import { CommentForm } from './CommentForm';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
+
+/** 最大嵌套层数，超过此深度后不再缩进 */
+const MAX_NESTING_DEPTH = 4;
+
+/** 每级嵌套的缩进像素值 */
+const NESTING_INDENT = 20;
+
+/** 线程线颜色（按深度循环） */
+const THREAD_COLORS = [
+  'var(--ant-color-border-secondary)',
+  'var(--ant-color-primary-border)',
+  'var(--ant-color-success-border)',
+  'var(--ant-color-warning-border)',
+  'var(--ant-color-info-border)',
+];
 
 export interface CommentListProps {
   comments: BlogComment[];
   loading?: boolean;
   postId: number;
-  onReply?: (parentId: number) => void;
 }
 
 /**
@@ -32,68 +48,174 @@ function formatRelativeTime(date: Date): string {
 }
 
 /**
- * 评论列表项组件
+ * 获取当前深度的线程线颜色
+ */
+function getThreadColor(depth: number): string {
+  return THREAD_COLORS[depth % THREAD_COLORS.length];
+}
+
+/**
+ * 评论项组件（递归，支持多级嵌套）
  */
 function CommentItem({
   comment,
   postId,
-  onReply,
-  isChild = false,
+  childComments,
+  depth = 0,
 }: {
   comment: BlogComment;
   postId: number;
-  onReply?: (parentId: number) => void;
-  isChild?: boolean;
+  childComments: Map<number, BlogComment[]>;
+  depth?: number;
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleReply = useCallback(() => {
-    onReply?.(comment.id);
-    setShowReplyForm(!showReplyForm);
-  }, [comment.id, onReply, showReplyForm]);
+    setShowReplyForm((prev) => !prev);
+  }, []);
+
+  const handleToggleCollapse = useCallback(() => {
+    setCollapsed((prev) => !prev);
+  }, []);
+
+  const isNested = depth > 0;
+  const children = childComments.get(comment.id) || [];
+  const childDepth = Math.min(depth + 1, MAX_NESTING_DEPTH);
+  const indentPx = isNested ? depth * NESTING_INDENT : 0;
+  const threadColor = getThreadColor(depth);
 
   return (
-    <div style={{ paddingLeft: isChild ? 48 : 0 }}>
-      <Space align="start" size={12} style={{ width: '100%' }}>
-        <Avatar src={comment.avatar || undefined} size={isChild ? 32 : 40}>
-          {comment.nickname.charAt(0).toUpperCase()}
-        </Avatar>
-        <div style={{ flex: 1 }}>
-          <Space>
-            <Text strong>{comment.nickname}</Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {formatRelativeTime(comment.createdAt)}
-            </Text>
-          </Space>
-          <div style={{ marginTop: 4 }}>
-            <Text>{comment.content}</Text>
+    <div
+      className="group relative"
+      style={isNested ? { marginLeft: indentPx } : undefined}
+    >
+      {/* 线程连接线 */}
+      {isNested && (
+        <div
+          className="absolute top-0 bottom-0 rounded-full"
+          style={{
+            left: -12,
+            width: 2,
+            backgroundColor: threadColor,
+            opacity: 0.6,
+          }}
+        />
+      )}
+
+      {/* 评论主体 */}
+      <div className="rounded-lg px-3 py-2.5 transition-colors duration-200 hover:bg-bg-text-hover">
+        {/* 头部：头像 + 信息 */}
+        <div className="flex items-start gap-3">
+          <div className="shrink-0 mt-0.5">
+            <Avatar
+              src={comment.avatar || undefined}
+              size={isNested ? 30 : 36}
+              style={
+                isNested
+                  ? { backgroundColor: 'var(--ant-color-primary-bg)' }
+                  : { backgroundColor: 'var(--ant-color-primary)' }
+              }
+            >
+              {comment.nickname.charAt(0).toUpperCase()}
+            </Avatar>
           </div>
-          {!isChild && (
-            <div style={{ marginTop: 8 }}>
+          <div className="flex-1 min-w-0">
+            {/* 昵称 + 时间 */}
+            <div className="flex items-baseline gap-2">
+              <Text
+                strong
+                style={isNested ? { fontSize: 13 } : undefined}
+              >
+                {comment.nickname}
+              </Text>
+              <Text
+                type="secondary"
+                style={{ fontSize: 12 }}
+              >
+                {formatRelativeTime(comment.createdAt)}
+              </Text>
+            </div>
+
+            {/* 评论内容 */}
+            <div className="mt-1.5">
+              <Paragraph
+                style={{
+                  marginBottom: 0,
+                  fontSize: isNested ? 13 : 14,
+                  lineHeight: 1.7,
+                }}
+              >
+                {comment.content}
+              </Paragraph>
+            </div>
+
+            {/* 操作栏 */}
+            <div className="flex items-center gap-3 mt-1.5">
               <button
                 type="button"
-                className="text-text-tertiary hover:text-primary bg-transparent border-none cursor-pointer p-0 text-sm"
+                className="bg-transparent border-none cursor-pointer p-0 text-sm transition-colors duration-200"
+                style={{ color: 'var(--ant-color-text-tertiary)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--ant-color-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--ant-color-text-tertiary)';
+                }}
                 onClick={handleReply}
               >
-                回复
+                {showReplyForm ? '收起回复' : '回复'}
               </button>
+              {children.length > 0 && (
+                <button
+                  type="button"
+                  className="bg-transparent border-none cursor-pointer p-0 text-sm transition-colors duration-200"
+                  style={{ color: 'var(--ant-color-text-quaternary)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--ant-color-text-secondary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--ant-color-text-quaternary)';
+                  }}
+                  onClick={handleToggleCollapse}
+                >
+                  {collapsed ? `展开 ${children.length} 条回复` : '收起'}
+                </button>
+              )}
             </div>
-          )}
-          {showReplyForm && (
-            <div style={{ marginTop: 12 }}>
-              <CommentForm
-                postId={postId}
-                parentId={comment.id}
-                onSuccess={() => setShowReplyForm(false)}
-                onCancel={() => setShowReplyForm(false)}
-                placeholder={`回复 @${comment.nickname}...`}
-                showCancel
-                compact
-              />
-            </div>
-          )}
+
+            {/* 回复表单 */}
+            {showReplyForm && (
+              <div className="mt-3">
+                <CommentForm
+                  postId={postId}
+                  parentId={comment.id}
+                  onSuccess={() => setShowReplyForm(false)}
+                  onCancel={() => setShowReplyForm(false)}
+                  placeholder={`回复 @${comment.nickname}...`}
+                  showCancel
+                  compact
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </Space>
+      </div>
+
+      {/* 递归渲染子评论 */}
+      {children.length > 0 && !collapsed && (
+        <div className="mt-0.5">
+          {children.map((child) => (
+            <CommentItem
+              key={child.id}
+              comment={child}
+              postId={postId}
+              childComments={childComments}
+              depth={childDepth}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -101,7 +223,7 @@ function CommentItem({
 /**
  * 评论列表组件
  */
-export function CommentList({ comments, loading, postId, onReply }: CommentListProps) {
+export function CommentList({ comments, loading, postId }: CommentListProps) {
   // 按 parentId 分组，构建树形结构
   const { rootComments, childCommentsMap } = useMemo(() => {
     const roots: BlogComment[] = [];
@@ -117,7 +239,7 @@ export function CommentList({ comments, loading, postId, onReply }: CommentListP
       }
     });
 
-    // 按时间排序（新的在前）
+    // 按时间排序（根评论新的在前，子评论旧的在前）
     roots.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     children.forEach((items) => {
       items.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -129,13 +251,13 @@ export function CommentList({ comments, loading, postId, onReply }: CommentListP
   // 获取没有对应父评论的子评论（孤儿评论）
   const orphanComments = useMemo(() => {
     return comments.filter(
-      (comment) => comment.parentId !== null && !comments.some((c) => c.id === comment.parentId)
+      (comment) => comment.parentId !== null && !comments.some((c) => c.id === comment.parentId),
     );
   }, [comments]);
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: 40 }}>
+      <div className="text-center py-10">
         <Spin />
       </div>
     );
@@ -143,7 +265,9 @@ export function CommentList({ comments, loading, postId, onReply }: CommentListP
 
   if (comments.length === 0) {
     return (
-      <Empty description="暂无评论，快来抢沙发吧~" style={{ margin: '40px 0' }} />
+      <div className="my-10">
+        <Empty description="暂无评论，快来抢沙发吧~" />
+      </div>
     );
   }
 
@@ -151,31 +275,38 @@ export function CommentList({ comments, loading, postId, onReply }: CommentListP
     <div>
       <List
         dataSource={rootComments}
-        renderItem={(comment) => {
-          const children = childCommentsMap.get(comment.id) || [];
-          return (
-            <List.Item key={comment.id} style={{ padding: '16px 0', borderBottom: '1px solid var(--color-border)' }}>
-              <div style={{ width: '100%' }}>
-                <CommentItem comment={comment} postId={postId} onReply={onReply} />
-                {children.length > 0 && (
-                  <div style={{ marginTop: 16 }}>
-                    {children.map((child) => (
-                      <div key={child.id} style={{ marginBottom: 12 }}>
-                        <CommentItem comment={child} postId={postId} isChild />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </List.Item>
-          );
-        }}
+        renderItem={(comment) => (
+          <List.Item
+            key={comment.id}
+            style={{
+              padding: '8px 0',
+              borderBottom: '1px solid var(--ant-color-border-secondary)',
+            }}
+          >
+            <div className="w-full">
+              <CommentItem
+                comment={comment}
+                postId={postId}
+                childComments={childCommentsMap}
+                depth={0}
+              />
+            </div>
+          </List.Item>
+        )}
       />
       {orphanComments.length > 0 && (
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--color-border)' }}>
+        <div
+          className="mt-4 pt-4"
+          style={{ borderTop: '1px solid var(--ant-color-border-secondary)' }}
+        >
           {orphanComments.map((comment) => (
-            <div key={comment.id} style={{ marginBottom: 12 }}>
-              <CommentItem comment={comment} postId={postId} isChild />
+            <div key={comment.id} className="mb-2">
+              <CommentItem
+                comment={comment}
+                postId={postId}
+                childComments={childCommentsMap}
+                depth={1}
+              />
             </div>
           ))}
         </div>

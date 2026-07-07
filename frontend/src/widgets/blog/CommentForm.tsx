@@ -1,3 +1,5 @@
+// src/widgets/blog/CommentForm.tsx
+
 import { useCallback, useState } from 'react';
 import { Button, Form, Input, Space } from 'antd';
 import type { ReactNode } from 'react';
@@ -67,27 +69,31 @@ export function CommentForm({
       layout="vertical"
       size={compact ? 'small' : 'middle'}
     >
-      <Space.Compact block style={compact ? { width: '100%' } : { width: '100%', maxWidth: 400 }}>
-        <Form.Item
-          name="nickname"
-          rules={[
-            { required: true, message: '请输入昵称' },
-            { min: 2, max: 20, message: '昵称长度在 2-20 个字符' },
-          ]}
-          style={{ flex: 1 }}
-        >
-          <Input placeholder="昵称" maxLength={20} />
-        </Form.Item>
-        <Form.Item
-          name="email"
-          rules={[
-            { type: 'email', message: '请输入有效的邮箱地址' },
-          ]}
-          style={{ flex: 1 }}
-        >
-          <Input placeholder="邮箱（选填）" />
-        </Form.Item>
-      </Space.Compact>
+      <div className="w-full">
+        <Space.Compact block>
+          <div className="flex-1">
+            <Form.Item
+              name="nickname"
+              rules={[
+                { required: true, message: '请输入昵称' },
+                { min: 2, max: 20, message: '昵称长度在 2-20 个字符' },
+              ]}
+            >
+              <Input placeholder="昵称" maxLength={20} />
+            </Form.Item>
+          </div>
+          <div className="flex-1">
+            <Form.Item
+              name="email"
+              rules={[
+                { type: 'email', message: '请输入有效的邮箱地址' },
+              ]}
+            >
+              <Input placeholder="邮箱（选填）" />
+            </Form.Item>
+          </div>
+        </Space.Compact>
+      </div>
       <Form.Item
         name="content"
         rules={[
@@ -115,7 +121,7 @@ export function CommentForm({
   );
 
   return compact ? (
-    <div style={{ paddingLeft: parentId ? 32 : 0 }}>{formContent}</div>
+    <div className={parentId ? 'pl-8' : ''}>{formContent}</div>
   ) : (
     formContent
   );

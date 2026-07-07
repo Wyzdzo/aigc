@@ -7,6 +7,8 @@ interface PostStats {
   total: number;
   published: number;
   draft: number;
+  totalViewCount: number;
+  totalLikeCount: number;
 }
 
 interface CommentStats {
@@ -42,7 +44,7 @@ export function useDashboardStats() {
   });
 
   return {
-    postStats: data?.postStats || { total: 0, published: 0, draft: 0 },
+    postStats: data?.postStats || { total: 0, published: 0, draft: 0, totalViewCount: 0, totalLikeCount: 0 },
     commentStats: data?.commentStats || { total: 0, pending: 0, approved: 0, rejected: 0 },
     categoryStats: data?.categoryStats || { total: 0 },
     tagStats: data?.tagStats || { total: 0 },

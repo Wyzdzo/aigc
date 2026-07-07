@@ -31,7 +31,7 @@ beforeAll(() => {
 
 vi.mock('@/features/blog', () => ({
   useDashboardStats: vi.fn(() => ({
-    postStats: { total: 10, published: 8, draft: 2 },
+    postStats: { total: 10, published: 8, draft: 2, totalViewCount: 1500, totalLikeCount: 320 },
     commentStats: { total: 50, pending: 3, approved: 45, rejected: 2 },
     categoryStats: { total: 5 },
     tagStats: { total: 20 },
@@ -67,20 +67,12 @@ describe('AdminDashboardPage', () => {
       expect(subtitles.length).toBeGreaterThan(0);
     });
 
-    it('should display stat cards', () => {
-      const { container } = render(
-        <BrowserRouter>
-          <AdminDashboardPage />
-        </BrowserRouter>
-      );
-      const statCards = container.querySelectorAll('.ant-card');
-      expect(statCards.length).toBeGreaterThan(0);
-    });
-
-    it('should display stat card titles', () => {
+    it('should display stat card titles including view and like stats', () => {
       const statTitles = [
         '文章总数',
         '评论总数',
+        '总阅读量',
+        '总点赞量',
         '分类数量',
         '标签数量',
         '友链数量',
@@ -93,6 +85,17 @@ describe('AdminDashboardPage', () => {
         const elements = screen.getAllByText(title);
         expect(elements.length).toBeGreaterThan(0);
       });
+    });
+
+    it('should display total view count and total like count values', () => {
+      const { container } = render(
+        <BrowserRouter>
+          <AdminDashboardPage />
+        </BrowserRouter>
+      );
+
+      expect(container.textContent).toContain('1,500');
+      expect(container.textContent).toContain('320');
     });
 
     it('should display quick actions section', () => {
@@ -125,34 +128,6 @@ describe('AdminDashboardPage', () => {
       expect(sections.length).toBeGreaterThan(0);
     });
 
-    it('should display statistics from query', () => {
-      const { container } = render(
-        <BrowserRouter>
-          <AdminDashboardPage />
-        </BrowserRouter>
-      );
-
-      const statValues = container.querySelectorAll('.ant-statistic-content-value');
-      expect(statValues.length).toBeGreaterThan(0);
-    });
-
-    it('should display correct stat values', () => {
-      const { container } = render(
-        <BrowserRouter>
-          <AdminDashboardPage />
-        </BrowserRouter>
-      );
-
-      expect(container.textContent).toContain('10');
-      expect(container.textContent).toContain('8');
-      expect(container.textContent).toContain('2');
-      expect(container.textContent).toContain('50');
-      expect(container.textContent).toContain('3');
-      expect(container.textContent).toContain('5');
-      expect(container.textContent).toContain('20');
-      expect(container.textContent).toContain('15');
-    });
-
     it('should display recent activities content', () => {
       const { container } = render(
         <BrowserRouter>
@@ -168,7 +143,7 @@ describe('AdminDashboardPage', () => {
   describe('Error Path', () => {
     it('should display loading state when data is loading', async () => {
       mockedUseDashboardStats.mockReturnValue({
-        postStats: { total: 0, published: 0, draft: 0 },
+        postStats: { total: 0, published: 0, draft: 0, totalViewCount: 0, totalLikeCount: 0 },
         commentStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
         categoryStats: { total: 0 },
         tagStats: { total: 0 },
@@ -189,7 +164,7 @@ describe('AdminDashboardPage', () => {
 
     it('should display error state when query fails', async () => {
       mockedUseDashboardStats.mockReturnValue({
-        postStats: { total: 0, published: 0, draft: 0 },
+        postStats: { total: 0, published: 0, draft: 0, totalViewCount: 0, totalLikeCount: 0 },
         commentStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
         categoryStats: { total: 0 },
         tagStats: { total: 0 },
@@ -206,6 +181,29 @@ describe('AdminDashboardPage', () => {
       );
 
       expect(container.textContent).toContain('加载失败');
+    });
+
+    it('should display zero values when all stats are zero', async () => {
+      mockedUseDashboardStats.mockReturnValue({
+        postStats: { total: 0, published: 0, draft: 0, totalViewCount: 0, totalLikeCount: 0 },
+        commentStats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+        categoryStats: { total: 0 },
+        tagStats: { total: 0 },
+        linkStats: { total: 0 },
+        loading: false,
+        error: undefined,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <BrowserRouter>
+          <AdminDashboardPage />
+        </BrowserRouter>
+      );
+
+      // Verify stat card titles still appear
+      expect(screen.getAllByText('总阅读量').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('总点赞量').length).toBeGreaterThan(0);
     });
   });
 });

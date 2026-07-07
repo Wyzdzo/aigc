@@ -10,6 +10,12 @@ export class PostStatsDTO {
 
   @Field(() => Int, { description: '草稿数' })
   draft!: number;
+
+  @Field(() => Int, { description: '总阅读量' })
+  totalViewCount!: number;
+
+  @Field(() => Int, { description: '总点赞量' })
+  totalLikeCount!: number;
 }
 
 @ObjectType({ description: '评论统计' })

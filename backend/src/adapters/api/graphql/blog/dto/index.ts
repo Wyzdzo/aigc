@@ -3,6 +3,7 @@ export { BlogCommentDTO } from './blog-comment.dto';
 export { BlogLinkDTO } from './blog-link.dto';
 export { BlogPostDTO } from './blog-post.dto';
 export { BlogPostsArgs } from './blog-posts.args';
+export { BlogPostNavigationDTO } from './blog-post-navigation.dto';
 export { BlogPostsResult } from './blog-posts.result';
 export { BlogTagDTO } from './blog-tag.dto';
 export { CreateBlogCommentInput } from './create-blog-comment.input';

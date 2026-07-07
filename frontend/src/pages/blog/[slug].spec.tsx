@@ -7,7 +7,7 @@ import { message } from 'antd';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { GET_COMMENTS, GET_POST_BY_SLUG, LIKE_POST } from '@/features/blog';
+import { GET_ADJACENT_POSTS, GET_COMMENTS, GET_POST_BY_SLUG, LIKE_POST } from '@/features/blog';
 import { VIEW_POST } from '@/features/blog/infrastructure/graphql/mutations';
 
 import { CommentStatus } from '@/entities/blog';
@@ -137,6 +137,26 @@ const mockPostWithoutToc = {
   updatedAt: new Date('2024-01-10'),
 };
 
+/**
+ * 创建相邻文章 mock
+ */
+function createAdjacentPostsMock(slug: string) {
+  return {
+    request: {
+      query: GET_ADJACENT_POSTS,
+      variables: { slug },
+    },
+    result: {
+      data: {
+        adjacentPosts: {
+          prev: null,
+          next: null,
+        },
+      },
+    },
+  };
+}
+
 describe('BlogDetailPage', () => {
   describe('Happy Path', () => {
     it('should render article title', async () => {
@@ -150,6 +170,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -170,6 +191,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -192,6 +214,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -212,6 +235,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -232,6 +256,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -252,6 +277,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -273,6 +299,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -296,6 +323,7 @@ describe('BlogDetailPage', () => {
           },
           delay: 10000, // 延迟返回，模拟加载状态
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -314,6 +342,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: null },
           },
         },
+        createAdjacentPostsMock('non-existent-post'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks, 'non-existent-post') });
@@ -333,6 +362,7 @@ describe('BlogDetailPage', () => {
           },
           error: new Error('Network error'),
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -360,6 +390,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: postWithoutCover },
           },
         },
+        createAdjacentPostsMock('typescript-advanced-types'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks, 'typescript-advanced-types') });
@@ -386,6 +417,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: postWithPlainContent },
           },
         },
+        createAdjacentPostsMock('typescript-advanced-types'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks, 'typescript-advanced-types') });
@@ -412,6 +444,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: postNotTop },
           },
         },
+        createAdjacentPostsMock('typescript-advanced-types'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks, 'typescript-advanced-types') });
@@ -448,6 +481,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -481,6 +515,7 @@ describe('BlogDetailPage', () => {
             data: { postBySlug: mockPostWithToc },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -519,6 +554,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -556,6 +592,7 @@ describe('BlogDetailPage', () => {
           },
           error: new Error('Network error'),
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -635,6 +672,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -671,6 +709,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -708,6 +747,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -745,6 +785,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -786,6 +827,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -822,6 +864,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -858,6 +901,7 @@ describe('BlogDetailPage', () => {
             },
           },
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });
@@ -896,6 +940,7 @@ describe('BlogDetailPage', () => {
           },
           delay: 10000, // 延迟返回，模拟加载状态
         },
+        createAdjacentPostsMock('react-18-new-features'),
       ];
 
       const { container } = render(<BlogDetailPage />, { wrapper: createWrapper(mocks) });

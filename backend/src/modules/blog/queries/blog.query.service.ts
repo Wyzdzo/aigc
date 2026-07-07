@@ -120,6 +120,47 @@ export class BlogQueryService {
     return { items, total };
   }
 
+  /**
+   * 获取相邻文章（上一篇/下一篇）
+   * 基于 id 排序（自增 ID 天然反映创建顺序），仅返回已发布的文章
+   */
+  async getAdjacentPosts(params: {
+    slug: string;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<{ prev: BlogPostEntity | null; next: BlogPostEntity | null }> {
+    const { slug, transactionContext } = params;
+    const repository = this.getPostRepository(transactionContext);
+
+    const currentPost = await repository.findOne({
+      where: { slug, status: PostStatus.PUBLISHED },
+      select: { id: true },
+    });
+
+    if (!currentPost) {
+      return { prev: null, next: null };
+    }
+
+    // 上一篇（列表中更靠前的文章，即更新发布的，id 更大）
+    const prev = await repository
+      .createQueryBuilder('post')
+      .where('post.status = :status', { status: PostStatus.PUBLISHED })
+      .andWhere('post.id > :id', { id: currentPost.id })
+      .orderBy('post.id', 'ASC')
+      .take(1)
+      .getOne();
+
+    // 下一篇（列表中更靠后的文章，即更早发布的，id 更小）
+    const next = await repository
+      .createQueryBuilder('post')
+      .where('post.status = :status', { status: PostStatus.PUBLISHED })
+      .andWhere('post.id < :id', { id: currentPost.id })
+      .orderBy('post.id', 'DESC')
+      .take(1)
+      .getOne();
+
+    return { prev, next };
+  }
+
   async getTopPosts(params: {
     limit?: number;
     transactionContext?: PersistenceTransactionContext;
@@ -310,9 +351,13 @@ export class BlogQueryService {
 
   // ==================== Stats Queries ====================
 
-  async getPostStats(params: {
-    transactionContext?: PersistenceTransactionContext;
-  }): Promise<{ total: number; published: number; draft: number }> {
+  async getPostStats(params: { transactionContext?: PersistenceTransactionContext }): Promise<{
+    total: number;
+    published: number;
+    draft: number;
+    totalViewCount: number;
+    totalLikeCount: number;
+  }> {
     const { transactionContext } = params;
     const repository = this.getPostRepository(transactionContext);
 
@@ -320,7 +365,21 @@ export class BlogQueryService {
     const published = await repository.count({ where: { status: PostStatus.PUBLISHED } });
     const draft = await repository.count({ where: { status: PostStatus.DRAFT } });
 
-    return { total, published, draft };
+    // 聚合总阅读量和总点赞量
+    const sumResult: { totalViewCount: string; totalLikeCount: string } | undefined =
+      await repository
+        .createQueryBuilder('post')
+        .select('COALESCE(SUM(post.viewCount), 0)', 'totalViewCount')
+        .addSelect('COALESCE(SUM(post.likeCount), 0)', 'totalLikeCount')
+        .getRawOne();
+
+    return {
+      total,
+      published,
+      draft,
+      totalViewCount: Number(sumResult?.totalViewCount ?? 0),
+      totalLikeCount: Number(sumResult?.totalLikeCount ?? 0),
+    };
   }
 
   async getCommentStats(params: {

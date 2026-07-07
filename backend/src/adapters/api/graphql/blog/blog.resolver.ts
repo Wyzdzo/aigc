@@ -10,6 +10,7 @@ import { UpdateBlogPostInput } from './dto/update-blog-post.input';
 import { CreateBlogCommentInput } from './dto/create-blog-comment.input';
 import { BlogPostsArgs } from './dto/blog-posts.args';
 import { BlogPostsResult } from './dto/blog-posts.result';
+import { BlogPostNavigationDTO } from './dto/blog-post-navigation.dto';
 import { BlogQueryService } from '@src/modules/blog/queries/blog.query.service';
 import {
   BlogUsecase,
@@ -73,6 +74,15 @@ export class BlogResolver {
   async topPosts(): Promise<BlogPostDTO[]> {
     const posts = await this.blogQueryService.getTopPosts({});
     return posts.map(this.toPostDTO);
+  }
+
+  @Query(() => BlogPostNavigationDTO, { description: '查询相邻文章（上一篇/下一篇）' })
+  async adjacentPosts(@Args('slug') slug: string): Promise<BlogPostNavigationDTO> {
+    const { prev, next } = await this.blogUsecase.getAdjacentPosts({ slug });
+    return {
+      prev: prev ? this.toPostDTO(prev) : null,
+      next: next ? this.toPostDTO(next) : null,
+    };
   }
 
   // ==================== Category Queries ====================

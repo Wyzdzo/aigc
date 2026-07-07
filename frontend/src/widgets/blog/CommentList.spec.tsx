@@ -2,11 +2,12 @@
 
 import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { render, waitFor, fireEvent } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { describe, expect, it, vi, beforeAll } from 'vitest';
 
 import type { BlogComment } from '@/entities/blog';
 import { CommentStatus } from '@/entities/blog';
+import { CREATE_COMMENT } from '@/features/blog';
 
 import { CommentList } from './CommentList';
 
@@ -34,8 +35,17 @@ beforeAll(() => {
 });
 
 function createWrapper(mocks: MockedResponse[] = []) {
+  const defaultMocks: MockedResponse[] = [
+    {
+      request: {
+        query: CREATE_COMMENT,
+        variables: { input: { postId: 1, parentId: 1, nickname: 'test', email: '', content: 'test' } },
+      },
+      result: { data: { createComment: { id: 999, status: 'PENDING' } } },
+    },
+  ];
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return <MockedProvider mocks={mocks}>{children}</MockedProvider>;
+    return <MockedProvider mocks={[...defaultMocks, ...mocks]}>{children}</MockedProvider>;
   };
 }
 
@@ -104,20 +114,15 @@ describe('CommentList', () => {
       expect(container.querySelector('.ant-spin')).toBeTruthy();
     });
 
-    it('should call onReply when reply button is clicked', async () => {
-      const onReplyMock = vi.fn();
-      const { container } = render(<CommentList comments={mockComments} postId={1} onReply={onReplyMock} />, { wrapper: createWrapper() });
+    it('should render reply buttons on all comments including child comments', () => {
+      const { container } = render(<CommentList comments={mockComments} postId={1} />, { wrapper: createWrapper() });
 
-      const replyButtons = container.querySelectorAll('button');
-      const firstReplyButton = Array.from(replyButtons).find(btn => btn.textContent === '回复');
-
-      if (firstReplyButton) {
-        fireEvent.click(firstReplyButton);
-      }
-
-      await waitFor(() => {
-        expect(onReplyMock).toHaveBeenCalled();
-      });
+      // 所有评论都应该有回复按钮（支持楼中楼）
+      const replyButtons = Array.from(container.querySelectorAll('button')).filter(
+        btn => btn.textContent === '回复',
+      );
+      // 3条评论（张三、李四、王五）各有1个回复按钮
+      expect(replyButtons.length).toBe(3);
     });
   });
 

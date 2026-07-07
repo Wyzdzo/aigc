@@ -25,6 +25,35 @@ test.describe('Admin Dashboard Page', () => {
     await expect(pageContent).toBeVisible();
   });
 
+  test('should display stat cards with titles when authenticated', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin');
+    await page.waitForLoadState('networkidle');
+
+    // 验证仪表盘标题
+    await expect(page.locator('text=仪表盘')).toBeVisible();
+
+    // 验证统计卡片标题包含总阅读量和总点赞量
+    await expect(page.locator('text=总阅读量')).toBeVisible();
+    await expect(page.locator('text=总点赞量')).toBeVisible();
+    await expect(page.locator('text=文章总数')).toBeVisible();
+    await expect(page.locator('text=评论总数')).toBeVisible();
+  });
+
+  test('should display quick actions section when authenticated', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=快捷操作')).toBeVisible();
+    await expect(page.locator('text=写文章')).toBeVisible();
+    await expect(page.locator('text=最近动态')).toBeVisible();
+  });
+
   test('should redirect when token is cleared', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('admin_token', 'test-token');

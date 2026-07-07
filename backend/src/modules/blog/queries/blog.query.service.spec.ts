@@ -399,17 +399,81 @@ describe('BlogQueryService', () => {
   });
 
   describe('getPostStats', () => {
-    it('should return total, published, and draft counts', async () => {
-      jest.spyOn(postRepository, 'count').mockResolvedValueOnce(20) // total
+    it('should return total, published, draft counts with view/like aggregation', async () => {
+      jest
+        .spyOn(postRepository, 'count')
+        .mockResolvedValueOnce(20) // total
         .mockResolvedValueOnce(15) // published
         .mockResolvedValueOnce(5); // draft
+
+      const queryBuilderMock = {
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue({
+          totalViewCount: '1500',
+          totalLikeCount: '320',
+        }),
+      };
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
 
       const result = await service.getPostStats({});
 
       expect(result.total).toBe(20);
       expect(result.published).toBe(15);
       expect(result.draft).toBe(5);
-      expect(postRepository.count).toHaveBeenCalledTimes(3);
+      expect(result.totalViewCount).toBe(1500);
+      expect(result.totalLikeCount).toBe(320);
+      expect(queryBuilderMock.select).toHaveBeenCalledWith(
+        'COALESCE(SUM(post.viewCount), 0)',
+        'totalViewCount',
+      );
+      expect(queryBuilderMock.addSelect).toHaveBeenCalledWith(
+        'COALESCE(SUM(post.likeCount), 0)',
+        'totalLikeCount',
+      );
+    });
+
+    it('should return zero view/like counts when no posts exist', async () => {
+      jest
+        .spyOn(postRepository, 'count')
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0);
+
+      const queryBuilderMock = {
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue({
+          totalViewCount: '0',
+          totalLikeCount: '0',
+        }),
+      };
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getPostStats({});
+
+      expect(result.totalViewCount).toBe(0);
+      expect(result.totalLikeCount).toBe(0);
+    });
+
+    it('should handle getRawOne returning undefined gracefully', async () => {
+      jest
+        .spyOn(postRepository, 'count')
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0);
+
+      const queryBuilderMock = {
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue(undefined),
+      };
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      const result = await service.getPostStats({});
+
+      expect(result.totalViewCount).toBe(0);
+      expect(result.totalLikeCount).toBe(0);
     });
   });
 

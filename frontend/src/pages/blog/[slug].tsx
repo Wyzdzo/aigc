@@ -20,7 +20,7 @@ import { Link, useParams } from 'react-router';
 
 import { CommentForm, CommentList } from '@/widgets/blog';
 import { SeoMeta } from '@/widgets/seo';
-import { useComments, useLikePost, usePostBySlug, useViewPost } from '@/features/blog';
+import { useAdjacentPosts, useComments, useLikePost, usePostBySlug, useViewPost } from '@/features/blog';
 
 import { Markdown } from '@/shared/blog/markdown';
 import { extractToc, type TocItem } from '@/shared/lib/markdownUtils';
@@ -105,23 +105,23 @@ function ArticleNavigation({
   if (!prev && !next) return null;
   const { Text } = Typography;
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+    <div className="flex justify-between gap-4 mt-6">
       {prev ? (
-        <Link to={`/blog/${prev.slug}`} style={{ maxWidth: '50%' }}>
+        <Link to={`/blog/${prev.slug}`} className="flex-1 min-w-0">
           <Card size="small" hoverable>
             <Text type="secondary">上一篇</Text>
             <div><Text strong ellipsis>{prev.title}</Text></div>
           </Card>
         </Link>
-      ) : <div />}
+      ) : <div className="flex-1" />}
       {next ? (
-        <Link to={`/blog/${next.slug}`} style={{ maxWidth: '50%', textAlign: 'right' }}>
+        <Link to={`/blog/${next.slug}`} className="flex-1 min-w-0 text-right">
           <Card size="small" hoverable>
             <Text type="secondary">下一篇</Text>
             <div><Text strong ellipsis>{next.title}</Text></div>
           </Card>
         </Link>
-      ) : <div />}
+      ) : <div className="flex-1" />}
     </div>
   );
 }
@@ -132,6 +132,7 @@ function ArticleNavigation({
 export function BlogDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { post, loading, error } = usePostBySlug(slug);
+  const { prev, next } = useAdjacentPosts(slug);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { items: comments, total, loading: commentsLoading, refetch } = useComments({ postId: post?.id });
@@ -284,7 +285,7 @@ export function BlogDetailPage() {
           </Card>
 
           {/* 文章导航 */}
-          <ArticleNavigation prev={null} next={null} />
+          <ArticleNavigation prev={prev} next={next} />
 
           {/* 评论区域 */}
           <Card style={{ borderRadius: 8, marginTop: 24 }} styles={{ body: { padding: isMobile ? 16 : 24 } }}>
