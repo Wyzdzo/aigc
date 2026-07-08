@@ -51,6 +51,7 @@ export function AdminSettingsPage() {
         siteName: siteSettings['site_name'] || '',
         siteDescription: siteSettings['site_description'] || '',
         siteKeywords: siteSettings['site_keywords'] || '',
+        announcement: siteSettings['site_announcement'] || '',
         perPage: Number(siteSettings['per_page']) || 10,
         allowComment: siteSettings['allow_comment'] === 'true',
       });
@@ -143,6 +144,10 @@ export function AdminSettingsPage() {
 
             <Form.Item name="siteKeywords" label="SEO关键词">
               <Input placeholder="请输入关键词，用逗号分隔" />
+            </Form.Item>
+
+            <Form.Item name="announcement" label="公告内容">
+              <TextArea rows={3} placeholder="请输入公告内容，留空则不显示公告栏" />
             </Form.Item>
 
             <Form.Item name="perPage" label="每页文章数">

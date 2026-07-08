@@ -29,3 +29,11 @@ export const GET_PUBLIC_BLOGGER_INFO = gql`
     }
   }
 `;
+
+export const GET_PUBLIC_SETTINGS = gql`
+  query GetPublicSettings {
+    publicSettings {
+      announcement
+    }
+  }
+`;

@@ -14,6 +14,7 @@ export interface SiteSettingData {
   bloggerAvatar?: string;
   perPage?: number;
   allowComment?: boolean;
+  announcement?: string;
 }
 
 @Injectable()
@@ -64,7 +65,20 @@ export class SettingsService {
   }
 
   async updateSetting(key: string, value: string): Promise<void> {
-    await this.settingsRepository.update({ settingKey: key }, { settingValue: value });
+    const existing = await this.settingsRepository.findOne({ where: { settingKey: key } });
+    if (existing) {
+      await this.settingsRepository.update({ settingKey: key }, { settingValue: value });
+    } else {
+      await this.settingsRepository.insert({
+        settingKey: key,
+        settingValue: value,
+        settingType: SettingType.STRING,
+        displayName: key,
+        groupName: 'general',
+        sortOrder: 99,
+        isPublic: 1,
+      });
+    }
   }
 
   async updateSettings(data: SiteSettingData): Promise<void> {
@@ -78,6 +92,7 @@ export class SettingsService {
     if (data.bloggerAvatar !== undefined) updateData['blogger_avatar'] = data.bloggerAvatar;
     if (data.perPage !== undefined) updateData['per_page'] = String(data.perPage);
     if (data.allowComment !== undefined) updateData['allow_comment'] = String(data.allowComment);
+    if (data.announcement !== undefined) updateData['site_announcement'] = data.announcement;
 
     for (const [key, value] of Object.entries(updateData)) {
       await this.settingsRepository.update({ settingKey: key }, { settingValue: value });

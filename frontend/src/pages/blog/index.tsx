@@ -8,6 +8,7 @@ import { Link } from 'react-router';
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
 import { SeoMeta } from '@/widgets/seo';
 import { usePublicBloggerInfo } from '@/features/settings';
+import { usePublicSettings } from '@/features/settings';
 import { useCategoryTree, useLikePost, usePosts, useTags } from '@/features/blog';
 
 import { type BlogPost, PostStatus } from '@/entities/blog';
@@ -195,8 +196,28 @@ function SidebarContent({
   onCategoryChange: (id: number | undefined) => void;
   onTagChange: (id: number | undefined) => void;
 }) {
+  const { announcement } = usePublicSettings();
+
   return (
     <>
+      {/* 公告栏 */}
+      {announcement && (
+        <div className="mb-6" data-testid="announcement-card">
+          <Card
+            style={{ borderRadius: 'var(--radius-card)' }}
+            styles={{ body: { padding: 16 } }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base">📢</span>
+              <Title level={5} className="mb-0">公告</Title>
+            </div>
+            <Paragraph type="secondary" className="mb-0 text-sm leading-relaxed">
+              {announcement}
+            </Paragraph>
+          </Card>
+        </div>
+      )}
+
       {/* 分类树 */}
       <div className="mb-6">
         <Card

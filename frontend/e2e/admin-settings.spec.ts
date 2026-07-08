@@ -21,4 +21,13 @@ test.describe('Admin Settings Page', () => {
     const pageContent = page.locator('body');
     await expect(pageContent).toBeVisible();
   });
+
+  test('should show announcement field in site settings tab', async ({ page }) => {
+    await page.addInitScript(setupAdminAuth());
+    await page.goto('/admin/settings');
+    await page.waitForLoadState('networkidle');
+
+    // 确保在网站设置标签页
+    await expect(page.locator('text=公告内容')).toBeVisible();
+  });
 });

@@ -28,6 +28,7 @@ describe('SettingsUsecase', () => {
           provide: SettingsService,
           useValue: {
             getAllSettings: jest.fn(),
+            getSetting: jest.fn(),
             updateSettings: jest.fn(),
           },
         },
@@ -103,6 +104,25 @@ describe('SettingsUsecase', () => {
       await usecase.updateSiteSettings(data);
 
       expect(settingsService.updateSettings).toHaveBeenCalledWith(data);
+    });
+  });
+
+  describe('getPublicSettings', () => {
+    it('should return announcement from settings service', async () => {
+      (settingsService.getSetting as jest.Mock).mockResolvedValue('欢迎访问本站！');
+
+      const result = await usecase.getPublicSettings();
+
+      expect(settingsService.getSetting).toHaveBeenCalledWith('site_announcement');
+      expect(result).toEqual({ announcement: '欢迎访问本站！' });
+    });
+
+    it('should return null announcement when not set', async () => {
+      (settingsService.getSetting as jest.Mock).mockResolvedValue(null);
+
+      const result = await usecase.getPublicSettings();
+
+      expect(result).toEqual({ announcement: null });
     });
   });
 

@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { GET_CATEGORY_TREE, GET_POSTS, GET_TAGS } from '@/features/blog';
+import { GET_PUBLIC_BLOGGER_INFO, GET_PUBLIC_SETTINGS } from '@/features/settings';
 
 import type { BlogPost } from '@/entities/blog';
 import { PostStatus } from '@/entities/blog';
@@ -702,6 +703,68 @@ describe('BlogHomePage', () => {
         const authorCard = container.querySelector('[style*="flex-direction: column"]');
         expect(authorCard).toBeTruthy();
       });
+    });
+  });
+
+  describe('Announcement Feature', () => {
+    const announcementMock = (announcement: string | null): MockedResponse => ({
+      request: { query: GET_PUBLIC_SETTINGS },
+      result: { data: { publicSettings: { announcement } } },
+    });
+
+    const baseMocks: MockedResponse[] = [
+      {
+        request: {
+          query: GET_POSTS,
+          variables: { status: PostStatus.PUBLISHED, page: 1, pageSize: 10 },
+        },
+        result: {
+          data: {
+            posts: { items: mockPosts, total: mockPosts.length, page: 1, pageSize: 10 },
+          },
+        },
+      },
+      {
+        request: { query: GET_PUBLIC_BLOGGER_INFO },
+        result: {
+          data: {
+            publicBloggerInfo: { nickname: 'Test', avatar: null, bio: 'test bio' },
+          },
+        },
+      },
+      {
+        request: { query: GET_CATEGORY_TREE },
+        result: { data: { categoryTree: [] } },
+      },
+      {
+        request: { query: GET_TAGS },
+        result: { data: { tags: [] } },
+      },
+    ];
+
+    it('should render announcement in sidebar when set', async () => {
+      const mocks = [...baseMocks, announcementMock('欢迎访问本站！')];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        expect(container.querySelector('[data-testid="announcement-card"]')).toBeTruthy();
+      });
+
+      expect(screen.getByText('欢迎访问本站！')).toBeTruthy();
+    });
+
+    it('should not render announcement when null', async () => {
+      const mocks = [...baseMocks, announcementMock(null)];
+
+      const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
+
+      await waitFor(() => {
+        // 等待页面主要内容加载（帖子标题出现）
+        expect(screen.getAllByText('React 18 新特性详解').length).toBeGreaterThan(0);
+      });
+
+      expect(container.querySelector('[data-testid="announcement-card"]')).toBeNull();
     });
   });
 

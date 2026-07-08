@@ -35,6 +35,7 @@ export interface UpdateSiteSettingsInput {
   bloggerAvatar?: string;
   perPage?: number;
   allowComment?: boolean;
+  announcement?: string;
 }
 
 export interface UpdateBloggerInfoInput {

@@ -65,6 +65,11 @@ export class SettingsUsecase {
     await this.settingsService.updateSettings(data);
   }
 
+  async getPublicSettings(): Promise<{ announcement: string | null }> {
+    const announcement = await this.settingsService.getSetting('site_announcement');
+    return { announcement };
+  }
+
   async getBloggerInfo(accountId: number): Promise<BloggerInfo | null> {
     const userInfo = await this.userInfoService.findByAccountId(accountId);
 

@@ -38,6 +38,12 @@ export class BloggerInfoGql {
   bio!: string | null;
 }
 
+@ObjectType()
+export class PublicSettingsGql {
+  @Field(() => String, { nullable: true })
+  announcement!: string | null;
+}
+
 @InputType()
 export class UpdateSiteSettingsInput {
   @Field(() => String, { nullable: true })
@@ -63,6 +69,9 @@ export class UpdateSiteSettingsInput {
 
   @Field(() => Boolean, { nullable: true })
   allowComment?: boolean;
+
+  @Field(() => String, { nullable: true })
+  announcement?: string;
 }
 
 @InputType()

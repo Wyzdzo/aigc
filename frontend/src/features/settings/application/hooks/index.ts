@@ -9,3 +9,5 @@ export {
 } from './useSettings';
 
 export { usePublicBloggerInfo, type PublicBloggerInfo } from './usePublicBloggerInfo';
+
+export { usePublicSettings, type PublicSettings } from './usePublicSettings';

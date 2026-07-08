@@ -8,6 +8,7 @@ import { JwtPayload } from '@app-types/jwt.types';
 import { SettingsUsecase } from '@src/usecases/settings/settings.usecase';
 import {
   BloggerInfoGql,
+  PublicSettingsGql,
   SettingsResultGql,
   UpdateSiteSettingsInput,
   UpdateBloggerInfoInput,
@@ -27,6 +28,12 @@ export class SettingsResolver {
       avatar: bloggerInfo.avatar,
       bio: bloggerInfo.bio,
     };
+  }
+
+  @Query(() => PublicSettingsGql)
+  async publicSettings(): Promise<PublicSettingsGql> {
+    const settings = await this.settingsUsecase.getPublicSettings();
+    return { announcement: settings.announcement };
   }
 
   @Query(() => SettingsResultGql)
@@ -64,6 +71,7 @@ export class SettingsResolver {
       bloggerAvatar: input.bloggerAvatar,
       perPage: input.perPage,
       allowComment: input.allowComment,
+      announcement: input.announcement,
     });
     return true;
   }

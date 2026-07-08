@@ -158,7 +158,10 @@ describe('SettingsService', () => {
   });
 
   describe('updateSetting', () => {
-    it('should update a setting value', async () => {
+    it('should update a setting value when key exists', async () => {
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValue({ settingKey: 'site_name', settingValue: 'Old' } as SiteSettingEntity);
       jest
         .spyOn(repository, 'update')
         .mockResolvedValue({ affected: 1, generatedMaps: [], raw: {} });
@@ -169,6 +172,22 @@ describe('SettingsService', () => {
         { settingKey: 'site_name' },
         { settingValue: 'New Blog Name' },
       );
+    });
+
+    it('should insert a new setting when key does not exist', async () => {
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
+      jest.spyOn(repository, 'insert').mockResolvedValue({ generatedMaps: [], raw: {}, identifiers: [] });
+      jest.spyOn(repository, 'update');
+
+      await service.updateSetting('new_key', 'New Value');
+
+      expect(repository.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          settingKey: 'new_key',
+          settingValue: 'New Value',
+        }),
+      );
+      expect(repository.update).not.toHaveBeenCalled();
     });
   });
 
