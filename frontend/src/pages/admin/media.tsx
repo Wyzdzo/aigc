@@ -67,10 +67,10 @@ export function AdminMediaPage() {
   };
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="p-6">
       <Title level={3}>文件管理</Title>
 
-      <div style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+      <div className="mb-4 flex items-center gap-4">
         <Upload beforeUpload={handleUpload} showUploadList={false}>
           <Button type="primary" icon={<UploadOutlined />}>
             上传图片
@@ -80,7 +80,7 @@ export function AdminMediaPage() {
         <Search
           placeholder="搜索文件名"
           allowClear
-          style={{ width: 300 }}
+          className="w-[300px]"
           prefix={<SearchOutlined />}
           onSearch={(value) => {
             setKeyword(value || undefined);
@@ -103,12 +103,12 @@ export function AdminMediaPage() {
                     hoverable
                     onClick={() => handlePreview(item)}
                     cover={
-                      <div style={{ height: 150, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                      <div className="flex h-[150px] items-center justify-center overflow-hidden bg-gray-100">
                         <Image
                           src={item.url}
                           alt={item.originalName}
                           preview={false}
-                          style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                          className="max-h-full max-w-full object-contain"
                           fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                         />
                       </div>
@@ -136,7 +136,7 @@ export function AdminMediaPage() {
               ))}
             </Row>
 
-            <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <div className="mt-4 text-right">
               <Pagination
                 current={page}
                 pageSize={pageSize}
@@ -151,7 +151,7 @@ export function AdminMediaPage() {
             </div>
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: 48, color: '#999' }}>
+          <div className="py-12 text-center text-gray-400">
             暂无文件，上传一张图片开始使用
           </div>
         )}
@@ -163,7 +163,7 @@ export function AdminMediaPage() {
         onCancel={() => setPreviewVisible(false)}
         width={800}
       >
-        <img alt="preview" style={{ width: '100%' }} src={previewImage} />
+        <img alt="preview" className="w-full" src={previewImage} />
       </Modal>
     </div>
   );

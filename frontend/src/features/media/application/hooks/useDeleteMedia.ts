@@ -10,8 +10,12 @@ export function useDeleteMedia() {
 
   return {
     deleteMedia: async (id: number) => {
-      const result = await deleteMedia({ variables: { id } });
-      return result.data?.deleteMedia ?? false;
+      try {
+        const result = await deleteMedia({ variables: { id } });
+        return result.data?.deleteMedia ?? false;
+      } catch {
+        return false;
+      }
     },
     loading,
   };

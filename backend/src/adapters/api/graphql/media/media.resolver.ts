@@ -35,11 +35,7 @@ export class MediaResolver {
   @Mutation(() => Boolean, { description: '删除媒体文件' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   async deleteMedia(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
-    try {
-      await this.mediaUsecase.deleteMedia(id);
-      return true;
-    } catch {
-      return false;
-    }
+    await this.mediaUsecase.deleteMedia(id);
+    return true;
   }
 }

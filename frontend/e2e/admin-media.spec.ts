@@ -1,17 +1,11 @@
 // e2e/admin-media.spec.ts
 
 import { test, expect } from '@playwright/test';
+import { setupAdminAuth } from './common/auth';
 
 test.describe('Admin Media Management', () => {
   test.beforeEach(async ({ page }) => {
-    // Login first
-    await page.goto('/login');
-    await page.fill('input[name="username"]', 'admin');
-    await page.fill('input[name="password"]', 'admin123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/admin');
-
-    // Navigate to media page
+    await page.addInitScript(setupAdminAuth());
     await page.goto('/admin/media');
     await page.waitForLoadState('networkidle');
   });
@@ -35,7 +29,6 @@ test.describe('Admin Media Management', () => {
 
   test('should show loading state', async ({ page }) => {
     await page.goto('/admin/media');
-    // Should show loading indicator initially
     const loading = page.locator('.ant-spin');
     if (await loading.isVisible({ timeout: 1000 }).catch(() => false)) {
       await expect(loading).toBeVisible();

@@ -180,6 +180,14 @@ Object.freeze(BLOG_ERROR);
 
 export type BlogErrorCode = (typeof BLOG_ERROR)[keyof typeof BLOG_ERROR];
 
+export type MediaErrorCode = (typeof MEDIA_ERROR)[keyof typeof MEDIA_ERROR];
+
+export const MEDIA_ERROR = {
+  MEDIA_NOT_FOUND: 'MEDIA_NOT_FOUND',
+  FILE_DELETE_FAILED: 'MEDIA_FILE_DELETE_FAILED',
+} as const;
+Object.freeze(MEDIA_ERROR);
+
 export const PAGINATION_ERROR = {
   INVALID_PAGE_SIZE: 'PAGINATION_INVALID_PAGE_SIZE',
   INVALID_CURSOR: 'PAGINATION_INVALID_CURSOR',
@@ -200,6 +208,7 @@ export type DomainErrorCode =
   | TimeErrorCode
   | InputNormalizeErrorCode
   | BlogErrorCode
+  | MediaErrorCode
   | PaginationErrorCode;
 
 // 类型守卫：统一判断是否为领域错误（兼容多包/反序列化场景）

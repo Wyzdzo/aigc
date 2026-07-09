@@ -1,11 +1,12 @@
 // src/modules/media/media.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MediaEntity } from './entities/media.entity';
 import { FileStorageService } from '@src/infrastructure/storage/file-storage.service';
 import { ImageProcessorService } from '@src/infrastructure/storage/image-processor.service';
+import { DomainError, MEDIA_ERROR } from '@core/common/errors/domain-error';
 
 export interface CreateMediaData {
   filename: string;
@@ -122,8 +123,18 @@ export class MediaService {
   async delete(id: number): Promise<void> {
     const media = await this.findById(id);
     if (!media) {
-      throw new NotFoundException(`Media #${id} not found`);
+      throw new DomainError(MEDIA_ERROR.MEDIA_NOT_FOUND, '媒体文件不存在');
     }
+
+    // 删除物理文件
+    try {
+      if (this.fileStorageService.exists(media.filename)) {
+        await this.fileStorageService.deleteFile(media.filename);
+      }
+    } catch {
+      throw new DomainError(MEDIA_ERROR.FILE_DELETE_FAILED, '物理文件删除失败');
+    }
+
     await this.mediaRepository.remove(media);
   }
 }

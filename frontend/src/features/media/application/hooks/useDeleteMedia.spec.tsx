@@ -94,5 +94,28 @@ describe('useDeleteMedia', () => {
 
       expect(deleteResult).toBe(false);
     });
+
+    it('should return false when mutation throws error', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: DELETE_MEDIA,
+            variables: { id: 1 },
+          },
+          error: new Error('Unauthorized'),
+        },
+      ];
+
+      const { result } = renderHook(() => useDeleteMedia(), {
+        wrapper: createWrapper(mocks),
+      });
+
+      let deleteResult: boolean | null = null;
+      await waitFor(async () => {
+        deleteResult = await result.current.deleteMedia(1);
+      });
+
+      expect(deleteResult).toBe(false);
+    });
   });
 });

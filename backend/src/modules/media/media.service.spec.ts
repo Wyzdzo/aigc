@@ -1,8 +1,8 @@
 // src/modules/media/media.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import { DomainError, MEDIA_ERROR } from '@core/common/errors/domain-error';
 import { MediaService } from './media.service';
 import { MediaEntity } from './entities/media.entity';
 import { FileStorageService } from '@src/infrastructure/storage/file-storage.service';
@@ -26,6 +26,8 @@ describe('MediaService', () => {
           provide: FileStorageService,
           useValue: {
             getFilePath: jest.fn(),
+            exists: jest.fn().mockReturnValue(true),
+            deleteFile: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -193,21 +195,44 @@ describe('MediaService', () => {
   });
 
   describe('delete', () => {
-    it('should delete media when found', async () => {
+    it('should delete media and physical file when found', async () => {
       const media = { id: 1, filename: 'test.jpg' } as MediaEntity;
       jest.spyOn(mediaRepository, 'findOne').mockResolvedValue(media);
       const removeSpy = jest.spyOn(mediaRepository, 'remove').mockResolvedValue(media);
 
       await service.delete(1);
 
+      expect(fileStorageService.exists).toHaveBeenCalledWith('test.jpg');
+      expect(fileStorageService.deleteFile).toHaveBeenCalledWith('test.jpg');
       expect(removeSpy).toHaveBeenCalledWith(media);
     });
 
-    it('should throw NotFoundException when not found', async () => {
+    it('should delete media without physical file when file does not exist', async () => {
+      const media = { id: 1, filename: 'test.jpg' } as MediaEntity;
+      jest.spyOn(mediaRepository, 'findOne').mockResolvedValue(media);
+      jest.spyOn(fileStorageService, 'exists').mockReturnValue(false);
+      const removeSpy = jest.spyOn(mediaRepository, 'remove').mockResolvedValue(media);
+
+      await service.delete(1);
+
+      expect(fileStorageService.deleteFile).not.toHaveBeenCalled();
+      expect(removeSpy).toHaveBeenCalledWith(media);
+    });
+
+    it('should throw DomainError when media not found', async () => {
       jest.spyOn(mediaRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.delete(999)).rejects.toThrow(NotFoundException);
-      await expect(service.delete(999)).rejects.toThrow('Media #999 not found');
+      await expect(service.delete(999)).rejects.toThrow('媒体文件不存在');
+      await expect(service.delete(999)).rejects.toHaveProperty('code', MEDIA_ERROR.MEDIA_NOT_FOUND);
+    });
+
+    it('should throw DomainError when physical file delete fails', async () => {
+      const media = { id: 1, filename: 'test.jpg' } as MediaEntity;
+      jest.spyOn(mediaRepository, 'findOne').mockResolvedValue(media);
+      jest.spyOn(fileStorageService, 'deleteFile').mockRejectedValue(new Error('disk error'));
+
+      await expect(service.delete(1)).rejects.toThrow('物理文件删除失败');
+      await expect(service.delete(1)).rejects.toHaveProperty('code', MEDIA_ERROR.FILE_DELETE_FAILED);
     });
   });
 });
