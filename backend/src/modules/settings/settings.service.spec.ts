@@ -192,7 +192,7 @@ describe('SettingsService', () => {
   });
 
   describe('updateSettings', () => {
-    it('should update multiple settings', async () => {
+    it('should call updateSetting (upsert) for each provided field', async () => {
       const data: SiteSettingData = {
         siteName: 'New Site',
         siteDescription: 'New Description',
@@ -200,28 +200,28 @@ describe('SettingsService', () => {
         allowComment: false,
       };
 
-      jest
-        .spyOn(repository, 'update')
-        .mockResolvedValue({ affected: 1, generatedMaps: [], raw: {} });
+      const updateSettingSpy = jest.spyOn(service, 'updateSetting').mockResolvedValue(undefined);
 
       await service.updateSettings(data);
 
-      expect(repository.update).toHaveBeenCalledWith(
-        { settingKey: 'site_name' },
-        { settingValue: 'New Site' },
-      );
-      expect(repository.update).toHaveBeenCalledWith(
-        { settingKey: 'site_description' },
-        { settingValue: 'New Description' },
-      );
-      expect(repository.update).toHaveBeenCalledWith(
-        { settingKey: 'per_page' },
-        { settingValue: '20' },
-      );
-      expect(repository.update).toHaveBeenCalledWith(
-        { settingKey: 'allow_comment' },
-        { settingValue: 'false' },
-      );
+      expect(updateSettingSpy).toHaveBeenCalledWith('site_name', 'New Site');
+      expect(updateSettingSpy).toHaveBeenCalledWith('site_description', 'New Description');
+      expect(updateSettingSpy).toHaveBeenCalledWith('per_page', '20');
+      expect(updateSettingSpy).toHaveBeenCalledWith('allow_comment', 'false');
+      expect(updateSettingSpy).toHaveBeenCalledTimes(4);
+    });
+
+    it('should call updateSetting for announcement field', async () => {
+      const data: SiteSettingData = {
+        announcement: '欢迎访问本站！',
+      };
+
+      const updateSettingSpy = jest.spyOn(service, 'updateSetting').mockResolvedValue(undefined);
+
+      await service.updateSettings(data);
+
+      expect(updateSettingSpy).toHaveBeenCalledWith('site_announcement', '欢迎访问本站！');
+      expect(updateSettingSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should only update provided fields', async () => {
@@ -229,17 +229,35 @@ describe('SettingsService', () => {
         siteName: 'New Site',
       };
 
-      jest
-        .spyOn(repository, 'update')
-        .mockResolvedValue({ affected: 1, generatedMaps: [], raw: {} });
+      const updateSettingSpy = jest.spyOn(service, 'updateSetting').mockResolvedValue(undefined);
 
       await service.updateSettings(data);
 
-      expect(repository.update).toHaveBeenCalledWith(
-        { settingKey: 'site_name' },
-        { settingValue: 'New Site' },
+      expect(updateSettingSpy).toHaveBeenCalledWith('site_name', 'New Site');
+      expect(updateSettingSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle upsert when key does not exist in updateSettings', async () => {
+      const data: SiteSettingData = {
+        announcement: '新公告',
+      };
+
+      // updateSetting 内部走 insert 路径（key 不存在）
+      jest.spyOn(repository, 'findOne').mockResolvedValue(null);
+      jest.spyOn(repository, 'insert').mockResolvedValue({
+        generatedMaps: [],
+        raw: {},
+        identifiers: [],
+      });
+
+      await service.updateSettings(data);
+
+      expect(repository.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          settingKey: 'site_announcement',
+          settingValue: '新公告',
+        }),
       );
-      expect(repository.update).toHaveBeenCalledTimes(1);
     });
   });
 });

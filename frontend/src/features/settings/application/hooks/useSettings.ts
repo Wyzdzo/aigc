@@ -67,18 +67,30 @@ export function useSettings(options?: { skip?: boolean }) {
     loading,
     refetch,
     updateSiteSettings: async (input: UpdateSiteSettingsInput) => {
-      const result = await updateSiteSettings({ variables: { input } });
-      return result.data?.updateSiteSettings ?? false;
+      try {
+        const result = await updateSiteSettings({ variables: { input } });
+        return result.data?.updateSiteSettings ?? false;
+      } catch {
+        return false;
+      }
     },
     updateSiteSettingsLoading,
     updateBloggerInfo: async (input: UpdateBloggerInfoInput) => {
-      const result = await updateBloggerInfo({ variables: { input } });
-      return result.data?.updateBloggerInfo ?? false;
+      try {
+        const result = await updateBloggerInfo({ variables: { input } });
+        return result.data?.updateBloggerInfo ?? false;
+      } catch {
+        return false;
+      }
     },
     updateBloggerInfoLoading,
     updatePassword: async (input: UpdatePasswordInput) => {
-      const result = await updatePassword({ variables: { input } });
-      return result.data?.updatePassword ?? false;
+      try {
+        const result = await updatePassword({ variables: { input } });
+        return result.data?.updatePassword ?? false;
+      } catch {
+        return false;
+      }
     },
     updatePasswordLoading,
   };

@@ -314,6 +314,50 @@ describe('useSettings', () => {
       expect(success!).toBe(false);
     });
 
+    it('should return false when updateBloggerInfo throws error', async () => {
+      const mocks: MockedResponse[] = [
+        {
+          request: {
+            query: GET_SETTINGS,
+          },
+          result: {
+            data: {
+              settings: {
+                siteSettings: [],
+                bloggerInfo: null,
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: UPDATE_BLOGGER_INFO,
+            variables: {
+              input: {
+                nickname: 'New Admin',
+              },
+            },
+          },
+          error: new Error('Unauthorized'),
+        },
+      ];
+
+      const { result } = renderHook(() => useSettings(), {
+        wrapper: createWrapper(mocks),
+      });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      let success: boolean;
+      await act(async () => {
+        success = await result.current.updateBloggerInfo({ nickname: 'New Admin' });
+      });
+
+      expect(success!).toBe(false);
+    });
+
     it('should return false when updatePassword fails', async () => {
       const mocks: MockedResponse[] = [
         {

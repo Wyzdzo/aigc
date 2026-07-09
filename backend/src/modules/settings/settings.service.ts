@@ -95,7 +95,7 @@ export class SettingsService {
     if (data.announcement !== undefined) updateData['site_announcement'] = data.announcement;
 
     for (const [key, value] of Object.entries(updateData)) {
-      await this.settingsRepository.update({ settingKey: key }, { settingValue: value });
+      await this.updateSetting(key, value);
     }
   }
 }

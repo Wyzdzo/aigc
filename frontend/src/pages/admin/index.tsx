@@ -193,7 +193,7 @@ export function AdminDashboardPage() {
             <QuickActionCard title="友链管理" icon={LinkOutlined} color="#13c2c2" onClick={() => navigate('/admin/links')} />
           </Col>
           <Col xs={6} sm={4} lg={3}>
-            <QuickActionCard title="系统设置" icon={EyeOutlined} color="#eb2f96" />
+            <QuickActionCard title="系统设置" icon={EyeOutlined} color="#eb2f96" onClick={() => navigate('/admin/settings')} />
           </Col>
         </Row>
       </Card>

@@ -90,4 +90,15 @@ test.describe('Admin Dashboard Page', () => {
     await page.goto('/admin/tags');
     await expect(page).toHaveURL('/');
   });
+
+  test('should navigate to settings page when clicking system settings quick action', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin');
+    await page.waitForLoadState('networkidle');
+
+    await page.locator('text=系统设置').click();
+    await expect(page).toHaveURL('/admin/settings');
+  });
 });
