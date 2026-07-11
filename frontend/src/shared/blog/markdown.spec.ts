@@ -116,10 +116,26 @@ describe('markdown utilities', () => {
       });
 
       it('should not extract headings inside inline code', () => {
-        const content = `\`# 这是内联代码\`\n\n# 真正的标题`;
+        const content = '`# 这是内联代码`\n\n# 真正的标题';
+        const result = extractToc(content);
+        expect(result).toEqual([{ id: '真正的标题', text: '真正的标题', level: 1 }]);
+      });
+
+      it('should extract headings from HTML content', () => {
+        const content = '<h1>HTML标题</h1><p>段落</p><h2>子标题</h2>';
         const result = extractToc(content);
 
-        expect(result).toEqual([{ id: '真正的标题', text: '真正的标题', level: 1 }]);
+        expect(result).toEqual([
+          { id: 'html标题', text: 'HTML标题', level: 1 },
+          { id: '子标题', text: '子标题', level: 2 },
+        ]);
+      });
+
+      it('should extract headings from HTML with nested tags', () => {
+        const content = '<h2><strong>加粗标题</strong></h2>';
+        const result = extractToc(content);
+
+        expect(result).toEqual([{ id: '加粗标题', text: '加粗标题', level: 2 }]);
       });
     });
   });

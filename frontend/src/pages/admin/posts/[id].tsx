@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
-import { Button, Card, Form, Input, message, Select, Spin, Switch } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Card, Form, Input, message, Select, Spin, Switch, Upload } from 'antd';
+import { ArrowLeftOutlined, SaveOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router';
 
 import {
@@ -17,6 +17,7 @@ import {
 import type { BlogCategory, BlogTag, CreateBlogPostInput } from '@/entities/blog';
 
 import { PostEditor } from '@/widgets/blog';
+import { htmlToMarkdown } from '@/shared/lib/htmlToMarkdown';
 
 export function AdminPostEditPage() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export function AdminPostEditPage() {
   const [form] = Form.useForm();
   const [content, setContent] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+  const [coverPreview, setCoverPreview] = useState<string>('');
 
   const { post, loading: postLoading } = usePost(isEdit ? Number(id) : undefined);
   const { categories, loading: categoriesLoading } = useCategories();
@@ -44,7 +46,8 @@ export function AdminPostEditPage() {
         isTop: post.isTop,
         categoryId: post.categoryId,
       });
-      setContent(post.content);
+      setContent(htmlToMarkdown(post.content));
+      setCoverPreview(post.coverImage || '');
     }
   }, [post, isEdit, form]);
 
@@ -138,16 +141,16 @@ export function AdminPostEditPage() {
 
   if (isEdit && postLoading) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div className="text-center py-6">
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="p-6">
       <Card
-        title={isEdit ? '编辑文章' : '新建文章'}
+        title={<span className="text-lg font-medium">{isEdit ? '编辑文章' : '新建文章'}</span>}
         extra={
           <Button
             icon={<ArrowLeftOutlined />}
@@ -166,8 +169,9 @@ export function AdminPostEditPage() {
           }}
           onFinish={handleSave}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+            {/* 左侧：标题 + 编辑器 */}
+            <div className="flex flex-col gap-4">
               <Form.Item
                 name="title"
                 label="文章标题"
@@ -176,23 +180,24 @@ export function AdminPostEditPage() {
                 <Input placeholder="请输入文章标题" size="large" />
               </Form.Item>
 
-              <div style={{ height: 'calc(100vh - 300px)', minHeight: '500px', border: '1px solid var(--ant-color-border-secondary, #f0f0f0)', borderRadius: 4, overflow: 'hidden' }}>
+              <div className="h-[calc(100vh-300px)] min-h-[500px] rounded-lg overflow-hidden">
                 <PostEditor
                   value={content}
                   onChange={setContent}
-                  placeholder="开始编写文章内容..."
+                  placeholder="开始编写 Markdown 文章内容..."
                   autoSave={isEdit}
                   onSave={handleAutoSave}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* 右侧：元信息 */}
+            <div className="flex flex-col gap-4">
               <Card title="基本信息" size="small">
                 <Form.Item
                   name="slug"
                   label="文章链接"
-                  rules={[{ pattern: /^[a-z0-9\u4e00-\u9fa5\-]+$/, message: '链接只能包含小写字母、数字、中文和连字符' }]}
+                  rules={[{ pattern: /^[a-z0-9\u4e00-\u9fa5-]+$/, message: '链接只能包含小写字母、数字、中文和连字符' }]}
                 >
                   <Input
                     placeholder="自动生成"
@@ -212,8 +217,53 @@ export function AdminPostEditPage() {
                   <Input.TextArea rows={3} placeholder="简要描述文章内容" />
                 </Form.Item>
 
-                <Form.Item name="coverImage" label="封面图片">
-                  <Input placeholder="输入图片URL" />
+                <Form.Item label="封面图片">
+                  <div className="flex flex-col gap-2">
+                    {coverPreview && (
+                      <img
+                        src={coverPreview}
+                        alt="封面预览"
+                        className="max-h-[120px] rounded object-cover"
+                      />
+                    )}
+                    <Upload
+                      beforeUpload={async (file) => {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        try {
+                          const token = localStorage.getItem('admin_token');
+                          const response = await fetch('/api/media/upload', {
+                            method: 'POST',
+                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                            body: formData,
+                          });
+                          if (response.ok) {
+                            const result = await response.json();
+                            const url = result.data?.url;
+                            if (url) {
+                              form.setFieldsValue({ coverImage: url });
+                              setCoverPreview(url);
+                              message.success('封面上传成功');
+                            } else {
+                              message.error('上传失败');
+                            }
+                          } else {
+                            message.error('上传失败');
+                          }
+                        } catch {
+                          message.error('上传失败');
+                        }
+                        return false;
+                      }}
+                      showUploadList={false}
+                      accept="image/*"
+                    >
+                      <Button icon={<UploadOutlined />}>上传封面</Button>
+                    </Upload>
+                  </div>
+                  <Form.Item name="coverImage" noStyle>
+                    <Input type="hidden" />
+                  </Form.Item>
                 </Form.Item>
               </Card>
 
@@ -222,7 +272,7 @@ export function AdminPostEditPage() {
                   <Select
                     placeholder="请选择分类"
                     loading={categoriesLoading}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   >
                     {categories.map((category: BlogCategory) => (
                       <Select.Option key={category.id} value={category.id}>
@@ -238,7 +288,7 @@ export function AdminPostEditPage() {
                   mode="multiple"
                   placeholder="请选择标签"
                   loading={tagsLoading}
-                  style={{ width: '100%' }}
+                  className="w-full"
                   value={selectedTagIds}
                   onChange={setSelectedTagIds}
                 >
@@ -252,7 +302,7 @@ export function AdminPostEditPage() {
 
               <Card title="状态设置" size="small">
                 <Form.Item name="status" label="文章状态">
-                  <Select style={{ width: '100%' }}>
+                  <Select className="w-full">
                     <Select.Option value={PostStatus.DRAFT}>草稿</Select.Option>
                     <Select.Option value={PostStatus.PUBLISHED}>已发布</Select.Option>
                   </Select>
@@ -263,9 +313,8 @@ export function AdminPostEditPage() {
                 </Form.Item>
               </Card>
 
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div className="flex gap-3">
                 <Button
-                  type="default"
                   size="large"
                   onClick={() => navigate('/admin/posts')}
                 >

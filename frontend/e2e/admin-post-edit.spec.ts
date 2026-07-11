@@ -38,7 +38,8 @@ test.describe('Admin Post Edit Page', () => {
     await expect(page.getByPlaceholder('请输入文章标题')).toBeVisible();
     await expect(page.getByPlaceholder('自动生成')).toBeVisible();
     await expect(page.getByPlaceholder('简要描述文章内容')).toBeVisible();
-    await expect(page.getByPlaceholder('输入图片URL')).toBeVisible();
+    // Cover image is now an Upload component, check for upload button
+    await expect(page.locator('text=上传封面')).toBeVisible();
   });
 
   test('should render post editor toolbar', async ({ page }) => {
@@ -94,10 +95,9 @@ test.describe('Admin Post Edit Page', () => {
     await page.goto('/admin/posts/new');
     await page.waitForLoadState('networkidle');
 
-    const previewButton = page.locator('text=预览');
-    await previewButton.click();
-
-    await expect(page.locator('text=编辑')).toBeVisible();
+    // Markdown editor has a view mode selector
+    const select = page.locator('.ant-select');
+    await expect(select).toBeVisible();
   });
 
   test('should navigate back to posts list', async ({ page }) => {
@@ -202,10 +202,9 @@ test.describe('Admin Post Edit Page', () => {
     await page.goto('/admin/posts/new');
     await page.waitForLoadState('networkidle');
 
-    const coverImageInput = page.getByPlaceholder('输入图片URL');
-    await coverImageInput.fill('https://example.com/cover.jpg');
-
-    await expect(coverImageInput).toHaveValue('https://example.com/cover.jpg');
+    // Cover image is now an Upload component
+    const uploadArea = page.locator('.ant-upload');
+    await expect(uploadArea).toBeVisible();
   });
 
   test('should show last saved time after clicking save', async ({ page }) => {
@@ -252,5 +251,99 @@ test.describe('Admin Post Edit Page', () => {
 
     await expect(titleInput).toHaveValue('测试文章');
     await expect(slugInput).toHaveValue('test-article');
+  });
+
+  test('should render Markdown editor with split view', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    // Markdown editor should have textarea and view mode selector
+    const textarea = page.locator('textarea');
+    await expect(textarea).toBeVisible();
+
+    // View mode selector (split/edit/preview)
+    const select = page.locator('.ant-select');
+    await expect(select).toBeVisible();
+  });
+
+  test('should render toolbar with heading buttons', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=H1')).toBeVisible();
+    await expect(page.locator('text=H2')).toBeVisible();
+    await expect(page.locator('text=H3')).toBeVisible();
+  });
+
+  test('should allow typing Markdown content in editor', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    const textarea = page.locator('textarea');
+    await textarea.fill('# Hello World\n\nThis is **bold** text.');
+
+    await expect(textarea).toHaveValue('# Hello World\n\nThis is **bold** text.');
+  });
+
+  test('should insert heading syntax when H1 button clicked', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    // Type some content first
+    const textarea = page.locator('textarea');
+    await textarea.fill('Hello');
+
+    // Click H1 button
+    const h1Button = page.locator('button:has-text("H1")');
+    await h1Button.click();
+
+    // Content should be prefixed with #
+    const value = await textarea.inputValue();
+    expect(value).toContain('#');
+  });
+
+  test('should insert bold syntax when bold button clicked', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    const textarea = page.locator('textarea');
+    await textarea.fill('Hello');
+
+    // Select text and click bold button
+    await textarea.selectText();
+    const boldButton = page.locator('.anticon-bold').first();
+    await boldButton.click();
+
+    const value = await textarea.inputValue();
+    expect(value).toContain('**');
+  });
+
+  test('should handle Ctrl+S save shortcut', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    const textarea = page.locator('textarea');
+    await textarea.fill('测试内容');
+    await textarea.press('Control+s');
+
+    await expect(page.locator('text=上次保存:')).toBeVisible();
   });
 });

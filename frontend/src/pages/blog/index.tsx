@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, FilterOutlined, LikeOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
 import { SeoMeta } from '@/widgets/seo';
@@ -259,9 +259,16 @@ function SidebarContent({
  * 博客首页
  */
 export function BlogHomePage() {
+  const [searchParams] = useSearchParams();
   const [keyword, setKeyword] = useState('');
-  const [categoryId, setCategoryId] = useState<number | undefined>();
-  const [tagId, setTagId] = useState<number | undefined>();
+  const [categoryId, setCategoryId] = useState<number | undefined>(() => {
+    const id = searchParams.get('categoryId');
+    return id ? Number(id) : undefined;
+  });
+  const [tagId, setTagId] = useState<number | undefined>(() => {
+    const id = searchParams.get('tagId');
+    return id ? Number(id) : undefined;
+  });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -291,7 +298,7 @@ export function BlogHomePage() {
   const { tags } = useTags();
 
   // 分离置顶文章和非置顶文章
-  const featuredPost = posts.find((post) => post.isTop);
+  const featuredPosts = posts.filter((post) => post.isTop);
   const regularPosts = posts.filter((post) => !post.isTop);
 
   // 无限滚动：IntersectionObserver 监听哨兵元素
@@ -465,7 +472,9 @@ export function BlogHomePage() {
           ) : (
             <>
               {/* 置顶文章 */}
-              {featuredPost && <FeaturedPostCard post={featuredPost} />}
+              {featuredPosts.map((post) => (
+                <FeaturedPostCard key={post.id} post={post} />
+              ))}
 
               {/* 文章列表 */}
               <Card style={{ borderRadius: 'var(--radius-card)' }}>

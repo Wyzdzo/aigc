@@ -12,12 +12,14 @@ import {
   message,
   Modal,
   Popconfirm,
+  Select,
   Spin,
   Tree,
 } from 'antd';
 import {
   DeleteOutlined,
   EditOutlined,
+  FolderOutlined,
   PlusOutlined,
   RestOutlined,
 } from '@ant-design/icons';
@@ -122,18 +124,33 @@ export function AdminCategoriesPage() {
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((category) => ({
         title: (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <span>{category.name}</span>
-            <div style={{ display: 'flex', gap: 8 }}>
+          <div className="group flex items-center justify-between w-full py-1.5 px-2 -mx-2 rounded transition-colors hover:bg-blue-50/50">
+            <div className="flex items-center gap-2 min-w-0">
+              <FolderOutlined className="text-amber-500 text-sm flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm">{category.name}</span>
+                  {category.slug && (
+                    <span className="text-xs text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
+                      {category.slug}
+                    </span>
+                  )}
+                </div>
+                {category.description && (
+                  <p className="text-xs text-gray-600 mt-0.5 truncate">{category.description}</p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 size="small"
+                type="text"
                 icon={<EditOutlined />}
                 onClick={() => handleEdit(category)}
-              >
-                编辑
-              </Button>
+              />
               <Popconfirm
                 title="确定删除这个分类吗？"
+                description="删除后其子分类将变为顶级分类"
                 onConfirm={() => handleDelete(category)}
                 okText="确定"
                 cancelText="取消"
@@ -141,11 +158,10 @@ export function AdminCategoriesPage() {
                 <Button
                   danger
                   size="small"
+                  type="text"
                   icon={<DeleteOutlined />}
                   loading={deleting}
-                >
-                  删除
-                </Button>
+                />
               </Popconfirm>
             </div>
           </div>
@@ -155,12 +171,17 @@ export function AdminCategoriesPage() {
       }));
   };
 
+  const parentCategoryOptions = categories.map((c) => ({
+    label: c.name,
+    value: c.id,
+  }));
+
   return (
-    <div style={{ padding: 24 }}>
+    <div className="p-6">
       <Card
-        title="分类管理"
+        title={<span className="text-lg font-medium">分类管理</span>}
         extra={
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -180,14 +201,13 @@ export function AdminCategoriesPage() {
         }
       >
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
+          <div className="text-center py-10">
             <Spin size="large" />
           </div>
         ) : categories.length === 0 ? (
           <Empty description="暂无分类" />
         ) : (
           <Tree
-            showLine
             defaultExpandAll
             treeData={buildTreeData(categories)}
           />
@@ -202,39 +222,42 @@ export function AdminCategoriesPage() {
         confirmLoading={creating || updating}
         width={500}
       >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="分类名称"
-            rules={[{ required: true, message: '请输入分类名称' }]}
-          >
-            <Input placeholder="请输入分类名称" />
-          </Form.Item>
-          <Form.Item
-            name="slug"
-            label="分类别名"
-            rules={[{ required: true, message: '请输入分类别名' }]}
-          >
-            <Input placeholder="请输入分类别名" />
-          </Form.Item>
-          <Form.Item name="description" label="分类描述">
-            <Input.TextArea placeholder="请输入分类描述" rows={3} />
-          </Form.Item>
-          <Form.Item name="parentId" label="父分类ID">
-            <InputNumber
-              min={1}
-              style={{ width: '100%' }}
-              placeholder="请输入父分类ID（可选）"
-            />
-          </Form.Item>
-          <Form.Item name="sortOrder" label="排序顺序" initialValue={0}>
-            <InputNumber
-              min={0}
-              style={{ width: '100%' }}
-              placeholder="请输入排序顺序"
-            />
-          </Form.Item>
-        </Form>
+        <div className="mt-4">
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="name"
+              label="分类名称"
+              rules={[{ required: true, message: '请输入分类名称' }]}
+            >
+              <Input placeholder="请输入分类名称" />
+            </Form.Item>
+            <Form.Item
+              name="slug"
+              label="分类别名"
+              rules={[{ required: true, message: '请输入分类别名' }]}
+            >
+              <Input placeholder="请输入分类别名" />
+            </Form.Item>
+            <Form.Item name="description" label="分类描述">
+              <Input.TextArea placeholder="请输入分类描述" rows={3} />
+            </Form.Item>
+            <Form.Item name="parentId" label="父分类">
+              <Select
+                allowClear
+                placeholder="无（顶级分类）"
+                options={parentCategoryOptions}
+              />
+            </Form.Item>
+            <Form.Item name="sortOrder" label="排序顺序" initialValue={0}>
+              <div className="w-full">
+                <InputNumber
+                  min={0}
+                  placeholder="请输入排序顺序"
+                />
+              </div>
+            </Form.Item>
+          </Form>
+        </div>
       </Modal>
     </div>
   );

@@ -262,8 +262,11 @@ describe('AdminCategoriesPage', () => {
       const { container } = render(<AdminCategoriesPage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.textContent).toContain('编辑');
-        expect(container.textContent).toContain('删除');
+        // Buttons are icon-only (EditOutlined / DeleteOutlined)
+        const editIcons = container.querySelectorAll('.anticon-edit');
+        const deleteIcons = container.querySelectorAll('.anticon-delete');
+        expect(editIcons.length).toBeGreaterThan(0);
+        expect(deleteIcons.length).toBeGreaterThan(0);
       });
     });
   });
@@ -403,9 +406,8 @@ describe('AdminCategoriesPage', () => {
         expect(container.textContent).toContain('测试分类');
       });
 
-      // Click the "编辑" button
-      const editBtns = container.querySelectorAll('button');
-      const editBtn = Array.from(editBtns).find((btn) => btn.textContent?.includes('编辑'));
+      // Click the edit icon button
+      const editBtn = container.querySelector('.anticon-edit')?.closest('button') as HTMLElement;
       expect(editBtn).toBeTruthy();
       fireEvent.click(editBtn!);
 

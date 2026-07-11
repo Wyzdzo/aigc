@@ -13,52 +13,6 @@ import { PostStatus } from '@/entities/blog';
 
 import { AdminPostEditPage } from './[id]';
 
-vi.mock('@tiptap/react', () => ({
-  useEditor: vi.fn(() => ({
-    getHTML: vi.fn(() => ''),
-    commands: {
-      toggleBold: vi.fn(),
-      toggleItalic: vi.fn(),
-      toggleUnderline: vi.fn(),
-      toggleStrike: vi.fn(),
-      toggleCode: vi.fn(),
-      toggleHeading: vi.fn(),
-      toggleBulletList: vi.fn(),
-      toggleOrderedList: vi.fn(),
-      toggleBlockquote: vi.fn(),
-      setCodeBlock: vi.fn(),
-      setLink: vi.fn(),
-      setImage: vi.fn(),
-      undo: vi.fn(),
-      redo: vi.fn(),
-      setContent: vi.fn(),
-    },
-    chain: vi.fn(() => ({
-      focus: vi.fn().mockReturnThis(),
-      toggleBold: vi.fn().mockReturnThis(),
-      toggleItalic: vi.fn().mockReturnThis(),
-      toggleUnderline: vi.fn().mockReturnThis(),
-      toggleStrike: vi.fn().mockReturnThis(),
-      toggleCode: vi.fn().mockReturnThis(),
-      toggleHeading: vi.fn().mockReturnThis(),
-      toggleBulletList: vi.fn().mockReturnThis(),
-      toggleOrderedList: vi.fn().mockReturnThis(),
-      toggleBlockquote: vi.fn().mockReturnThis(),
-      setCodeBlock: vi.fn().mockReturnThis(),
-      setLink: vi.fn().mockReturnThis(),
-      setImage: vi.fn().mockReturnThis(),
-      undo: vi.fn().mockReturnThis(),
-      redo: vi.fn().mockReturnThis(),
-    })),
-    can: vi.fn(() => ({
-      undo: vi.fn(() => false),
-      redo: vi.fn(() => false),
-    })),
-    isActive: vi.fn(() => false),
-  })),
-  EditorContent: vi.fn(() => <div data-testid="editor-content" />),
-}));
-
 beforeAll(() => {
   class ResizeObserverMock {
     observe() {}

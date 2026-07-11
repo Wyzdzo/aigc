@@ -18,3 +18,6 @@ export {
   UPDATE_BLOGGER_INFO,
   UPDATE_PASSWORD,
 } from './infrastructure/graphql/mutations';
+
+export { BloggerInfoModal } from './ui/blogger-info-modal';
+export { PasswordModal } from './ui/password-modal';

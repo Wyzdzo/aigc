@@ -38,7 +38,7 @@ export function TagCloud({ selectedId, onChange }: TagCloudProps) {
         {tags.map((tag, index) => (
           <Tag
             key={tag.id}
-            color={selectedId === tag.id ? 'primary' : getTagColor(index)}
+            color={selectedId === tag.id ? '#1677ff' : getTagColor(index)}
             onClick={() => handleTagClick(tag)}
             style={{ cursor: 'pointer', padding: '4px 12px' }}
           >

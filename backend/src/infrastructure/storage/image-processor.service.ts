@@ -2,7 +2,7 @@
 
 import { Injectable } from '@nestjs/common';
 import sharp from 'sharp';
-import { renameSync, unlinkSync } from 'fs';
+import { renameSync, unlinkSync, statSync } from 'fs';
 
 export interface ImageMetadata {
   width: number;
@@ -31,8 +31,7 @@ export class ImageProcessorService {
   async compressImage(inputPath: string, options: ImageCompressionOptions = {}): Promise<number> {
     const { maxWidth = this.defaultMaxWidth, quality = this.defaultQuality } = options;
 
-    const metadata = await sharp(inputPath).metadata();
-    const inputSize = metadata.size || 0;
+    const inputSize = statSync(inputPath).size;
 
     // 只压缩超过阈值的图片
     if (inputSize > this.compressionThreshold) {
@@ -49,8 +48,7 @@ export class ImageProcessorService {
     }
 
     // 返回处理后的文件大小
-    const processedMetadata = await sharp(inputPath).metadata();
-    return processedMetadata.size || inputSize;
+    return statSync(inputPath).size;
   }
 
   /**
@@ -58,12 +56,13 @@ export class ImageProcessorService {
    */
   async getImageMetadata(imagePath: string): Promise<ImageMetadata> {
     const metadata = await sharp(imagePath).metadata();
+    const fileStat = statSync(imagePath);
 
     return {
       width: metadata.width || 0,
       height: metadata.height || 0,
       format: metadata.format || 'unknown',
-      size: metadata.size || 0,
+      size: fileStat.size,
     };
   }
 

@@ -60,9 +60,6 @@ export class MediaController {
       baseUrl,
     });
 
-    return {
-      success: true,
-      data: media,
-    };
+    return media;
   }
 }

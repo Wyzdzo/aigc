@@ -71,7 +71,7 @@ export class MediaService {
 
     // 获取元数据
     const metadata = await this.imageProcessorService.getImageMetadata(filePath);
-    const url = `${baseUrl}/${filename}`;
+    const url = `${baseUrl}/uploads/${filename}`;
 
     return {
       filename,

@@ -51,6 +51,7 @@ test.describe('Admin Dashboard Page', () => {
 
     await expect(page.locator('text=快捷操作')).toBeVisible();
     await expect(page.locator('text=写文章')).toBeVisible();
+    await expect(page.locator('text=文章管理')).toBeVisible();
     await expect(page.locator('text=最近动态')).toBeVisible();
   });
 
@@ -100,5 +101,16 @@ test.describe('Admin Dashboard Page', () => {
 
     await page.locator('text=系统设置').click();
     await expect(page).toHaveURL('/admin/settings');
+  });
+
+  test('should navigate to post management page when clicking article management quick action', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin');
+    await page.waitForLoadState('networkidle');
+
+    await page.locator('text=文章管理').click();
+    await expect(page).toHaveURL('/admin/posts');
   });
 });

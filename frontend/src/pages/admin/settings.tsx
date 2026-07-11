@@ -109,9 +109,14 @@ export function AdminSettingsPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        bloggerForm.setFieldsValue({ avatar: data.url });
-        message.success('头像上传成功');
+        const result = await response.json();
+        const url = result.data?.url;
+        if (url) {
+          bloggerForm.setFieldsValue({ avatar: url });
+          message.success('头像上传成功');
+        } else {
+          message.error('上传失败');
+        }
       } else {
         message.error('上传失败');
       }

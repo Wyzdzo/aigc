@@ -43,6 +43,7 @@ interface AuthState {
 interface AuthContextValue extends AuthState {
   login: (input: LoginInput) => Promise<boolean>;
   logout: () => void;
+  updateUser: (patch: Partial<UserInfo>) => void;
   isAdmin: () => boolean;
   hasRole: (role: string) => boolean;
 }
@@ -187,6 +188,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     message.success('已退出登录');
   }, []);
 
+  const updateUser = useCallback((patch: Partial<UserInfo>) => {
+    setAuthState((prev) => {
+      if (!prev.user) return prev;
+      const updatedUser = { ...prev.user, ...patch };
+      localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+      return { ...prev, user: updatedUser };
+    });
+  }, []);
+
   const isAdmin = useCallback(() => {
     if (!authState.user) return false;
     return authState.user.accessGroup.some(
@@ -205,9 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ...authState,
     login,
     logout,
+    updateUser,
     isAdmin,
     hasRole,
-  }), [authState, login, logout, isAdmin, hasRole]);
+  }), [authState, login, logout, updateUser, isAdmin, hasRole]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -232,6 +243,7 @@ export function useAuth(): AuthContextValue {
       error: null,
       login: async () => false,
       logout: () => {},
+      updateUser: () => {},
       isAdmin: () => false,
       hasRole: () => false,
     };

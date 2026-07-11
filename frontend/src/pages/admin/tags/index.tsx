@@ -12,13 +12,15 @@ import {
   Modal,
   Popconfirm,
   Spin,
-  Table,
+  Tag,
+  Tooltip,
 } from 'antd';
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
   RestOutlined,
+  TagOutlined,
 } from '@ant-design/icons';
 
 import {
@@ -28,6 +30,15 @@ import {
   useUpdateTag,
 } from '@/features/blog';
 import type { BlogTag } from '@/entities/blog';
+
+const TAG_COLORS = [
+  'blue', 'cyan', 'geekblue', 'purple', 'magenta',
+  'volcano', 'orange', 'gold', 'green', 'lime',
+];
+
+function getTagColor(id: number): string {
+  return TAG_COLORS[id % TAG_COLORS.length];
+}
 
 export function AdminTagsPage() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -96,69 +107,20 @@ export function AdminTagsPage() {
     form.resetFields();
   };
 
-  const columns = [
-    {
-      title: '标签名称',
-      dataIndex: 'name',
-      key: 'name',
-      width: 150,
-    },
-    {
-      title: '标签别名',
-      dataIndex: 'slug',
-      key: 'slug',
-      width: 150,
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 180,
-      render: (date: Date) => {
-        return new Date(date).toLocaleString('zh-CN');
-      },
-    },
-    {
-      title: '操作',
-      key: 'actions',
-      width: 180,
-      render: (_: unknown, record: BlogTag) => {
-        return (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Button
-              size="small"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            >
-              编辑
-            </Button>
-            <Popconfirm
-              title="确定删除这个标签吗？"
-              onConfirm={() => handleDelete(record)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <Button
-                danger
-                size="small"
-                icon={<DeleteOutlined />}
-                loading={deleting}
-              >
-                删除
-              </Button>
-            </Popconfirm>
-          </div>
-        );
-      },
-    },
-  ];
-
   return (
-    <div style={{ padding: 24 }}>
+    <div className="p-6">
       <Card
-        title="标签管理"
+        title={
+          <div className="flex items-center gap-2">
+            <TagOutlined className="text-blue-500" />
+            <span className="text-lg font-medium">标签管理</span>
+            {tags.length > 0 && (
+              <span className="text-sm text-gray-400 font-normal">共 {tags.length} 个</span>
+            )}
+          </div>
+        }
         extra={
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -178,22 +140,49 @@ export function AdminTagsPage() {
         }
       >
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
+          <div className="text-center py-10">
             <Spin size="large" />
           </div>
         ) : tags.length === 0 ? (
           <Empty description="暂无标签" />
         ) : (
-          <Table
-            dataSource={tags}
-            columns={columns}
-            rowKey="id"
-            pagination={{
-              showSizeChanger: true,
-              showTotal: (total) => `共 ${total} 条`,
-            }}
-            scroll={{ x: 800 }}
-          />
+          <div className="flex flex-wrap gap-3">
+            {tags.map((tag) => (
+              <div
+                key={tag.id}
+                className="group relative inline-flex items-center gap-2 px-3 py-2 border rounded-lg hover:shadow-sm hover:border-blue-300 transition-all"
+              >
+                <span className="m-0"><Tag color={getTagColor(tag.id)}>{tag.name}</Tag></span>
+                <span className="text-xs text-gray-400">/{tag.slug}</span>
+                <div className="flex gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Tooltip title="编辑">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(tag)}
+                    />
+                  </Tooltip>
+                  <Popconfirm
+                    title="确定删除这个标签吗？"
+                    onConfirm={() => handleDelete(tag)}
+                    okText="确定"
+                    cancelText="取消"
+                  >
+                    <Tooltip title="删除">
+                      <Button
+                        danger
+                        size="small"
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        loading={deleting}
+                      />
+                    </Tooltip>
+                  </Popconfirm>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </Card>
 
@@ -202,9 +191,11 @@ export function AdminTagsPage() {
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
+        confirmLoading={creating || updating}
         width={450}
       >
-        <Form form={form} layout="vertical">
+        <div className="mt-4">
+          <Form form={form} layout="vertical">
           <Form.Item
             name="name"
             label="标签名称"
@@ -219,7 +210,8 @@ export function AdminTagsPage() {
           >
             <Input placeholder="请输入标签别名" />
           </Form.Item>
-        </Form>
+          </Form>
+        </div>
       </Modal>
     </div>
   );

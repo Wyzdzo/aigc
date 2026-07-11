@@ -821,6 +821,179 @@ body {
   pointer-events: none;
 }
 
+/* TipTap ProseMirror content styling */
+.tiptap .ProseMirror h1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  margin: 0.75em 0 0.5em;
+  line-height: 1.3;
+}
+
+.tiptap .ProseMirror h2 {
+  font-size: 1.4em;
+  font-weight: 600;
+  margin: 0.75em 0 0.5em;
+  line-height: 1.35;
+}
+
+.tiptap .ProseMirror h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0.5em 0 0.4em;
+  line-height: 1.4;
+}
+
+.tiptap .ProseMirror p {
+  margin: 0.5em 0;
+  line-height: 1.75;
+}
+
+.tiptap .ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap .ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap .ProseMirror li {
+  margin: 0.25em 0;
+  line-height: 1.6;
+}
+
+.tiptap .ProseMirror blockquote {
+  border-left: 3px solid var(--ant-color-border);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: var(--ant-color-text-secondary);
+  font-style: italic;
+}
+
+.tiptap .ProseMirror pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 6px;
+  padding: 1em;
+  margin: 0.75em 0;
+  overflow-x: auto;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+}
+
+.tiptap .ProseMirror code {
+  background: var(--ant-color-fill-quaternary);
+  border-radius: 3px;
+  padding: 0.15em 0.4em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+}
+
+.tiptap .ProseMirror pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.tiptap .ProseMirror img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 0.75em 0;
+}
+
+.tiptap .ProseMirror a {
+  color: var(--ant-color-primary);
+  text-decoration: underline;
+}
+
+.tiptap .ProseMirror hr {
+  border: none;
+  border-top: 1px solid var(--ant-color-border-secondary);
+  margin: 1.5em 0;
+}
+
+.tiptap .ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap .ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.tiptap .ProseMirror ul[data-type="taskList"] li label {
+  margin-top: 0.2em;
+}
+
+/* Markdown editor syntax highlighting */
+.md-heading {
+  color: var(--ant-color-primary);
+  font-weight: 600;
+}
+
+.md-bold {
+  color: var(--ant-color-text);
+  font-weight: 700;
+}
+
+.md-italic {
+  color: var(--ant-color-text-secondary);
+  font-style: italic;
+}
+
+.md-strike {
+  color: var(--ant-color-text-tertiary);
+  text-decoration: line-through;
+}
+
+.md-code-block {
+  color: var(--ant-color-success);
+}
+
+.md-inline-code {
+  color: var(--ant-color-success);
+}
+
+.md-blockquote {
+  color: var(--ant-color-text-secondary);
+  font-style: italic;
+}
+
+.md-link-bracket {
+  color: var(--ant-color-text-tertiary);
+}
+
+.md-link-text {
+  color: var(--ant-color-primary);
+}
+
+.md-link-url {
+  color: var(--ant-color-link);
+}
+
+.md-img-marker {
+  color: var(--ant-color-warning);
+}
+
+.md-list-marker {
+  color: var(--ant-color-primary);
+  font-weight: 600;
+}
+
+.md-hr {
+  color: var(--ant-color-text-quaternary);
+}
+
+/* Markdown editor preview: remove top margin of first element to align with editor */
+.md-editor-preview .prose > :first-child {
+  margin-top: 0;
+}
+
 .blog-footer {
   background: var(--ant-color-bg-container);
   border-top: 1px solid var(--ant-color-border-secondary);

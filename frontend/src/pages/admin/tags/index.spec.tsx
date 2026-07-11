@@ -70,7 +70,7 @@ describe('AdminTagsPage', () => {
       });
     });
 
-    it('should render tags table with columns', async () => {
+    it('should render tags as tag cloud with names and slugs', async () => {
       const mocks: MockedResponse[] = [
         {
           request: { query: GET_TAGS },
@@ -100,13 +100,10 @@ describe('AdminTagsPage', () => {
       const { container } = render(<AdminTagsPage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.querySelector('.ant-table')).toBeTruthy();
         expect(container.textContent).toContain('React');
         expect(container.textContent).toContain('TypeScript');
-        expect(container.textContent).toContain('标签名称');
-        expect(container.textContent).toContain('标签别名');
-        expect(container.textContent).toContain('创建时间');
-        expect(container.textContent).toContain('操作');
+        expect(container.textContent).toContain('/react');
+        expect(container.textContent).toContain('/typescript');
       });
     });
 
@@ -199,8 +196,11 @@ describe('AdminTagsPage', () => {
       const { container } = render(<AdminTagsPage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.textContent).toContain('编辑');
-        expect(container.textContent).toContain('删除');
+        // Buttons are icon-only (EditOutlined / DeleteOutlined)
+        const editIcons = container.querySelectorAll('.anticon-edit');
+        const deleteIcons = container.querySelectorAll('.anticon-delete');
+        expect(editIcons.length).toBeGreaterThan(0);
+        expect(deleteIcons.length).toBeGreaterThan(0);
       });
     });
 
@@ -353,9 +353,8 @@ describe('AdminTagsPage', () => {
         expect(container.textContent).toContain('测试标签');
       });
 
-      // Click the "编辑" button
-      const editBtns = container.querySelectorAll('button');
-      const editBtn = Array.from(editBtns).find((btn) => btn.textContent?.includes('编辑'));
+      // Click the edit icon button
+      const editBtn = container.querySelector('.anticon-edit')?.closest('button') as HTMLElement;
       expect(editBtn).toBeTruthy();
       fireEvent.click(editBtn!);
 
