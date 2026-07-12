@@ -329,6 +329,38 @@ export class BlogQueryService {
     return await query.getCount();
   }
 
+  /**
+   * 批量获取多篇文章的评论数量，避免 N+1 查询
+   */
+  async getCommentCountByPosts(params: {
+    postIds: number[];
+    status?: CommentStatus;
+    transactionContext?: PersistenceTransactionContext;
+  }): Promise<Map<number, number>> {
+    const { postIds, status, transactionContext } = params;
+    if (postIds.length === 0) return new Map();
+
+    const repository = this.getCommentRepository(transactionContext);
+    const query = repository
+      .createQueryBuilder('comment')
+      .select('comment.postId', 'postId')
+      .addSelect('COUNT(*)', 'count')
+      .where('comment.postId IN (:...postIds)', { postIds });
+
+    if (status) {
+      query.andWhere('comment.status = :status', { status });
+    }
+
+    query.groupBy('comment.postId');
+
+    const results = await query.getRawMany();
+    const map = new Map<number, number>();
+    for (const row of results) {
+      map.set(Number(row.postId), Number(row.count));
+    }
+    return map;
+  }
+
   // ==================== Link Queries ====================
 
   async getAllLinks(params: {

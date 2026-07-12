@@ -58,11 +58,10 @@ export class MediaService {
     originalName: string;
     mimeType: string;
     size: number;
-    baseUrl: string;
     maxWidth?: number;
     quality?: number;
   }): Promise<ProcessImageResult> {
-    const { filename, originalName, mimeType, baseUrl, maxWidth, quality } = params;
+    const { filename, originalName, mimeType, maxWidth, quality } = params;
 
     const filePath = this.fileStorageService.getFilePath(filename);
 
@@ -71,7 +70,7 @@ export class MediaService {
 
     // 获取元数据
     const metadata = await this.imageProcessorService.getImageMetadata(filePath);
-    const url = `${baseUrl}/uploads/${filename}`;
+    const url = `/uploads/${filename}`;
 
     return {
       filename,

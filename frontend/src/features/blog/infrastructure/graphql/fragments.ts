@@ -15,6 +15,7 @@ export const POST_BASIC_FRAGMENT = gql`
     isTop
     viewCount
     likeCount
+    commentCount
     categoryId
     createdAt
     updatedAt
@@ -36,6 +37,7 @@ export const POST_FULL_FRAGMENT = gql`
     isTop
     viewCount
     likeCount
+    commentCount
     categoryId
     createdAt
     updatedAt

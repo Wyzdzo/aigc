@@ -68,8 +68,7 @@ export class UserInfoEntity {
 
   @Column({
     name: 'meta_digest',
-    type: 'varchar',
-    length: 1024,
+    type: 'json',
     nullable: true,
     comment: '私有数据加密字段',
   })

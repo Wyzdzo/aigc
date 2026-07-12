@@ -41,15 +41,15 @@ export function AdminPostsPage() {
   const [statusFilter, setStatusFilter] = useState<PostStatus | undefined>();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(20);
 
   const {
     posts: items,
     total,
-    currentPage,
-    pageSize,
     loading,
     refetch,
-  } = usePosts({ status: statusFilter, keyword: searchKeyword, page: 1, pageSize: 20 });
+  } = usePosts({ status: statusFilter, keyword: searchKeyword, page: currentPage, pageSize: currentPageSize });
 
   const { publishPost, loading: publishing } = usePublishPost();
   const { unpublishPost, loading: unpublishing } = useUnpublishPost();
@@ -316,9 +316,13 @@ export function AdminPostsPage() {
             pagination={{
               total: total,
               current: currentPage,
-              pageSize: pageSize,
+              pageSize: currentPageSize,
               showSizeChanger: true,
               showTotal: (total) => `共 ${total} 条`,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setCurrentPageSize(pageSize);
+              },
             }}
             scroll={{ x: 1200 }}
           />

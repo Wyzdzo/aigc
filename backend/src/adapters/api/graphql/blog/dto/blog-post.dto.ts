@@ -34,6 +34,9 @@ export class BlogPostDTO {
   @Field(() => Int, { description: '点赞次数' })
   likeCount!: number;
 
+  @Field(() => Int, { description: '评论数量', nullable: true })
+  commentCount!: number | null;
+
   @Field(() => Int, { description: '分类ID', nullable: true })
   categoryId!: number | null;
 

@@ -7,6 +7,7 @@ import {
   BoldOutlined,
   CodeOutlined,
   EditOutlined,
+  FolderOpenOutlined,
   ItalicOutlined,
   LinkOutlined,
   OrderedListOutlined,
@@ -17,6 +18,7 @@ import {
 } from '@ant-design/icons';
 
 import { Markdown } from '@/shared/blog/markdown';
+import { MediaPicker } from './MediaPicker';
 
 export interface PostEditorProps {
   value: string;
@@ -94,6 +96,7 @@ export function PostEditor({
 }: PostEditorProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
@@ -271,6 +274,19 @@ export function PostEditor({
     input.click();
   }, [value, onChange]);
 
+  // 从图片库选择插入
+  const handleMediaSelect = useCallback(
+    (url: string, name: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const { selectionStart } = textarea;
+      const imgMd = `![${name}](${url})`;
+      const newValue = value.slice(0, selectionStart) + imgMd + value.slice(selectionStart);
+      onChange(newValue);
+    },
+    [value, onChange],
+  );
+
   // 快捷键
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -383,6 +399,9 @@ export function PostEditor({
             <Tooltip title="上传图片">
               <Button size="small" icon={<PictureOutlined />} onClick={insertImage} />
             </Tooltip>
+            <Tooltip title="从图片库选择">
+              <Button size="small" icon={<FolderOpenOutlined />} onClick={() => setMediaPickerOpen(true)} />
+            </Tooltip>
           </Space>
 
           <Space size="small">
@@ -450,6 +469,12 @@ export function PostEditor({
           </div>
         )}
       </div>
+
+      <MediaPicker
+        open={mediaPickerOpen}
+        onCancel={() => setMediaPickerOpen(false)}
+        onSelect={handleMediaSelect}
+      />
     </div>
   );
 }

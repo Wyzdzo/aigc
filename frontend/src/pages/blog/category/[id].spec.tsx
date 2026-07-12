@@ -74,6 +74,7 @@ const mockPostsItems = [
     isTop: true,
     viewCount: 1234,
     likeCount: 56,
+    commentCount: 3,
     categoryId: 1,
     createdAt: '2024-01-15',
     updatedAt: '2024-01-15',

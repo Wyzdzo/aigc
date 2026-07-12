@@ -50,8 +50,12 @@ export class BlogResolver {
       },
     });
 
+    // 批量获取评论数，避免 N+1 查询
+    const postIds = result.items.map((p: any) => p.id);
+    const commentCountMap = await this.blogQueryService.getCommentCountByPosts({ postIds });
+
     return {
-      items: result.items.map(this.toPostDTO),
+      items: result.items.map((p: any) => this.toPostDTO(p, commentCountMap.get(p.id) ?? 0)),
       total: result.total,
       page: args.page ?? 1,
       pageSize: args.pageSize ?? 10,
@@ -61,19 +65,25 @@ export class BlogResolver {
   @Query(() => BlogPostDTO, { description: '根据 ID 查询文章', nullable: true })
   async post(@Args('id', { type: () => Int }) id: number): Promise<BlogPostDTO | null> {
     const post = await this.blogQueryService.getPostById({ id });
-    return post ? this.toPostDTO(post) : null;
+    if (!post) return null;
+    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: id });
+    return this.toPostDTO(post, commentCount);
   }
 
   @Query(() => BlogPostDTO, { description: '根据 slug 查询文章', nullable: true })
   async postBySlug(@Args('slug') slug: string): Promise<BlogPostDTO | null> {
     const post = await this.blogQueryService.getPostBySlug({ slug });
-    return post ? this.toPostDTO(post) : null;
+    if (!post) return null;
+    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: post.id });
+    return this.toPostDTO(post, commentCount);
   }
 
   @Query(() => [BlogPostDTO], { description: '查询置顶文章' })
   async topPosts(): Promise<BlogPostDTO[]> {
     const posts = await this.blogQueryService.getTopPosts({});
-    return posts.map(this.toPostDTO);
+    const postIds = posts.map((p: any) => p.id);
+    const commentCountMap = await this.blogQueryService.getCommentCountByPosts({ postIds });
+    return posts.map((p: any) => this.toPostDTO(p, commentCountMap.get(p.id) ?? 0));
   }
 
   @Query(() => BlogPostNavigationDTO, { description: '查询相邻文章（上一篇/下一篇）' })
@@ -214,7 +224,7 @@ export class BlogResolver {
         tagIds: input.tagIds,
       },
     });
-    return this.toPostDTO(result.post);
+    return this.toPostDTO(result.post, 0);
   }
 
   @Mutation(() => BlogPostDTO, { description: '更新文章', nullable: true })
@@ -237,7 +247,9 @@ export class BlogResolver {
     });
 
     const post = await this.blogQueryService.getPostById({ id });
-    return post ? this.toPostDTO(post) : null;
+    if (!post) return null;
+    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: id });
+    return this.toPostDTO(post, commentCount);
   }
 
   @Mutation(() => Boolean, { description: '删除文章' })
@@ -261,7 +273,9 @@ export class BlogResolver {
   @Mutation(() => BlogPostDTO, { description: '查看文章（增加阅读量）', nullable: true })
   async viewPost(@Args('id', { type: () => Int }) id: number): Promise<BlogPostDTO | null> {
     const post = await this.blogUsecase.viewPost({ id });
-    return post ? this.toPostDTO(post) : null;
+    if (!post) return null;
+    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: id });
+    return this.toPostDTO(post, commentCount);
   }
 
   @Mutation(() => Boolean, { description: '点赞文章' })
@@ -426,7 +440,7 @@ export class BlogResolver {
 
   // ==================== DTO Converters ====================
 
-  private toPostDTO(entity: any): BlogPostDTO {
+  private toPostDTO(entity: any, commentCount?: number): BlogPostDTO {
     return {
       id: entity.id,
       title: entity.title,
@@ -438,6 +452,7 @@ export class BlogResolver {
       isTop: entity.isTop,
       viewCount: entity.viewCount,
       likeCount: entity.likeCount,
+      commentCount: commentCount ?? null,
       categoryId: entity.categoryId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

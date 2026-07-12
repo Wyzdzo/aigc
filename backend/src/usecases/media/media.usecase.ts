@@ -35,7 +35,6 @@ export interface CreateMediaParams {
   originalName: string;
   mimeType: string;
   size: number;
-  baseUrl: string;
   operatorId?: number;
   operatorName?: string;
   ipAddress?: string;
@@ -85,7 +84,6 @@ export class MediaUsecase {
       originalName,
       mimeType,
       size,
-      baseUrl,
       operatorId = 0,
       operatorName = 'anonymous',
       ipAddress,
@@ -99,7 +97,6 @@ export class MediaUsecase {
       originalName,
       mimeType,
       size,
-      baseUrl,
       maxWidth,
       quality,
     });

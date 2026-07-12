@@ -4,14 +4,15 @@ import {
   Controller,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaUsecase } from '@src/usecases/media/media.usecase';
+import { JwtAuthGuard } from '../graphql/guards/jwt-auth.guard';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { ConfigService } from '@nestjs/config';
 
 const UPLOAD_DIR = 'uploads';
 
@@ -19,10 +20,10 @@ const UPLOAD_DIR = 'uploads';
 export class MediaController {
   constructor(
     private readonly mediaUsecase: MediaUsecase,
-    private readonly configService: ConfigService,
   ) {}
 
   @Post('upload')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -50,14 +51,11 @@ export class MediaController {
       throw new BadRequestException('没有上传文件');
     }
 
-    const baseUrl = this.configService.get<string>('app.baseUrl') || 'http://localhost:3000';
-
     const media = await this.mediaUsecase.createMedia({
       filename: file.filename,
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
-      baseUrl,
     });
 
     return media;

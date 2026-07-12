@@ -110,10 +110,11 @@ describe('AdminDashboardPage', () => {
     it('should display quick action buttons', () => {
       const quickActions = [
         '写文章',
-        '管理评论',
+        '评论管理',
         '分类管理',
         '标签管理',
         '友链管理',
+        '图片库',
         '系统设置',
       ];
 

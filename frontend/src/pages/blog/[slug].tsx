@@ -1,7 +1,7 @@
 // src/pages/blog/[slug].tsx
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarOutlined, EyeOutlined, LikeOutlined, MenuOutlined } from '@ant-design/icons';
+import { CalendarOutlined, CommentOutlined, EyeOutlined, LikeOutlined, MenuOutlined } from '@ant-design/icons';
 import {
   Anchor,
   Breadcrumb,
@@ -59,11 +59,13 @@ function ArticleMeta({
   postId,
   viewCount,
   likeCount,
+  commentCount,
   createdAt,
 }: {
   postId: number;
   viewCount: number;
   likeCount: number;
+  commentCount: number | null;
   createdAt: Date;
 }) {
   const { likePost, loading: likeLoading } = useLikePost();
@@ -84,6 +86,11 @@ function ArticleMeta({
             <LikeOutlined /> {likeCount}
           </button>
         </Tooltip>
+        {commentCount != null && (
+          <span>
+            <CommentOutlined /> {commentCount}
+          </span>
+        )}
         <span>
           <CalendarOutlined /> {formatDate(createdAt)}
         </span>
@@ -258,6 +265,7 @@ export function BlogDetailPage() {
                 postId={post.id}
                 viewCount={post.viewCount}
                 likeCount={post.likeCount}
+                commentCount={post.commentCount}
                 createdAt={post.createdAt}
               />
             </Space>

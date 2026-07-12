@@ -346,4 +346,38 @@ test.describe('Admin Post Edit Page', () => {
 
     await expect(page.locator('text=上次保存:')).toBeVisible();
   });
+
+  test('should render "从图片库选择" button in cover image section', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('button:has-text("从图片库选择")')).toBeVisible();
+  });
+
+  test('should open media picker modal when clicking cover media button', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    const coverMediaButton = page.locator('button:has-text("从图片库选择")').first();
+    await coverMediaButton.click();
+
+    await expect(page.locator('.ant-modal-wrap')).toBeVisible();
+  });
+
+  test('should render "从图片库选择" button in editor toolbar', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('admin_token', 'test-token');
+    });
+    await page.goto('/admin/posts/new');
+    await page.waitForLoadState('networkidle');
+
+    // Editor toolbar has a FolderOpenOutlined icon button for media picker
+    await expect(page.locator('.toolbar .anticon-folder-open')).toBeVisible();
+  });
 });

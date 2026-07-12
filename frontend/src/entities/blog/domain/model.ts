@@ -23,6 +23,7 @@ export interface BlogPost {
   isTop: boolean;
   viewCount: number;
   likeCount: number;
+  commentCount: number | null;
   categoryId: number | null;
   createdAt: Date;
   updatedAt: Date;

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
-import { Button, Card, Form, Input, message, Select, Spin, Switch, Upload } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Card, Form, Input, message, Select, Space, Spin, Switch, Upload } from 'antd';
+import { ArrowLeftOutlined, FolderOpenOutlined, SaveOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router';
 
 import {
@@ -16,7 +16,7 @@ import {
 } from '@/features/blog';
 import type { BlogCategory, BlogTag, CreateBlogPostInput } from '@/entities/blog';
 
-import { PostEditor } from '@/widgets/blog';
+import { PostEditor, MediaPicker } from '@/widgets/blog';
 import { htmlToMarkdown } from '@/shared/lib/htmlToMarkdown';
 
 export function AdminPostEditPage() {
@@ -28,6 +28,7 @@ export function AdminPostEditPage() {
   const [content, setContent] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [coverPreview, setCoverPreview] = useState<string>('');
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const { post, loading: postLoading } = usePost(isEdit ? Number(id) : undefined);
   const { categories, loading: categoriesLoading } = useCategories();
@@ -226,40 +227,48 @@ export function AdminPostEditPage() {
                         className="max-h-[120px] rounded object-cover"
                       />
                     )}
-                    <Upload
-                      beforeUpload={async (file) => {
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        try {
-                          const token = localStorage.getItem('admin_token');
-                          const response = await fetch('/api/media/upload', {
-                            method: 'POST',
-                            headers: token ? { Authorization: `Bearer ${token}` } : {},
-                            body: formData,
-                          });
-                          if (response.ok) {
-                            const result = await response.json();
-                            const url = result.data?.url;
-                            if (url) {
-                              form.setFieldsValue({ coverImage: url });
-                              setCoverPreview(url);
-                              message.success('封面上传成功');
+                    <Space>
+                      <Upload
+                        beforeUpload={async (file) => {
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          try {
+                            const token = localStorage.getItem('admin_token');
+                            const response = await fetch('/api/media/upload', {
+                              method: 'POST',
+                              headers: token ? { Authorization: `Bearer ${token}` } : {},
+                              body: formData,
+                            });
+                            if (response.ok) {
+                              const result = await response.json();
+                              const url = result.data?.url;
+                              if (url) {
+                                form.setFieldsValue({ coverImage: url });
+                                setCoverPreview(url);
+                                message.success('封面上传成功');
+                              } else {
+                                message.error('上传失败');
+                              }
                             } else {
                               message.error('上传失败');
                             }
-                          } else {
+                          } catch {
                             message.error('上传失败');
                           }
-                        } catch {
-                          message.error('上传失败');
-                        }
-                        return false;
-                      }}
-                      showUploadList={false}
-                      accept="image/*"
-                    >
-                      <Button icon={<UploadOutlined />}>上传封面</Button>
-                    </Upload>
+                          return false;
+                        }}
+                        showUploadList={false}
+                        accept="image/*"
+                      >
+                        <Button icon={<UploadOutlined />}>上传封面</Button>
+                      </Upload>
+                      <Button
+                        icon={<FolderOpenOutlined />}
+                        onClick={() => setMediaPickerOpen(true)}
+                      >
+                        从图片库选择
+                      </Button>
+                    </Space>
                   </div>
                   <Form.Item name="coverImage" noStyle>
                     <Input type="hidden" />
@@ -334,6 +343,15 @@ export function AdminPostEditPage() {
           </div>
         </Form>
       </Card>
+
+      <MediaPicker
+        open={mediaPickerOpen}
+        onCancel={() => setMediaPickerOpen(false)}
+        onSelect={(url) => {
+          form.setFieldsValue({ coverImage: url });
+          setCoverPreview(url);
+        }}
+      />
     </div>
   );
 }

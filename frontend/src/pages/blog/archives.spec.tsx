@@ -39,6 +39,7 @@ const mockPosts = [
     isTop: false,
     viewCount: 100,
     likeCount: 10,
+    commentCount: 1,
     categoryId: 1,
     createdAt: '2024-01-15T00:00:00.000Z',
     updatedAt: '2024-01-15T00:00:00.000Z',

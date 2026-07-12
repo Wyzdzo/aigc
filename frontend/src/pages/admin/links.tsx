@@ -228,6 +228,7 @@ export function AdminLinksPage() {
             columns={columns}
             rowKey="id"
             pagination={{
+              total: links.length,
               showSizeChanger: true,
               showTotal: (total) => `共 ${total} 条`,
             }}

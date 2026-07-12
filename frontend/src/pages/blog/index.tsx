@@ -1,7 +1,7 @@
 // src/pages/blog/index.tsx
 
 import { useEffect, useRef, useState } from 'react';
-import { CalendarOutlined, EyeOutlined, FilterOutlined, LikeOutlined, UserOutlined } from '@ant-design/icons';
+import { CalendarOutlined, CommentOutlined, EyeOutlined, FilterOutlined, LikeOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { Link, useSearchParams } from 'react-router';
 
@@ -107,6 +107,11 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
                 <span>
                   <LikeOutlined /> {post.likeCount}
                 </span>
+                {post.commentCount != null && (
+                  <span>
+                    <CommentOutlined /> {post.commentCount}
+                  </span>
+                )}
                 <span>
                   <CalendarOutlined /> {formatDate(post.createdAt)}
                 </span>
@@ -153,6 +158,11 @@ function PostListItem({
             <LikeOutlined /> {post.likeCount}
           </button>
         </Tooltip>,
+        ...(post.commentCount != null ? [
+          <span key="comments">
+            <CommentOutlined /> {post.commentCount}
+          </span>,
+        ] : []),
       ]}
     >
       <List.Item.Meta

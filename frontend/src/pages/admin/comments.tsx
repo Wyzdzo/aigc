@@ -33,15 +33,15 @@ import type { BlogComment } from '@/entities/blog';
 export function AdminCommentsPage() {
   const [statusFilter, setStatusFilter] = useState<CommentStatus | undefined>();
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(20);
 
   const {
     items: comments,
     total,
-    currentPage,
-    pageSize,
     loading,
     refetch,
-  } = useAdminComments({ status: statusFilter, page: 1, pageSize: 20 });
+  } = useAdminComments({ status: statusFilter, page: currentPage, pageSize: currentPageSize });
 
   const { updateCommentStatus, loading: updatingStatus } = useUpdateCommentStatus();
   const { deleteComment, loading: deleting } = useDeleteComment();
@@ -258,9 +258,13 @@ export function AdminCommentsPage() {
             pagination={{
               total: total,
               current: currentPage,
-              pageSize: pageSize,
+              pageSize: currentPageSize,
               showSizeChanger: true,
               showTotal: (total) => `共 ${total} 条`,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setCurrentPageSize(pageSize);
+              },
             }}
             scroll={{ x: 1000 }}
           />

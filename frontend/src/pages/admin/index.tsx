@@ -1,6 +1,6 @@
 // src/pages/admin/index.tsx
 
-import { AppstoreOutlined, EyeOutlined, FileAddOutlined, FileTextOutlined, HeartOutlined, LinkOutlined, MessageOutlined, WarningOutlined, UserOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, EyeOutlined, FileAddOutlined, FileTextOutlined, HeartOutlined, LinkOutlined, MessageOutlined, PictureOutlined, WarningOutlined, UserOutlined } from '@ant-design/icons';
 import { Card, Row, Col, Statistic, Spin, Typography } from 'antd';
 import { useNavigate } from 'react-router';
 import { useDashboardStats } from '@/features/blog';
@@ -160,7 +160,7 @@ export function AdminDashboardPage() {
               <QuickActionCard title="文章管理" icon={AppstoreOutlined} color={STAT_COLORS.blue} onClick={() => navigate('/admin/posts')} />
             </Col>
             <Col xs={6} sm={4} lg={3}>
-              <QuickActionCard title="管理评论" icon={MessageOutlined} color={STAT_COLORS.success} onClick={() => navigate('/admin/comments')} />
+              <QuickActionCard title="评论管理" icon={MessageOutlined} color={STAT_COLORS.success} onClick={() => navigate('/admin/comments')} />
             </Col>
             <Col xs={6} sm={4} lg={3}>
               <QuickActionCard title="分类管理" icon={WarningOutlined} color={STAT_COLORS.purple} onClick={() => navigate('/admin/categories')} />
@@ -170,6 +170,9 @@ export function AdminDashboardPage() {
             </Col>
             <Col xs={6} sm={4} lg={3}>
               <QuickActionCard title="友链管理" icon={LinkOutlined} color={STAT_COLORS.cyan} onClick={() => navigate('/admin/links')} />
+            </Col>
+            <Col xs={6} sm={4} lg={3}>
+              <QuickActionCard title="图片库" icon={PictureOutlined} color={STAT_COLORS.blue} onClick={() => navigate('/admin/media')} />
             </Col>
             <Col xs={6} sm={4} lg={3}>
               <QuickActionCard title="系统设置" icon={EyeOutlined} color={STAT_COLORS.magenta} onClick={() => navigate('/admin/settings')} />
