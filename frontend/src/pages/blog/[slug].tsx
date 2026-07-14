@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarOutlined, CommentOutlined, EyeOutlined, LikeOutlined, MenuOutlined } from '@ant-design/icons';
 import {
   Anchor,
+  App,
   Breadcrumb,
   Button,
   Card,
@@ -69,6 +70,7 @@ function ArticleMeta({
   createdAt: Date;
 }) {
   const { likePost, loading: likeLoading } = useLikePost();
+  const { message: messageApi } = App.useApp();
 
   return (
     <div className="text-text-tertiary">
@@ -80,7 +82,12 @@ function ArticleMeta({
           <button
             type="button"
             className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
-            onClick={() => likePost(postId)}
+            onClick={async () => {
+              const result = await likePost(postId);
+              if (result === 'already_liked') messageApi.info('您已经点过赞了');
+              else if (result === 'success') messageApi.success('点赞成功');
+              else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
+            }}
             disabled={likeLoading}
           >
             <LikeOutlined /> {likeCount}

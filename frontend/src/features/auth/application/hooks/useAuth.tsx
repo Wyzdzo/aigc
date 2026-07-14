@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { message } from 'antd';
+import { App } from 'antd';
 
 import { LOGIN } from '../constants';
 import { configureGraphQLRuntime } from '@/shared/graphql/client';
@@ -99,6 +99,7 @@ function initializeAuthState(): AuthState {
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>(initializeAuthState);
+  const { message: messageApi } = App.useApp();
 
   // 设置 onAuthFailure 回调，在认证失败时清除状态
   const onAuthFailure = useCallback(() => {
@@ -109,6 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading: false,
       error: null,
     });
+    // 跳转到登录页，避免用户停留在已失效的页面
+    window.location.href = '/login';
   }, []);
 
   // 配置 onAuthFailure 回调
@@ -155,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: null,
         });
 
-        message.success('登录成功');
+        messageApi.success('登录成功');
         return true;
       }
 
@@ -164,10 +167,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '登录失败';
       setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }));
-      message.error(errorMessage);
+      messageApi.error(errorMessage);
       return false;
     }
-  }, [loginMutation, onAuthFailure]);
+  }, [loginMutation, onAuthFailure, messageApi]);
 
   const logout = useCallback(() => {
     clearAuthStorage();
@@ -185,8 +188,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error: null,
     });
 
-    message.success('已退出登录');
-  }, []);
+    messageApi.success('已退出登录');
+  }, [messageApi]);
 
   const updateUser = useCallback((patch: Partial<UserInfo>) => {
     setAuthState((prev) => {

@@ -34,11 +34,11 @@ describe('Blog Service E2E', () => {
 
   // 测试数据清理
   const cleanupTestData = async () => {
-    await dataSource.getRepository(BlogCommentEntity).delete({});
-    await dataSource.getRepository(BlogLinkEntity).delete({});
-    await dataSource.getRepository(BlogTagEntity).delete({});
-    await dataSource.getRepository(BlogCategoryEntity).delete({});
-    await dataSource.getRepository(BlogPostEntity).delete({});
+    await dataSource.getRepository(BlogCommentEntity).clear();
+    await dataSource.getRepository(BlogLinkEntity).clear();
+    await dataSource.getRepository(BlogTagEntity).clear();
+    await dataSource.getRepository(BlogCategoryEntity).clear();
+    await dataSource.getRepository(BlogPostEntity).clear();
   };
 
   beforeEach(async () => {
@@ -320,26 +320,28 @@ describe('Blog Service E2E', () => {
         mutation {
           viewPost(id: ${savedPost.id}) {
             id
-            viewCount
           }
         }
       `;
 
       // First view
-      let response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/graphql')
         .send({ query: viewMutation })
         .expect(200);
 
-      expect(response.body.data.viewPost.viewCount).toBe(1);
+      // Verify view count incremented via direct DB query
+      const afterFirst = await postRepo.findOne({ where: { id: savedPost.id } });
+      expect(afterFirst?.viewCount).toBe(1);
 
       // Second view
-      response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/graphql')
         .send({ query: viewMutation })
         .expect(200);
 
-      expect(response.body.data.viewPost.viewCount).toBe(2);
+      const afterSecond = await postRepo.findOne({ where: { id: savedPost.id } });
+      expect(afterSecond?.viewCount).toBe(2);
     });
 
     it('should increment like count', async () => {
@@ -614,8 +616,10 @@ describe('Blog Service E2E', () => {
       const query = `
         query {
           comments(postId: ${savedPost.id}) {
-            id
-            nickname
+            items {
+              id
+              nickname
+            }
           }
         }
       `;
@@ -625,7 +629,7 @@ describe('Blog Service E2E', () => {
         .send({ query: query })
         .expect(200);
 
-      expect(response.body.data.comments.length).toBe(2);
+      expect(response.body.data.comments.items.length).toBe(2);
     });
 
     it('should increment comment like count', async () => {
@@ -941,6 +945,177 @@ describe('Blog Service E2E', () => {
     });
   });
 
+  describe('Guestbook Comments', () => {
+    it('should create a guestbook comment with postId=0', async () => {
+      const createMutation = `
+        mutation {
+          createComment(input: {
+            postId: 0,
+            nickname: "Guestbook User",
+            email: "guest@example.com",
+            content: "Guestbook message"
+          }) {
+            id
+            postId
+            nickname
+            content
+            status
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createMutation })
+        .expect(200);
+
+      expect(response.body.data.createComment).toBeDefined();
+      expect(response.body.data.createComment.postId).toBe(0);
+      expect(response.body.data.createComment.nickname).toBe('Guestbook User');
+      expect(response.body.data.createComment.content).toBe('Guestbook message');
+      expect(response.body.data.createComment.status).toBe('PENDING');
+    });
+
+    it('should query guestbook comments with postId=0', async () => {
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      await commentRepo.save({
+        postId: 0,
+        nickname: 'Guest 1',
+        content: 'Guestbook entry 1',
+        status: CommentStatus.APPROVED,
+      });
+
+      await commentRepo.save({
+        postId: 0,
+        nickname: 'Guest 2',
+        content: 'Guestbook entry 2',
+        status: CommentStatus.APPROVED,
+      });
+
+      const query = `
+        query {
+          comments(postId: 0) {
+            items {
+              id
+              postId
+              nickname
+              content
+              status
+            }
+            total
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: query })
+        .expect(200);
+
+      expect(response.body.data.comments.items.length).toBe(2);
+      expect(response.body.data.comments.total).toBe(2);
+      expect(response.body.data.comments.items.every((c: any) => c.postId === 0)).toBe(true);
+    });
+
+    it('should create a reply to a guestbook comment (nested guestbook comments)', async () => {
+      // Create root guestbook comment via GraphQL
+      const createRootMutation = `
+        mutation {
+          createComment(input: {
+            postId: 0,
+            nickname: "Guestbook User",
+            email: "guest@example.com",
+            content: "Guestbook message"
+          }) {
+            id
+            parentId
+          }
+        }
+      `;
+
+      const rootRes = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createRootMutation })
+        .expect(200);
+
+      const parentId = rootRes.body.data.createComment.id;
+      expect(rootRes.body.data.createComment.parentId).toBeNull();
+
+      // Create reply to root guestbook comment
+      const createReplyMutation = `
+        mutation {
+          createComment(input: {
+            postId: 0,
+            parentId: ${parentId},
+            nickname: "Reply User",
+            content: "Reply to guestbook"
+          }) {
+            id
+            parentId
+            nickname
+            content
+          }
+        }
+      `;
+
+      const replyRes = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: createReplyMutation })
+        .expect(200);
+
+      expect(replyRes.body.data.createComment.parentId).toBe(parentId);
+      expect(replyRes.body.data.createComment.nickname).toBe('Reply User');
+      expect(replyRes.body.data.createComment.content).toBe('Reply to guestbook');
+    });
+
+    it('should query comments with postId=0 and status filter', async () => {
+      const commentRepo = dataSource.getRepository(BlogCommentEntity);
+
+      await commentRepo.save({
+        postId: 0,
+        nickname: 'Approved Guest',
+        content: 'Approved entry',
+        status: CommentStatus.APPROVED,
+      });
+
+      await commentRepo.save({
+        postId: 0,
+        nickname: 'Pending Guest',
+        content: 'Pending entry',
+        status: CommentStatus.PENDING,
+      });
+
+      await commentRepo.save({
+        postId: 0,
+        nickname: 'Rejected Guest',
+        content: 'Rejected entry',
+        status: CommentStatus.REJECTED,
+      });
+
+      const query = `
+        query {
+          comments(postId: 0, status: APPROVED) {
+            items {
+              id
+              nickname
+              status
+            }
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query: query })
+        .expect(200);
+
+      expect(response.body.data.comments.items.length).toBe(1);
+      expect(response.body.data.comments.items[0].nickname).toBe('Approved Guest');
+      expect(response.body.data.comments.items[0].status).toBe('APPROVED');
+    });
+  });
+
   describe('Link Operations', () => {
     it('should create a link', async () => {
       const createMutation = `
@@ -972,7 +1147,7 @@ describe('Blog Service E2E', () => {
 
       const query = `
         query {
-          links {
+          activeLinks {
             id
             title
           }
@@ -984,7 +1159,7 @@ describe('Blog Service E2E', () => {
         .send({ query: query })
         .expect(200);
 
-      expect(response.body.data.links.length).toBe(2);
+      expect(response.body.data.activeLinks.length).toBe(2);
     });
 
     it('should update a link', async () => {
@@ -1173,6 +1348,55 @@ describe('Blog Service E2E', () => {
         .expect(200);
 
       expect(response.body.data.posts.total).toBe(3);
+    });
+
+    it('should list pinned posts before non-pinned posts regardless of other sort order', async () => {
+      const postRepo = dataSource.getRepository(BlogPostEntity);
+
+      // 非置顶但更新的文章
+      await postRepo.save({
+        title: 'Normal New Post',
+        slug: 'normal-new-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+        isTop: false,
+        viewCount: 100,
+      });
+
+      // 置顶但更旧的文章
+      await postRepo.save({
+        title: 'Pinned Old Post',
+        slug: 'pinned-old-e2e',
+        content: 'Content',
+        status: PostStatus.PUBLISHED,
+        isTop: true,
+        viewCount: 1,
+      });
+
+      // 验证：无论 viewCount 排序如何，置顶文章始终在前
+      const query = `
+        query {
+          posts(orderBy: "viewCount", orderDirection: "DESC") {
+            items {
+              title
+              isTop
+            }
+          }
+        }
+      `;
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query })
+        .expect(200);
+
+      const items = response.body.data.posts.items;
+      expect(items.length).toBe(2);
+      // 置顶文章排在第一个，即使 viewCount 更低
+      expect(items[0].title).toBe('Pinned Old Post');
+      expect(items[0].isTop).toBe(true);
+      expect(items[1].title).toBe('Normal New Post');
+      expect(items[1].isTop).toBe(false);
     });
   });
 

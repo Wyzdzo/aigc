@@ -1,7 +1,6 @@
 // src/features/blog/application/hooks/useLikePost.ts
 import { useCallback, useRef } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { message } from 'antd';
 
 import { LIKE_POST } from '../../infrastructure/graphql/mutations';
 import { GET_POSTS, GET_POST_BY_ID } from '../../infrastructure/graphql/queries';
@@ -21,8 +20,7 @@ export function useLikePost() {
     async (postId: number) => {
       // 防止重复点赞
       if (likedPostsRef.current.has(postId)) {
-        message.info('您已经点过赞了');
-        return false;
+        return 'already_liked' as const;
       }
 
       try {
@@ -35,11 +33,9 @@ export function useLikePost() {
 
         // 标记已点赞
         likedPostsRef.current.add(postId);
-        message.success('点赞成功');
-        return true;
+        return 'success' as const;
       } catch {
-        message.error('点赞失败，请稍后重试');
-        return false;
+        return 'error' as const;
       }
     },
     [likePostMutation],

@@ -3,12 +3,12 @@
 import { useState } from 'react';
 
 import {
+  App,
   Button,
   Card,
   Empty,
   Form,
   Input,
-  message,
   Modal,
   Popconfirm,
   Spin,
@@ -41,6 +41,7 @@ function getTagColor(id: number): string {
 }
 
 export function AdminTagsPage() {
+  const { message: messageApi } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingTag, setEditingTag] = useState<BlogTag | null>(null);
   const [form] = Form.useForm();
@@ -68,10 +69,10 @@ export function AdminTagsPage() {
   const handleDelete = async (tag: BlogTag) => {
     try {
       await deleteTag(tag.id);
-      message.success('删除成功');
+      messageApi.success('删除成功');
       await refetch();
     } catch {
-      message.error('删除失败，请重试');
+      messageApi.error('删除失败，请重试');
     }
   };
 
@@ -84,18 +85,18 @@ export function AdminTagsPage() {
             name: values.name,
             slug: values.slug,
           });
-          message.success('更新成功');
+          messageApi.success('更新成功');
         } else {
           await createTag({
             name: values.name,
             slug: values.slug,
           });
-          message.success('创建成功');
+          messageApi.success('创建成功');
         }
         setIsModalVisible(false);
         await refetch();
       } catch {
-        message.error('操作失败，请重试');
+        messageApi.error('操作失败，请重试');
       }
     }).catch(() => {
       // Form validation failed

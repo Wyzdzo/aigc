@@ -3,13 +3,13 @@
 import { useState } from 'react';
 
 import {
+  App,
   Button,
   Card,
   Empty,
   Form,
   Input,
   InputNumber,
-  message,
   Modal,
   Popconfirm,
   Select,
@@ -38,6 +38,7 @@ import {
 import type { BlogCategory } from '@/entities/blog';
 
 export function AdminCategoriesPage() {
+  const { message: messageApi } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<BlogCategory | null>(null);
   const [form] = Form.useForm();
@@ -68,10 +69,10 @@ export function AdminCategoriesPage() {
   const handleDelete = async (category: BlogCategory) => {
     try {
       await deleteCategory(category.id);
-      message.success('删除成功');
+      messageApi.success('删除成功');
       await refetch();
     } catch {
-      message.error('删除失败，请重试');
+      messageApi.error('删除失败，请重试');
     }
   };
 
@@ -95,15 +96,15 @@ export function AdminCategoriesPage() {
             id: editingCategory.id,
             ...cleaned,
           });
-          message.success('更新成功');
+          messageApi.success('更新成功');
         } else {
           await createCategory(cleaned as Parameters<typeof createCategory>[0]);
-          message.success('创建成功');
+          messageApi.success('创建成功');
         }
         setIsModalVisible(false);
         await refetch();
       } catch {
-        message.error('操作失败，请重试');
+        messageApi.error('操作失败，请重试');
       }
     }).catch(() => {
       // Form validation failed

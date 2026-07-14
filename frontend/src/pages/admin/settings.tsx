@@ -2,26 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import {
+  App,
+  Button,
   Card,
-  Tabs,
   Form,
   Input,
-  Button,
-  message,
   Spin,
-  Typography,
   Switch,
+  Tabs,
+  Typography,
+  Upload,
   InputNumber,
   Avatar,
-  Upload,
 } from 'antd';
 import { UserOutlined, LockOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons';
-import { useSettings, type UpdateSiteSettingsInput, type UpdateBloggerInfoInput, type UpdatePasswordInput } from '@/features/settings';
+import { useSettings, type UpdateSiteSettingsInput, type UpdateBloggerInfoInput } from '@/features/settings';
 
 const { Title } = Typography;
 const { TextArea } = Input;
 
 export function AdminSettingsPage() {
+  const { message: messageApi } = App.useApp();
   const [activeTab, setActiveTab] = useState('site');
   const [siteForm] = Form.useForm();
   const [bloggerForm] = Form.useForm();
@@ -69,30 +70,35 @@ export function AdminSettingsPage() {
   const handleSiteSettingsSubmit = async (values: UpdateSiteSettingsInput) => {
     const success = await updateSiteSettings(values);
     if (success) {
-      message.success('网站设置已保存');
+      messageApi.success('网站设置已保存');
       refetch();
     } else {
-      message.error('保存失败');
+      messageApi.error('保存失败');
     }
   };
 
   const handleBloggerInfoSubmit = async (values: UpdateBloggerInfoInput) => {
     const success = await updateBloggerInfo(values);
     if (success) {
-      message.success('博主信息已保存');
+      messageApi.success('博主信息已保存');
       refetch();
     } else {
-      message.error('保存失败');
+      messageApi.error('保存失败');
     }
   };
 
-  const handlePasswordSubmit = async (values: UpdatePasswordInput) => {
-    const success = await updatePassword(values);
-    if (success) {
-      message.success('密码已修改');
-      passwordForm.resetFields();
-    } else {
-      message.error('修改失败，请检查旧密码是否正确');
+  const handlePasswordSubmit = async (values: { oldPassword: string; newPassword: string; confirmPassword: string }) => {
+    const { oldPassword, newPassword } = values;
+    try {
+      const result = await updatePassword({ oldPassword, newPassword });
+      if (result) {
+        messageApi.success('密码已修改');
+        passwordForm.resetFields();
+      } else {
+        messageApi.error('修改失败，请检查旧密码是否正确');
+      }
+    } catch {
+      messageApi.error('修改失败，请稍后重试');
     }
   };
 
@@ -113,15 +119,15 @@ export function AdminSettingsPage() {
         const url = result.data?.url;
         if (url) {
           bloggerForm.setFieldsValue({ avatar: url });
-          message.success('头像上传成功');
+          messageApi.success('头像上传成功');
         } else {
-          message.error('上传失败');
+          messageApi.error('上传失败');
         }
       } else {
-        message.error('上传失败');
+        messageApi.error('上传失败');
       }
     } catch {
-      message.error('上传失败');
+      messageApi.error('上传失败');
     }
 
     return false;

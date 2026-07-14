@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { App as AntApp } from 'antd';
 
 import { bootstrapGraphQLRuntime } from '@/app/bootstrap';
 import { AuthProvider } from '@/features/auth';
@@ -16,9 +17,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <GraphQLProvider>
       <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <AntApp>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </AntApp>
       </ThemeProvider>
     </GraphQLProvider>
   </React.StrictMode>,

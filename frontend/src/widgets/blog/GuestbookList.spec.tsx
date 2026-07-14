@@ -106,9 +106,9 @@ describe('GuestbookList', () => {
       expect(container.querySelector('.ant-spin')).toBeTruthy();
     });
 
-    it('should call onReply when reply button is clicked', async () => {
-      const onReplyMock = vi.fn();
-      const { container } = render(<GuestbookList comments={mockGuestbookComments} onReply={onReplyMock} />, { wrapper: createWrapper() });
+    it('should toggle reply form when reply button is clicked', async () => {
+      const onReplySuccessMock = vi.fn();
+      const { container } = render(<GuestbookList comments={mockGuestbookComments} onReplySuccess={onReplySuccessMock} />, { wrapper: createWrapper() });
 
       const replyButtons = container.querySelectorAll('button');
       const firstReplyButton = Array.from(replyButtons).find(btn => btn.textContent === '回复');
@@ -117,9 +117,11 @@ describe('GuestbookList', () => {
         fireEvent.click(firstReplyButton);
       }
 
+      // 点击回复按钮后应显示回复表单，而不是触发 onReplySuccess
       await waitFor(() => {
-        expect(onReplyMock).toHaveBeenCalled();
+        expect(container.querySelector('textarea')).toBeTruthy();
       });
+      expect(onReplySuccessMock).not.toHaveBeenCalled();
     });
 
     it('should render nested replies under parent comment', () => {
@@ -204,7 +206,7 @@ describe('GuestbookList', () => {
       expect(container.textContent).toContain('没有邮箱的留言');
     });
 
-    it('should generate avatar URL correctly', () => {
+    it('should show avatar fallback with nickname initial', () => {
       const commentWithEmail: BlogComment[] = [
         {
           id: 1,
@@ -223,12 +225,10 @@ describe('GuestbookList', () => {
 
       const { container } = render(<GuestbookList comments={commentWithEmail} />, { wrapper: createWrapper() });
 
-      const avatars = container.querySelectorAll('.ant-avatar img');
+      const avatars = container.querySelectorAll('.ant-avatar');
       expect(avatars.length).toBeGreaterThan(0);
-      const firstAvatar = avatars[0];
-      const src = firstAvatar?.getAttribute('src') ?? '';
-      expect(src).toContain('api.dicebear.com');
-      expect(src).toContain('test%40example.com');
+      // Avatar 使用 nickname 首字作为 fallback 文字
+      expect(avatars[0].textContent).toBe('测');
     });
   });
 });

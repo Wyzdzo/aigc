@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import {
+  App,
   Button,
   Col,
   Empty,
   Image,
   Input,
-  message,
   Modal,
   Pagination,
   Popconfirm,
@@ -32,6 +32,7 @@ import type { MediaItem } from '@/features/media';
 const { Search } = Input;
 
 export function AdminMediaPage() {
+  const { message: messageApi } = App.useApp();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [keyword, setKeyword] = useState<string | undefined>();
@@ -54,13 +55,13 @@ export function AdminMediaPage() {
       });
 
       if (response.ok) {
-        message.success('上传成功');
+        messageApi.success('上传成功');
         refetch();
       } else {
-        message.error('上传失败');
+        messageApi.error('上传失败');
       }
     } catch {
-      message.error('上传失败');
+      messageApi.error('上传失败');
     }
 
     return false;
@@ -69,10 +70,10 @@ export function AdminMediaPage() {
   const handleDelete = async (id: number) => {
     const success = await deleteMedia(id);
     if (success) {
-      message.success('删除成功');
+      messageApi.success('删除成功');
       refetch();
     } else {
-      message.error('删除失败');
+      messageApi.error('删除失败');
     }
   };
 
@@ -83,8 +84,8 @@ export function AdminMediaPage() {
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url).then(
-      () => message.success('链接已复制'),
-      () => message.error('复制失败'),
+      () => messageApi.success('链接已复制'),
+      () => messageApi.error('复制失败'),
     );
   };
 

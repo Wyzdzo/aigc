@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { message } from 'antd';
 
 import type { BlogComment, CreateCommentInput } from '@/entities/blog';
 
@@ -22,12 +21,11 @@ export function useCreateComment() {
   const submittedRef = useRef<Set<string>>(new Set());
 
   const createComment = useCallback(
-    async (input: CreateCommentInput): Promise<boolean> => {
+    async (input: CreateCommentInput): Promise<'duplicate' | 'success' | 'error'> => {
       // 生成唯一 key 用于重复提交拦截
       const key = `${input.postId}-${input.nickname}-${input.content}`;
       if (submittedRef.current.has(key)) {
-        message.info('请勿重复提交');
-        return false;
+        return 'duplicate';
       }
 
       try {
@@ -63,14 +61,12 @@ export function useCreateComment() {
 
         if (result.data?.createComment) {
           submittedRef.current.add(key);
-          message.success('评论发布成功');
-          return true;
+          return 'success';
         }
 
-        return false;
+        return 'error';
       } catch {
-        message.error('评论发布失败，请稍后重试');
-        return false;
+        return 'error';
       }
     },
     [createCommentMutation],

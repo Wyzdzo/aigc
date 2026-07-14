@@ -1,7 +1,7 @@
 // src/features/settings/ui/blogger-info-modal.tsx
 
 import { useEffect } from 'react';
-import { Avatar, Button, Form, Input, Modal, Upload, message } from 'antd';
+import { App, Avatar, Button, Form, Input, Modal, Upload } from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 
 import { useSettings, type UpdateBloggerInfoInput } from '../application/hooks';
@@ -15,6 +15,7 @@ interface BloggerInfoModalProps {
 export function BloggerInfoModal({ open, onClose, onSuccess }: BloggerInfoModalProps) {
   const [form] = Form.useForm<UpdateBloggerInfoInput>();
   const { settings, updateBloggerInfo, updateBloggerInfoLoading } = useSettings({ skip: !open });
+  const { message: messageApi } = App.useApp();
 
   useEffect(() => {
     if (open && settings?.bloggerInfo) {
@@ -43,15 +44,15 @@ export function BloggerInfoModal({ open, onClose, onSuccess }: BloggerInfoModalP
         const url = result.data?.url;
         if (url) {
           form.setFieldsValue({ avatar: url });
-          message.success('头像上传成功');
+          messageApi.success('头像上传成功');
         } else {
-          message.error('上传失败');
+          messageApi.error('上传失败');
         }
       } else {
-        message.error('上传失败');
+        messageApi.error('上传失败');
       }
     } catch {
-      message.error('上传失败');
+      messageApi.error('上传失败');
     }
 
     return false;
@@ -63,16 +64,16 @@ export function BloggerInfoModal({ open, onClose, onSuccess }: BloggerInfoModalP
       const success = await updateBloggerInfo(values);
       if (success) {
         onSuccess?.(values);
-        message.success('博主信息更新成功');
+        messageApi.success('博主信息更新成功');
         onClose();
       } else {
-        message.error('更新失败，请重新登录后再试');
+        messageApi.error('更新失败，请重新登录后再试');
       }
     } catch (error) {
       if ((error as { errorFields?: unknown })?.errorFields) {
         return;
       }
-      message.error('更新失败，请重新登录后再试');
+      messageApi.error('更新失败，请重新登录后再试');
     }
   };
 

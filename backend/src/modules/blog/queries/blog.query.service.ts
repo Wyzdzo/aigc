@@ -108,10 +108,10 @@ export class BlogQueryService {
         .where('pt.tagId = :tagId', { tagId: options.tagId });
     }
 
-    // Order
+    // Order: pinned posts first, then by specified field
     const orderBy = options.orderBy ?? 'createdAt';
     const orderDirection = options.orderDirection ?? 'DESC';
-    queryBuilder.orderBy(`post.${orderBy}`, orderDirection);
+    queryBuilder.orderBy('post.isTop', 'DESC').addOrderBy(`post.${orderBy}`, orderDirection);
 
     // Pagination
     queryBuilder.skip(skip).take(pageSize);
@@ -277,19 +277,19 @@ export class BlogQueryService {
 
     const queryBuilder = repository.createQueryBuilder('comment');
 
-    if (options.postId) {
+    if (options.postId !== undefined) {
       queryBuilder.where('comment.postId = :postId', { postId: options.postId });
     }
 
     if (options.parentId !== undefined) {
-      const whereClause = options.postId ? 'AND' : 'WHERE';
+      const whereClause = options.postId !== undefined ? 'AND' : 'WHERE';
       queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere']('comment.parentId = :parentId', {
         parentId: options.parentId,
       });
     }
 
-    if (options.status) {
-      const whereClause = options.postId || options.parentId !== undefined ? 'AND' : 'WHERE';
+    if (options.status !== undefined) {
+      const whereClause = options.postId !== undefined || options.parentId !== undefined ? 'AND' : 'WHERE';
       queryBuilder[whereClause === 'WHERE' ? 'where' : 'andWhere']('comment.status = :status', {
         status: options.status,
       });

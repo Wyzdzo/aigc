@@ -71,9 +71,20 @@ export default defineConfig(({ mode }) => {
       port: devServerPort,
       strictPort: devServerStrictPort,
       proxy: {
-        '/api': {
+        '/api/graphql': {
           target: 'http://localhost:3000',
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+        '/api/health': {
+          target: 'http://localhost:3000',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+        '/api/media': {
+          target: 'http://localhost:3000',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
         },
         '/uploads': {
           target: 'http://localhost:3000',

@@ -57,16 +57,18 @@ function getThreadColor(depth: number): string {
 /**
  * 评论项组件（递归，支持多级嵌套）
  */
-function CommentItem({
+export function CommentItem({
   comment,
   postId,
   childComments,
   depth = 0,
+  onReplySuccess,
 }: {
   comment: BlogComment;
   postId: number;
   childComments: Map<number, BlogComment[]>;
   depth?: number;
+  onReplySuccess?: () => void;
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -190,7 +192,10 @@ function CommentItem({
                 <CommentForm
                   postId={postId}
                   parentId={comment.id}
-                  onSuccess={() => setShowReplyForm(false)}
+                  onSuccess={() => {
+                    setShowReplyForm(false);
+                    onReplySuccess?.();
+                  }}
                   onCancel={() => setShowReplyForm(false)}
                   placeholder={`回复 @${comment.nickname}...`}
                   showCancel
@@ -212,6 +217,7 @@ function CommentItem({
               postId={postId}
               childComments={childComments}
               depth={childDepth}
+              onReplySuccess={onReplySuccess}
             />
           ))}
         </div>

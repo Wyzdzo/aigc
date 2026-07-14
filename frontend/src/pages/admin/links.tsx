@@ -3,13 +3,13 @@
 import { useState } from 'react';
 
 import {
+  App,
   Button,
   Card,
   Empty,
   Form,
   Input,
   InputNumber,
-  message,
   Modal,
   Popconfirm,
   Spin,
@@ -33,6 +33,7 @@ import {
 import type { BlogLink } from '@/entities/blog';
 
 export function AdminLinksPage() {
+  const { message: messageApi } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingLink, setEditingLink] = useState<BlogLink | null>(null);
   const [form] = Form.useForm();
@@ -63,10 +64,10 @@ export function AdminLinksPage() {
   const handleDelete = async (link: BlogLink) => {
     try {
       await deleteLink(link.id);
-      message.success('删除成功');
+      messageApi.success('删除成功');
       await refetch();
     } catch {
-      message.error('删除失败，请重试');
+      messageApi.error('删除失败，请重试');
     }
   };
 
@@ -82,7 +83,7 @@ export function AdminLinksPage() {
             logo: values.logo,
             sortOrder: values.sortOrder,
           });
-          message.success('更新成功');
+          messageApi.success('更新成功');
         } else {
           await createLink({
             title: values.title,
@@ -91,12 +92,12 @@ export function AdminLinksPage() {
             logo: values.logo,
             sortOrder: values.sortOrder,
           });
-          message.success('创建成功');
+          messageApi.success('创建成功');
         }
         setIsModalVisible(false);
         await refetch();
       } catch {
-        message.error('操作失败，请重试');
+        messageApi.error('操作失败，请重试');
       }
     }).catch(() => {
       // Form validation failed

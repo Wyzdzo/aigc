@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { CalendarOutlined, CommentOutlined, EyeOutlined, FilterOutlined, LikeOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
+import { App, Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { Link, useSearchParams } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
@@ -135,6 +135,7 @@ function PostListItem({
   keyword?: string;
 }) {
   const { likePost, loading: likeLoading } = useLikePost();
+  const { message: messageApi } = App.useApp();
 
   return (
     <List.Item
@@ -148,10 +149,13 @@ function PostListItem({
             type="button"
             key="likes"
             className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              likePost(post.id);
+              const result = await likePost(post.id);
+              if (result === 'already_liked') messageApi.info('您已经点过赞了');
+              else if (result === 'success') messageApi.success('点赞成功');
+              else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
             }}
             disabled={likeLoading}
           >

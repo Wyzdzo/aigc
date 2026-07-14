@@ -80,7 +80,7 @@ export function BlogGuestbookPage() {
         <GuestbookList
           comments={comments}
           loading={loading}
-          onReply={() => refetch()}
+          onReplySuccess={() => refetch()}
         />
       </Card>
     </div>

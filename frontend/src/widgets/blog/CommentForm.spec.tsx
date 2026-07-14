@@ -3,12 +3,37 @@
 import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
 import { render, waitFor, fireEvent } from '@testing-library/react';
-import { message } from 'antd';
-import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from 'vitest';
+import { describe, expect, it, vi, beforeAll, afterEach } from 'vitest';
 
 import { CREATE_COMMENT, GET_COMMENTS } from '@/features/blog';
 
 import { CommentForm } from './CommentForm';
+
+// Mock App.useApp
+const { mockMessageApi } = vi.hoisted(() => {
+  const mockMessageApi = {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  };
+  return { mockMessageApi };
+});
+
+vi.mock('antd', async () => {
+  const actual = await vi.importActual('antd');
+  return {
+    ...actual,
+    App: {
+      ...((actual as any).App || {}),
+      useApp: vi.fn(() => ({
+        message: mockMessageApi,
+        notification: {},
+        modal: {},
+      })),
+    },
+  };
+});
 
 beforeAll(() => {
   class ResizeObserverMock {
@@ -34,13 +59,9 @@ beforeAll(() => {
 });
 
 describe('CommentForm', () => {
-  beforeEach(() => {
-    vi.spyOn(message, 'success').mockReturnValue({} as ReturnType<typeof message.success>);
-    vi.spyOn(message, 'error').mockReturnValue({} as ReturnType<typeof message.error>);
-  });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   function createWrapper(mocks: MockedResponse[] = []) {
@@ -143,7 +164,7 @@ describe('CommentForm', () => {
       fireEvent.click(submitButton!);
 
       await waitFor(() => {
-        expect(message.success).toHaveBeenCalled();
+        expect(onSuccessMock).toHaveBeenCalled();
       });
     });
 
@@ -241,7 +262,8 @@ describe('CommentForm', () => {
       fireEvent.click(submitButton!);
 
       await waitFor(() => {
-        expect(message.error).toHaveBeenCalled();
+        // Verify the component still renders after error (form not crashed)
+        expect(container.querySelector('form')).toBeTruthy();
       });
     });
   });
@@ -308,7 +330,8 @@ describe('CommentForm', () => {
       fireEvent.click(submitButton!);
 
       await waitFor(() => {
-        expect(message.success).toHaveBeenCalled();
+        // Verify the component still renders after successful submission
+        expect(container.querySelector('form')).toBeTruthy();
       });
     });
 
@@ -318,6 +341,103 @@ describe('CommentForm', () => {
       expect(container.querySelector('textarea[placeholder="写下你的评论..."]')).toBeTruthy();
     });
 
+    it('should call messageApi.success on successful submission', async () => {
+      const onSuccessMock = vi.fn();
+      const mocks = [
+        {
+          request: {
+            query: CREATE_COMMENT,
+            variables: {
+              input: {
+                postId: 1,
+                nickname: '测试用户',
+                email: '',
+                content: '测试评论内容',
+              },
+            },
+          },
+          result: {
+            data: {
+              createComment: {
+                id: 1,
+                postId: 1,
+                parentId: null,
+                nickname: '测试用户',
+                email: '',
+                avatar: null,
+                content: '测试评论内容',
+                status: 'APPROVED',
+                likeCount: 0,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              comments: {
+                items: [],
+                total: 1,
+                page: 1,
+                pageSize: 10,
+              },
+            },
+          },
+        },
+      ];
 
+      const { container } = render(<CommentForm postId={1} onSuccess={onSuccessMock} />, { wrapper: createWrapper(mocks) });
+
+      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
+      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
+      const submitButton = container.querySelector('button[type="submit"]');
+
+      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
+      fireEvent.change(contentInput, { target: { value: '测试评论内容' } });
+      fireEvent.click(submitButton!);
+
+      await waitFor(() => {
+        expect(mockMessageApi.success).toHaveBeenCalledWith('评论发布成功');
+      });
+    });
+
+    it('should call messageApi.error when createComment returns error', async () => {
+      const mocks = [
+        {
+          request: {
+            query: CREATE_COMMENT,
+            variables: {
+              input: {
+                postId: 1,
+                nickname: '测试用户',
+                email: '',
+                content: '测试评论内容',
+              },
+            },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper(mocks) });
+
+      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
+      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
+      const submitButton = container.querySelector('button[type="submit"]');
+
+      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
+      fireEvent.change(contentInput, { target: { value: '测试评论内容' } });
+      fireEvent.click(submitButton!);
+
+      await waitFor(() => {
+        expect(mockMessageApi.error).toHaveBeenCalledWith('评论发布失败，请稍后重试');
+      });
+    });
   });
 });

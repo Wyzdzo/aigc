@@ -1,7 +1,7 @@
 // src/widgets/blog/CommentForm.tsx
 
 import { useCallback, useState } from 'react';
-import { Button, Form, Input, Space } from 'antd';
+import { App, Button, Form, Input, Space } from 'antd';
 import type { ReactNode } from 'react';
 
 import { useCreateComment } from '@/features/blog';
@@ -33,12 +33,13 @@ export function CommentForm({
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const { createComment } = useCreateComment();
+  const { message: messageApi } = App.useApp();
 
   const handleSubmit = useCallback(
     async (values: { nickname: string; email?: string; content: string }) => {
       setSubmitting(true);
       try {
-        const success = await createComment({
+        const result = await createComment({
           postId,
           parentId: parentId ?? undefined,
           nickname: values.nickname,
@@ -46,15 +47,20 @@ export function CommentForm({
           content: values.content,
         });
 
-        if (success) {
+        if (result === 'success') {
           form.resetFields();
           onSuccess?.();
+          messageApi.success('评论发布成功');
+        } else if (result === 'duplicate') {
+          messageApi.info('请勿重复提交');
+        } else {
+          messageApi.error('评论发布失败，请稍后重试');
         }
       } finally {
         setSubmitting(false);
       }
     },
-    [postId, parentId, createComment, form, onSuccess],
+    [postId, parentId, createComment, form, onSuccess, messageApi],
   );
 
   const handleCancel = useCallback(() => {

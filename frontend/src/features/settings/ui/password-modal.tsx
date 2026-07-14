@@ -1,6 +1,6 @@
 // src/features/settings/ui/password-modal.tsx
 
-import { Form, Input, Modal, message } from 'antd';
+import { App, Form, Input, Modal } from 'antd';
 
 import { useSettings } from '../application/hooks';
 
@@ -12,6 +12,7 @@ interface PasswordModalProps {
 export function PasswordModal({ open, onClose }: PasswordModalProps) {
   const [form] = Form.useForm<{ oldPassword: string; newPassword: string; confirmPassword: string }>();
   const { updatePassword, updatePasswordLoading } = useSettings({ skip: !open });
+  const { message: messageApi } = App.useApp();
 
   const handleSubmit = async () => {
     try {
@@ -21,17 +22,17 @@ export function PasswordModal({ open, onClose }: PasswordModalProps) {
         newPassword: values.newPassword,
       });
       if (success) {
-        message.success('密码修改成功');
+        messageApi.success('密码修改成功');
         form.resetFields();
         onClose();
       } else {
-        message.error('密码修改失败，请重试');
+        messageApi.error('密码修改失败，请重试');
       }
     } catch (error) {
       if ((error as { errorFields?: unknown })?.errorFields) {
         return;
       }
-      message.error('密码修改失败，请重试');
+      messageApi.error('密码修改失败，请重试');
     }
   };
 

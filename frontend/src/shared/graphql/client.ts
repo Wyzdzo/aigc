@@ -211,8 +211,9 @@ function createCacheConfig() {
 }
 
 function createApolloClient() {
+  const endpoint = getGraphQLEndpoint();
   const httpLink = new HttpLink({
-    uri: getGraphQLEndpoint(),
+    uri: endpoint,
   });
   const authLink = setContext((_, previousContext) => {
     if (getContextAuthMode(previousContext) === 'none') {

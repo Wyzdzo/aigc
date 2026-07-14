@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined } from '@ant-design/icons';
-import { Breadcrumb, Card, Empty, List, Space, Spin, Tooltip, Typography } from 'antd';
+import { App, Breadcrumb, Card, Empty, List, Space, Spin, Tooltip, Typography } from 'antd';
 import { Link, useParams } from 'react-router';
 
 import { useCategories, useLikePost, usePosts } from '@/features/blog';
@@ -27,6 +27,7 @@ function formatDate(date: Date): string {
  */
 function PostListItem({ post }: { post: import('@/entities/blog').BlogPost }) {
   const { likePost, loading: likeLoading } = useLikePost();
+  const { message: messageApi } = App.useApp();
 
   return (
     <List.Item
@@ -40,10 +41,13 @@ function PostListItem({ post }: { post: import('@/entities/blog').BlogPost }) {
             type="button"
             key="likes"
             className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              likePost(post.id);
+              const result = await likePost(post.id);
+              if (result === 'already_liked') messageApi.info('您已经点过赞了');
+              else if (result === 'success') messageApi.success('点赞成功');
+              else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
             }}
             disabled={likeLoading}
           >

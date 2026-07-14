@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button, Select, Space, Tooltip, message } from 'antd';
+import { App, Button, Select, Space, Tooltip } from 'antd';
 import {
   BoldOutlined,
   CodeOutlined,
@@ -94,6 +94,7 @@ export function PostEditor({
   autoSaveInterval = 3000,
   onSave,
 }: PostEditorProps) {
+  const { message: messageApi } = App.useApp();
   const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
@@ -262,13 +263,13 @@ export function PostEditor({
             const newValue = value.slice(0, selectionStart) + imgMd + value.slice(selectionStart);
             onChange(newValue);
           } else {
-            message.error('上传失败');
+            messageApi.error('上传失败');
           }
         } else {
-          message.error('上传失败');
+          messageApi.error('上传失败');
         }
       } catch {
-        message.error('上传失败');
+        messageApi.error('上传失败');
       }
     };
     input.click();

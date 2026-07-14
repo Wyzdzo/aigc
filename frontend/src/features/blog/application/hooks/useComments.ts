@@ -38,7 +38,7 @@ export function useComments(variables: CommentsVariables = {}) {
     GET_COMMENTS,
     {
       variables: { postId, status, page, pageSize },
-      skip: !postId,
+      skip: postId === undefined,
       fetchPolicy: 'cache-first',
     },
   );
@@ -59,7 +59,7 @@ export function useCommentStats(postId: number | undefined) {
     GET_COMMENT_STATS,
     {
       variables: { postId: postId ?? 0 },
-      skip: !postId,
+      skip: postId === undefined,
       fetchPolicy: 'cache-first',
     },
   );

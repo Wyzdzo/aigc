@@ -125,21 +125,30 @@ describe('BlogQueryService', () => {
   });
 
   describe('getPosts', () => {
+    /** 创建通用 queryBuilder mock（含 addOrderBy） */
+    function createQueryBuilderMock(overrides: Record<string, any> = {}) {
+      return {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+        ...overrides,
+      };
+    }
+
     it('should return paginated posts', async () => {
       const mockPosts: Partial<BlogPostEntity>[] = [
         { id: 1, title: 'Post 1', slug: 'post-1', status: PostStatus.PUBLISHED },
         { id: 2, title: 'Post 2', slug: 'post-2', status: PostStatus.PUBLISHED },
       ];
 
-      const queryBuilderMock = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        innerJoin: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
+      const queryBuilderMock = createQueryBuilderMock({
         getManyAndCount: jest.fn().mockResolvedValue([mockPosts, 10]),
-      };
+      });
 
       jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
 
@@ -154,15 +163,7 @@ describe('BlogQueryService', () => {
     });
 
     it('should filter posts by category', async () => {
-      const queryBuilderMock = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        innerJoin: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-      };
+      const queryBuilderMock = createQueryBuilderMock();
 
       jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
 
@@ -176,15 +177,7 @@ describe('BlogQueryService', () => {
     });
 
     it('should filter posts by keyword', async () => {
-      const queryBuilderMock = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        innerJoin: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-      };
+      const queryBuilderMock = createQueryBuilderMock();
 
       jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
 
@@ -199,15 +192,7 @@ describe('BlogQueryService', () => {
     });
 
     it('should filter posts by tag', async () => {
-      const queryBuilderMock = {
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        innerJoin: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-      };
+      const queryBuilderMock = createQueryBuilderMock();
 
       jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
 
@@ -220,6 +205,45 @@ describe('BlogQueryService', () => {
         'pt',
         'pt.postId = post.id',
       );
+    });
+
+    it('should order by isTop DESC first, then by specified field', async () => {
+      const queryBuilderMock = createQueryBuilderMock();
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getPosts({
+        options: { orderBy: 'createdAt', orderDirection: 'DESC' },
+      });
+
+      // 置顶优先排序
+      expect(queryBuilderMock.orderBy).toHaveBeenCalledWith('post.isTop', 'DESC');
+      // 其次按指定字段排序
+      expect(queryBuilderMock.addOrderBy).toHaveBeenCalledWith('post.createdAt', 'DESC');
+    });
+
+    it('should default to createdAt DESC when no orderBy specified', async () => {
+      const queryBuilderMock = createQueryBuilderMock();
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getPosts({ options: {} });
+
+      expect(queryBuilderMock.orderBy).toHaveBeenCalledWith('post.isTop', 'DESC');
+      expect(queryBuilderMock.addOrderBy).toHaveBeenCalledWith('post.createdAt', 'DESC');
+    });
+
+    it('should support ordering by viewCount ASC with isTop priority', async () => {
+      const queryBuilderMock = createQueryBuilderMock();
+
+      jest.spyOn(postRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getPosts({
+        options: { orderBy: 'viewCount', orderDirection: 'ASC' },
+      });
+
+      expect(queryBuilderMock.orderBy).toHaveBeenCalledWith('post.isTop', 'DESC');
+      expect(queryBuilderMock.addOrderBy).toHaveBeenCalledWith('post.viewCount', 'ASC');
     });
   });
 
@@ -379,6 +403,27 @@ describe('BlogQueryService', () => {
 
       expect(result.items.length).toBe(2);
       expect(result.total).toBe(10);
+    });
+
+    it('should filter by postId=0 for guestbook comments', async () => {
+      const queryBuilderMock = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      };
+
+      jest.spyOn(commentRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
+
+      await service.getComments({
+        options: { postId: 0, status: CommentStatus.APPROVED, page: 1, pageSize: 20 },
+      });
+
+      // postId=0 should still trigger the WHERE clause (not be treated as falsy)
+      expect(queryBuilderMock.where).toHaveBeenCalledWith('comment.postId = :postId', { postId: 0 });
+      expect(queryBuilderMock.andWhere).toHaveBeenCalledWith('comment.status = :status', { status: CommentStatus.APPROVED });
     });
   });
 

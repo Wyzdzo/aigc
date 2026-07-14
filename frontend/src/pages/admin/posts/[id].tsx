@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { Button, Card, Form, Input, message, Select, Space, Spin, Switch, Upload } from 'antd';
+import { App, Button, Card, Form, Input, Select, Space, Spin, Switch, Upload } from 'antd';
 import { ArrowLeftOutlined, FolderOpenOutlined, SaveOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router';
 
@@ -23,6 +23,7 @@ export function AdminPostEditPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id && id !== 'new';
+  const { message: messageApi } = App.useApp();
 
   const [form] = Form.useForm();
   const [content, setContent] = useState('');
@@ -69,7 +70,7 @@ export function AdminPostEditPage() {
     categoryId?: number;
   }) => {
     if (!values.title?.trim()) {
-      message.error('请输入文章标题');
+      messageApi.error('请输入文章标题');
       return;
     }
 
@@ -88,17 +89,17 @@ export function AdminPostEditPage() {
     try {
       if (isEdit && id) {
         await updatePost(Number(id), createInput);
-        message.success('文章更新成功');
+        messageApi.success('文章更新成功');
       } else {
         await createPost(createInput);
-        message.success('文章创建成功');
+        messageApi.success('文章创建成功');
         navigate('/admin/posts');
         return;
       }
     } catch (err) {
       console.error('保存文章失败:', err);
       const msg = err instanceof Error ? err.message : '保存失败，请重试';
-      message.error(msg);
+      messageApi.error(msg);
     }
   };
 
@@ -245,15 +246,15 @@ export function AdminPostEditPage() {
                               if (url) {
                                 form.setFieldsValue({ coverImage: url });
                                 setCoverPreview(url);
-                                message.success('封面上传成功');
+                                messageApi.success('封面上传成功');
                               } else {
-                                message.error('上传失败');
+                                messageApi.error('上传失败');
                               }
                             } else {
-                              message.error('上传失败');
+                              messageApi.error('上传失败');
                             }
                           } catch {
-                            message.error('上传失败');
+                            messageApi.error('上传失败');
                           }
                           return false;
                         }}

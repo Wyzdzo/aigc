@@ -1,7 +1,6 @@
 import { MockedProvider } from '@apollo/client/testing/react';
 import { renderHook, waitFor } from '@testing-library/react';
-import { message } from 'antd';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CREATE_COMMENT } from '../../infrastructure/graphql/mutations';
 import { GET_COMMENTS } from '../../infrastructure/graphql/queries';
@@ -30,12 +29,6 @@ describe('useCreateComment', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
-  beforeEach(() => {
-    vi.spyOn(message, 'success').mockClear();
-    vi.spyOn(message, 'info').mockClear();
-    vi.spyOn(message, 'error').mockClear();
-  });
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -79,13 +72,9 @@ describe('useCreateComment', () => {
 
       expect(result.current.loading).toBe(false);
 
-      const success = await result.current.createComment(mockCommentInput);
+      const res = await result.current.createComment(mockCommentInput);
 
-      await waitFor(() => {
-        expect(message.success).toHaveBeenCalledWith('评论发布成功');
-      });
-
-      expect(success).toBe(true);
+      expect(res).toBe('success');
     });
 
     it('should create reply comment successfully', async () => {
@@ -131,9 +120,9 @@ describe('useCreateComment', () => {
         wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
       });
 
-      const success = await result.current.createComment(replyInput);
+      const res = await result.current.createComment(replyInput);
 
-      expect(success).toBe(true);
+      expect(res).toBe('success');
     });
   });
 
@@ -153,13 +142,9 @@ describe('useCreateComment', () => {
         wrapper: ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>,
       });
 
-      const success = await result.current.createComment(mockCommentInput);
+      const res = await result.current.createComment(mockCommentInput);
 
-      await waitFor(() => {
-        expect(message.error).toHaveBeenCalledWith('评论发布失败，请稍后重试');
-      });
-
-      expect(success).toBe(false);
+      expect(res).toBe('error');
     });
 
     it('should block duplicate submission', async () => {
@@ -182,21 +167,12 @@ describe('useCreateComment', () => {
       });
 
       // 第一次提交
-      await result.current.createComment(mockCommentInput);
-
-      await waitFor(() => {
-        expect(message.success).toHaveBeenCalled();
-      });
+      const first = await result.current.createComment(mockCommentInput);
+      expect(first).toBe('success');
 
       // 第二次提交相同内容（应该被拦截）
-      await result.current.createComment(mockCommentInput);
-
-      await waitFor(() => {
-        expect(message.info).toHaveBeenCalledWith('请勿重复提交');
-      });
-
-      // 验证 mutation 只被调用一次
-      // （由于 mock 只定义了一次，第二次会被忽略）
+      const second = await result.current.createComment(mockCommentInput);
+      expect(second).toBe('duplicate');
     });
   });
 
@@ -213,6 +189,7 @@ describe('useCreateComment', () => {
               createComment: mockCreatedComment,
             },
           },
+          delay: 100,
         },
       ];
 

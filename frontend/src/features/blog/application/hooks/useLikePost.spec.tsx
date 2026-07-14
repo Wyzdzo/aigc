@@ -1,8 +1,7 @@
 // src/features/blog/application/hooks/useLikePost.spec.tsx
 import { MockedProvider } from '@apollo/client/testing/react';
 import { renderHook, waitFor } from '@testing-library/react';
-import { message } from 'antd';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LIKE_POST } from '../../infrastructure/graphql/mutations';
 import { mockPosts } from '../../infrastructure/mock/mock';
@@ -11,12 +10,6 @@ import { useLikePost } from './useLikePost';
 
 describe('useLikePost', () => {
   const mockPost = mockPosts[0];
-
-  beforeEach(() => {
-    vi.spyOn(message, 'success').mockClear();
-    vi.spyOn(message, 'info').mockClear();
-    vi.spyOn(message, 'error').mockClear();
-  });
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -49,13 +42,11 @@ describe('useLikePost', () => {
 
       expect(result.current.loading).toBe(false);
 
-      const success = await result.current.likePost(mockPost.id);
+      const res = await result.current.likePost(mockPost.id);
 
       await waitFor(() => {
-        expect(success).toBe(true);
+        expect(res).toBe('success');
       });
-
-      expect(message.success).toHaveBeenCalledWith('点赞成功');
     });
 
     it('should return loading state while mutation is in progress', async () => {
@@ -100,7 +91,7 @@ describe('useLikePost', () => {
   });
 
   describe('error path', () => {
-    it('should return false and show error message on mutation failure', async () => {
+    it('should return error on mutation failure', async () => {
       const mocks = [
         {
           request: {
@@ -117,13 +108,11 @@ describe('useLikePost', () => {
         ),
       });
 
-      const success = await result.current.likePost(mockPost.id);
+      const res = await result.current.likePost(mockPost.id);
 
       await waitFor(() => {
-        expect(success).toBe(false);
+        expect(res).toBe('error');
       });
-
-      expect(message.error).toHaveBeenCalledWith('点赞失败，请稍后重试');
     });
 
     it('should block duplicate likes for same post', async () => {
@@ -151,16 +140,14 @@ describe('useLikePost', () => {
       });
 
       const firstLike = await result.current.likePost(mockPost.id);
-      expect(firstLike).toBe(true);
+      expect(firstLike).toBe('success');
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
 
       const secondLike = await result.current.likePost(mockPost.id);
-      expect(secondLike).toBe(false);
-
-      expect(message.info).toHaveBeenCalledWith('您已经点过赞了');
+      expect(secondLike).toBe('already_liked');
     });
 
     it('should allow liking different posts', async () => {
@@ -205,14 +192,14 @@ describe('useLikePost', () => {
       });
 
       const like1 = await result.current.likePost(postId1);
-      expect(like1).toBe(true);
+      expect(like1).toBe('success');
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
 
       const like2 = await result.current.likePost(postId2);
-      expect(like2).toBe(true);
+      expect(like2).toBe('success');
     });
   });
 
