@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { CalendarOutlined, CommentOutlined, EyeOutlined, FilterOutlined, LikeOutlined, UserOutlined } from '@ant-design/icons';
-import { App, Avatar, Button, Card, Drawer, Empty, List, Space, Spin, Tag, Tooltip, Typography } from 'antd';
+import { App, Avatar, Button, Card, Drawer, Empty, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import { Link, useSearchParams } from 'react-router';
 
 import { CategoryTree, SearchHighlight, SearchInput, TagCloud } from '@/widgets/blog';
@@ -138,61 +138,65 @@ function PostListItem({
   const { message: messageApi } = App.useApp();
 
   return (
-    <List.Item
+    <div
       className="py-4"
-      actions={[
-        <span key="views">
-          <EyeOutlined /> {post.viewCount}
-        </span>,
-        <Tooltip title="点赞">
-          <button
-            type="button"
-            key="likes"
-            className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
-            onClick={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const result = await likePost(post.id);
-              if (result === 'already_liked') messageApi.info('您已经点过赞了');
-              else if (result === 'success') messageApi.success('点赞成功');
-              else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
-            }}
-            disabled={likeLoading}
-          >
-            <LikeOutlined /> {post.likeCount}
-          </button>
-        </Tooltip>,
-        ...(post.commentCount != null ? [
-          <span key="comments">
-            <CommentOutlined /> {post.commentCount}
-          </span>,
-        ] : []),
-      ]}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        borderBottom: '1px solid var(--ant-color-border-secondary)',
+      }}
     >
-      <List.Item.Meta
-        title={
-          <Link to={`/blog/${post.slug}`}>
-            <Title level={5} className="mb-0">
-              <SearchHighlight text={post.title} keyword={keyword ?? ''} />
-            </Title>
-          </Link>
-        }
-        description={
-          <>
-            <Paragraph
-              type="secondary"
-              ellipsis={{ rows: 2 }}
-              className="mb-2"
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Link to={`/blog/${post.slug}`}>
+          <Title level={5} className="mb-0">
+            <SearchHighlight text={post.title} keyword={keyword ?? ''} />
+          </Title>
+        </Link>
+        <Paragraph
+          type="secondary"
+          ellipsis={{ rows: 2 }}
+          className="mb-2"
+        >
+          <SearchHighlight text={post.summary ?? ''} keyword={keyword ?? ''} />
+        </Paragraph>
+        <Space size="middle">
+          <CalendarOutlined /> {formatDate(post.createdAt)}
+        </Space>
+      </div>
+      <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0, marginLeft: 24 }}>
+        <li>
+          <span>
+            <EyeOutlined /> {post.viewCount}
+          </span>
+        </li>
+        <li>
+          <Tooltip title="点赞">
+            <button
+              type="button"
+              className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const result = await likePost(post.id);
+                if (result === 'already_liked') messageApi.info('您已经点过赞了');
+                else if (result === 'success') messageApi.success('点赞成功');
+                else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
+              }}
+              disabled={likeLoading}
             >
-              <SearchHighlight text={post.summary ?? ''} keyword={keyword ?? ''} />
-            </Paragraph>
-            <Space size="middle">
-              <CalendarOutlined /> {formatDate(post.createdAt)}
-            </Space>
-          </>
-        }
-      />
-    </List.Item>
+              <LikeOutlined /> {post.likeCount}
+            </button>
+          </Tooltip>
+        </li>
+        {post.commentCount != null && (
+          <li>
+            <span>
+              <CommentOutlined /> {post.commentCount}
+            </span>
+          </li>
+        )}
+      </ul>
+    </div>
   );
 }
 
@@ -492,10 +496,9 @@ export function BlogHomePage() {
 
               {/* 文章列表 */}
               <Card style={{ borderRadius: 'var(--radius-card)' }}>
-                <List
-                  dataSource={regularPosts}
-                  renderItem={(post) => <PostListItem post={post} keyword={keyword} />}
-                />
+                {regularPosts.map((post) => (
+                  <PostListItem key={post.id} post={post} keyword={keyword} />
+                ))}
 
                 {/* 无限滚动哨兵 + 加载更多 */}
                 <div ref={sentinelRef} className="text-center py-6">

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { MessageOutlined } from '@ant-design/icons';
-import { Empty, List, Spin } from 'antd';
+import { Empty, Spin } from 'antd';
 
 import type { BlogComment } from '@/entities/blog';
 
@@ -66,7 +66,7 @@ export function GuestbookList({
     return (
       <div className="my-10">
         <Empty
-          image={<MessageOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
+          image={<MessageOutlined style={{ fontSize: 48, color: 'var(--ant-color-text-quaternary)' }} />}
           description="暂无留言，快来写下第一条留言吧~"
         />
       </div>
@@ -75,28 +75,25 @@ export function GuestbookList({
 
   return (
     <div>
-      <List
-        dataSource={rootComments}
-        renderItem={(comment) => (
-          <List.Item
-            key={comment.id}
-            style={{
-              padding: '8px 0',
-              borderBottom: '1px solid var(--ant-color-border-secondary)',
-            }}
-          >
-            <div className="w-full">
-              <CommentItem
-                comment={comment}
-                postId={GUESTBOOK_POST_ID}
-                childComments={childCommentsMap}
-                depth={0}
-                onReplySuccess={onReplySuccess}
-              />
-            </div>
-          </List.Item>
-        )}
-      />
+      {rootComments.map((comment) => (
+        <div
+          key={comment.id}
+          style={{
+            padding: '8px 0',
+            borderBottom: '1px solid var(--ant-color-border-secondary)',
+          }}
+        >
+          <div className="w-full">
+            <CommentItem
+              comment={comment}
+              postId={GUESTBOOK_POST_ID}
+              childComments={childCommentsMap}
+              depth={0}
+              onReplySuccess={onReplySuccess}
+            />
+          </div>
+        </div>
+      ))}
       {orphanComments.length > 0 && (
         <div
           className="mt-4 pt-4"

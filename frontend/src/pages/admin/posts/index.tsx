@@ -142,7 +142,7 @@ export function AdminPostsPage() {
       align: 'center' as const,
       render: (isTop: boolean) =>
         isTop ? (
-          <StarOutlined style={{ color: '#faad14' }} />
+          <StarOutlined style={{ color: 'var(--ant-color-warning)' }} />
         ) : null,
     },
     {

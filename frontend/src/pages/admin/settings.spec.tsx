@@ -6,6 +6,7 @@ import { MockedProvider } from '@apollo/client/testing/react';
 import type { MockedResponse } from '@apollo/client/testing';
 import { InMemoryCache } from '@apollo/client/cache';
 import { BrowserRouter } from 'react-router';
+import { App as AntApp } from 'antd';
 
 import { GET_SETTINGS } from '@/features/settings';
 
@@ -39,7 +40,9 @@ function createWrapper(mocks: MockedResponse[] = []) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <MockedProvider mocks={mocks} cache={new InMemoryCache()}>
-        <BrowserRouter>{children}</BrowserRouter>
+        <BrowserRouter>
+          <AntApp>{children}</AntApp>
+        </BrowserRouter>
       </MockedProvider>
     );
   };
@@ -75,7 +78,7 @@ describe('AdminSettingsPage', () => {
 
       expect(screen.getByText('网站设置')).toBeTruthy();
       expect(screen.getByText('博主信息')).toBeTruthy();
-      expect(screen.getByText('修改密码')).toBeTruthy();
+      expect(screen.getAllByText('修改密码').length).toBeGreaterThan(0);
     });
 
     it('should render announcement field in site settings', async () => {

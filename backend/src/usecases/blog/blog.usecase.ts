@@ -1,7 +1,7 @@
 // src/usecases/blog/blog.usecase.ts
 
 import type { PersistenceTransactionContext } from '@app-types/common/transaction.types';
-import { PostStatus, CommentStatus } from '@app-types/models/blog/blog.types';
+import { PostStatus, CommentStatus, LinkStatus } from '@app-types/models/blog/blog.types';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   BlogService,
@@ -544,6 +544,112 @@ export class BlogUsecase {
       title: post.title,
       slug: post.slug,
     };
+  }
+
+  /** 读委托：返回完整实体供 Resolver 映射 DTO */
+  async findPostById(params: { id: number; transactionContext?: PersistenceTransactionContext }) {
+    return this.blogQueryService.getPostById(params);
+  }
+
+  /** 读委托：返回完整实体供 Resolver 映射 DTO */
+  async findPostBySlug(params: {
+    slug: string;
+    transactionContext?: PersistenceTransactionContext;
+  }) {
+    return this.blogQueryService.getPostBySlug(params);
+  }
+
+  /** @deprecated Resolver should call this via Usecase; will be the only path after migration */
+  async getPosts(params: {
+    options: {
+      page?: number;
+      pageSize?: number;
+      categoryId?: number;
+      tagId?: number;
+      status?: PostStatus;
+      keyword?: string;
+      orderBy?: 'createdAt' | 'viewCount' | 'likeCount';
+      orderDirection?: 'ASC' | 'DESC';
+    };
+    transactionContext?: PersistenceTransactionContext;
+  }) {
+    return this.blogQueryService.getPosts(params);
+  }
+
+  async getTopPosts(params: Record<string, unknown>) {
+    return this.blogQueryService.getTopPosts(params);
+  }
+
+  async getCommentCountByPost(params: { postId: number }) {
+    return this.blogQueryService.getCommentCountByPost(params);
+  }
+
+  async getCommentCountByPosts(params: { postIds: number[] }) {
+    return this.blogQueryService.getCommentCountByPosts(params);
+  }
+
+  async getAllCategories(params: Record<string, unknown>) {
+    return this.blogQueryService.getAllCategories(params);
+  }
+
+  async getCategoryById(params: { id: number }) {
+    return this.blogQueryService.getCategoryById(params);
+  }
+
+  async getCategoryBySlug(params: { slug: string }) {
+    return this.blogQueryService.getCategoryBySlug(params);
+  }
+
+  async getCategoryTree(params: Record<string, unknown>) {
+    return this.blogQueryService.getCategoryTree(params);
+  }
+
+  async getAllTags(params: Record<string, unknown>) {
+    return this.blogQueryService.getAllTags(params);
+  }
+
+  async getTagById(params: { id: number }) {
+    return this.blogQueryService.getTagById(params);
+  }
+
+  async getPostTags(params: { postId: number }) {
+    return this.blogQueryService.getPostTags(params);
+  }
+
+  async getComments(params: {
+    options: {
+      postId?: number;
+      status?: CommentStatus;
+      page?: number;
+      pageSize?: number;
+    };
+    transactionContext?: PersistenceTransactionContext;
+  }) {
+    return this.blogQueryService.getComments(params);
+  }
+
+  async getPostStats(params: Record<string, unknown>) {
+    return this.blogQueryService.getPostStats(params);
+  }
+
+  async getCommentStats(params: Record<string, unknown>) {
+    return this.blogQueryService.getCommentStats(params);
+  }
+
+  async getCategoryStats(params: Record<string, unknown>) {
+    return this.blogQueryService.getCategoryStats(params);
+  }
+
+  async getTagStats(params: Record<string, unknown>) {
+    return this.blogQueryService.getTagStats(params);
+  }
+
+  async getLinkStats(params: Record<string, unknown>) {
+    return this.blogQueryService.getLinkStats(params);
+  }
+
+  async getAllLinks(params: { status?: LinkStatus; transactionContext?: PersistenceTransactionContext } = {}) {
+    return this.blogQueryService.getAllLinks(params);
   }
 
   // ==================== Notification Helpers ====================

@@ -4,6 +4,7 @@ import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { App as AntApp } from 'antd';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { GET_CATEGORY_TREE, GET_POSTS, GET_TAGS } from '@/features/blog';
@@ -108,7 +109,9 @@ const mockPosts: BlogPost[] = [
 const createWrapper = (mocks: readonly MockedResponse[]) => {
   return ({ children }: { children: React.ReactNode }) => (
     <MemoryRouter>
-      <MockedProvider mocks={mocks}>{children}</MockedProvider>
+      <MockedProvider mocks={mocks}>
+        <AntApp>{children}</AntApp>
+      </MockedProvider>
     </MemoryRouter>
   );
 };
@@ -164,9 +167,9 @@ describe('BlogHomePage', () => {
 
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
-      // 等待数据加载
+      // 等待数据加载 - 置顶标签出现
       await waitFor(() => {
-        expect(container.querySelector('.ant-tag')).toBeTruthy();
+        expect(screen.getAllByText(/置顶/).length).toBeGreaterThan(0);
       });
 
       // 置顶文章应该有置顶标签
@@ -196,9 +199,9 @@ describe('BlogHomePage', () => {
 
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
-      // 等待数据加载
+      // 等待数据加载 - PostListItem renders post title
       await waitFor(() => {
-        expect(container.querySelector('.ant-list-item')).toBeTruthy();
+        expect(screen.getAllByText('TypeScript 高级类型技巧').length).toBeGreaterThan(0);
       });
 
       // 非置顶文章应该显示在列表中
@@ -323,9 +326,9 @@ describe('BlogHomePage', () => {
 
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
-      // 等待加载完成
+      // 等待加载完成 - Empty component renders
       await waitFor(() => {
-        expect(container.querySelector('.ant-list')).toBeTruthy();
+        expect(screen.getAllByText('暂无文章').length).toBeGreaterThan(0);
       });
 
       expect(screen.getAllByText('暂无文章').length).toBeGreaterThan(0);
@@ -354,7 +357,7 @@ describe('BlogHomePage', () => {
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.querySelector('.ant-tag')).toBeTruthy();
+        expect(screen.getAllByText(/置顶/).length).toBeGreaterThan(0);
       });
 
       expect(screen.getAllByText(/置顶/).length).toBeGreaterThan(0);
@@ -392,11 +395,8 @@ describe('BlogHomePage', () => {
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.querySelector('.ant-list-item')).toBeTruthy();
+        expect(screen.getAllByText('React 18 新特性详解').length).toBeGreaterThan(0);
       });
-
-      // 文章标题应该显示，但没有封面图片
-      expect(screen.getAllByText('React 18 新特性详解').length).toBeGreaterThan(0);
     });
 
     it('should format date correctly', async () => {
@@ -422,7 +422,7 @@ describe('BlogHomePage', () => {
       const { container } = render(<BlogHomePage />, { wrapper: createWrapper(mocks) });
 
       await waitFor(() => {
-        expect(container.querySelector('.ant-list-item')).toBeTruthy();
+        expect(screen.getAllByText('React 18 新特性详解').length).toBeGreaterThan(0);
       });
 
       // 检查日期格式化 - 使用正则匹配

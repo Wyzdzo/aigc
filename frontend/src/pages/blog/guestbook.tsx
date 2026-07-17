@@ -35,18 +35,13 @@ export function BlogGuestbookPage() {
     <div>
       {/* 留言说明 */}
       <Card
-        style={{
-          marginBottom: 24,
-          borderRadius: 8,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          border: 'none',
-        }}
+        style={{ marginBottom: 24, borderRadius: 'var(--radius-card)' }}
         styles={{ body: { padding: isMobile ? 16 : 24 } }}
       >
-        <Title level={4} style={{ color: '#fff', marginBottom: 8 }}>
+        <Title level={4} style={{ marginBottom: 8 }}>
           留言板
         </Title>
-        <p style={{ color: 'rgba(255,255,255,0.9)', marginBottom: 0 }}>
+        <p style={{ color: 'var(--ant-color-text-secondary)', marginBottom: 0 }}>
           有什么想说的？想吐槽的？想交流的？都在这里留言吧~
           博主会认真阅读每一条留言，并尽快回复。
         </p>
@@ -54,7 +49,7 @@ export function BlogGuestbookPage() {
 
       {/* 留言表单 */}
       <Card
-        style={{ borderRadius: 8, marginBottom: 24 }}
+        style={{ borderRadius: 'var(--radius-card)', marginBottom: 24 }}
         styles={{ body: { padding: isMobile ? 16 : 24 } }}
       >
         <Title level={5} style={{ marginBottom: 16 }}>
@@ -71,7 +66,7 @@ export function BlogGuestbookPage() {
 
       {/* 留言列表 */}
       <Card
-        style={{ borderRadius: 8 }}
+        style={{ borderRadius: 'var(--radius-card)' }}
         styles={{ body: { padding: isMobile ? 16 : 24 } }}
       >
         <Title level={5} style={{ marginBottom: 16 }}>

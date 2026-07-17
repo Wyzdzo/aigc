@@ -138,6 +138,7 @@ export function AdminSettingsPage() {
       key: 'site',
       label: '网站设置',
       icon: <SettingOutlined />,
+      forceRender: true,
       children: (
         <Spin spinning={loading}>
           <Form
@@ -182,6 +183,7 @@ export function AdminSettingsPage() {
       key: 'blogger',
       label: '博主信息',
       icon: <UserOutlined />,
+      forceRender: true,
       children: (
         <Spin spinning={loading}>
           <Form
@@ -226,6 +228,7 @@ export function AdminSettingsPage() {
       key: 'password',
       label: '修改密码',
       icon: <LockOutlined />,
+      forceRender: true,
       children: (
         <Form
           form={passwordForm}

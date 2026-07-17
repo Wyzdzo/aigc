@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined } from '@ant-design/icons';
-import { Badge, Card, Collapse, Empty, List, Space, Spin, Typography } from 'antd';
+import { Badge, Card, Collapse, Empty, Space, Spin, Typography } from 'antd';
 import { Link } from 'react-router';
 
 import { SeoMeta } from '@/widgets/seo';
@@ -183,10 +183,15 @@ export function ArchivesPage() {
               </div>
             ),
             children: (
-              <List
-                dataSource={archive.posts}
-                renderItem={(post) => (
-                  <List.Item style={{ padding: '12px 0' }}>
+              <>
+                {archive.posts.map((post) => (
+                  <div
+                    key={post.id}
+                    style={{
+                      padding: '12px 0',
+                      borderBottom: '1px solid var(--ant-color-border-secondary)',
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 16, width: '100%', flexWrap: 'wrap' }}>
                       {/* 日期 */}
                       <Text type="secondary" style={{ minWidth: 60 }}>
@@ -211,9 +216,9 @@ export function ArchivesPage() {
                         </Text>
                       </Space>
                     </div>
-                  </List.Item>
-                )}
-              />
+                  </div>
+                ))}
+              </>
             ),
           }))}
         />

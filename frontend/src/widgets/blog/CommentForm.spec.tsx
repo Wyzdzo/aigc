@@ -10,22 +10,21 @@ import { CREATE_COMMENT, GET_COMMENTS } from '@/features/blog';
 import { CommentForm } from './CommentForm';
 
 // Mock App.useApp
-const { mockMessageApi } = vi.hoisted(() => {
-  const mockMessageApi = {
+const { mockMessageApi } = vi.hoisted(() => ({
+  mockMessageApi: {
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
     warning: vi.fn(),
-  };
-  return { mockMessageApi };
-});
+  },
+}));
 
 vi.mock('antd', async () => {
   const actual = await vi.importActual('antd');
   return {
     ...actual,
     App: {
-      ...((actual as any).App || {}),
+      ...((actual as Record<string, unknown>).App || {}),
       useApp: vi.fn(() => ({
         message: mockMessageApi,
         notification: {},

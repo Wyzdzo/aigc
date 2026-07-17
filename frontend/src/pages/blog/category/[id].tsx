@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CalendarOutlined, EyeOutlined, LikeOutlined } from '@ant-design/icons';
-import { App, Breadcrumb, Card, Empty, List, Space, Spin, Tooltip, Typography } from 'antd';
+import { App, Breadcrumb, Card, Empty, Pagination, Space, Spin, Tooltip, Typography } from 'antd';
 import { Link, useParams } from 'react-router';
 
 import { useCategories, useLikePost, usePosts } from '@/features/blog';
@@ -30,56 +30,58 @@ function PostListItem({ post }: { post: import('@/entities/blog').BlogPost }) {
   const { message: messageApi } = App.useApp();
 
   return (
-    <List.Item
-      style={{ padding: '16px 0' }}
-      actions={[
-        <span key="views">
-          <EyeOutlined /> {post.viewCount}
-        </span>,
-        <Tooltip title="点赞">
-          <button
-            type="button"
-            key="likes"
-            className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
-            onClick={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const result = await likePost(post.id);
-              if (result === 'already_liked') messageApi.info('您已经点过赞了');
-              else if (result === 'success') messageApi.success('点赞成功');
-              else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
-            }}
-            disabled={likeLoading}
-          >
-            <LikeOutlined /> {post.likeCount}
-          </button>
-        </Tooltip>,
-      ]}
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '16px 0',
+        borderBottom: '1px solid var(--ant-color-border-secondary)',
+      }}
     >
-      <List.Item.Meta
-        title={
-          <Link to={`/blog/${post.slug}`}>
-            <Title level={5} style={{ marginBottom: 0 }}>
-              {post.title}
-            </Title>
-          </Link>
-        }
-        description={
-          <>
-            <Paragraph
-              type="secondary"
-              ellipsis={{ rows: 2 }}
-              style={{ marginBottom: 8 }}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Link to={`/blog/${post.slug}`}>
+          <Title level={5} style={{ marginBottom: 0 }}>
+            {post.title}
+          </Title>
+        </Link>
+        <Paragraph
+          type="secondary"
+          ellipsis={{ rows: 2 }}
+          style={{ marginBottom: 8 }}
+        >
+          {post.summary ?? ''}
+        </Paragraph>
+        <Space size="middle">
+          <CalendarOutlined /> {formatDate(post.createdAt)}
+        </Space>
+      </div>
+      <ul style={{ display: 'flex', gap: 16, listStyle: 'none', margin: 0, padding: 0, marginLeft: 24 }}>
+        <li>
+          <span>
+            <EyeOutlined /> {post.viewCount}
+          </span>
+        </li>
+        <li>
+          <Tooltip title="点赞">
+            <button
+              type="button"
+              className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer bg-transparent border-none p-0"
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const result = await likePost(post.id);
+                if (result === 'already_liked') messageApi.info('您已经点过赞了');
+                else if (result === 'success') messageApi.success('点赞成功');
+                else if (result === 'error') messageApi.error('点赞失败，请稍后重试');
+              }}
+              disabled={likeLoading}
             >
-              {post.summary ?? ''}
-            </Paragraph>
-            <Space size="middle">
-              <CalendarOutlined /> {formatDate(post.createdAt)}
-            </Space>
-          </>
-        }
-      />
-    </List.Item>
+              <LikeOutlined /> {post.likeCount}
+            </button>
+          </Tooltip>
+        </li>
+      </ul>
+    </div>
   );
 }
 
@@ -174,18 +176,18 @@ export function BlogCategoryPage() {
           {/* 文章列表 */}
           {posts.length > 0 ? (
             <Card style={{ borderRadius: 8 }}>
-              <List
-                dataSource={posts}
-                renderItem={(post) => <PostListItem post={post} />}
-                pagination={{
-                  current: currentPage,
-                  pageSize: pageSize,
-                  total: total,
-                  onChange: handlePageChange,
-                  showSizeChanger: true,
-                  pageSizeOptions: ['10', '20', '50'],
-                  showTotal: (total) => `共 ${total} 篇文章`,
-                }}
+              {posts.map((post) => (
+                <PostListItem key={post.id} post={post} />
+              ))}
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={total}
+                onChange={handlePageChange}
+                showSizeChanger
+                pageSizeOptions={['10', '20', '50']}
+                showTotal={(t) => `共 ${t} 篇文章`}
+                style={{ textAlign: 'center', marginTop: 16 }}
               />
             </Card>
           ) : (

@@ -21,6 +21,25 @@ export type BlogQueryServiceMock = {
   readonly getPostById: jest.Mock<Promise<any>>;
   readonly getPostBySlug: jest.Mock<Promise<any>>;
   readonly getCommentById: jest.Mock;
+  readonly getPosts: jest.Mock;
+  readonly getTopPosts: jest.Mock;
+  readonly getCommentCountByPost: jest.Mock;
+  readonly getCommentCountByPosts: jest.Mock;
+  readonly getAllCategories: jest.Mock;
+  readonly getCategoryById: jest.Mock;
+  readonly getCategoryBySlug: jest.Mock;
+  readonly getCategoryTree: jest.Mock;
+  readonly getAllTags: jest.Mock;
+  readonly getTagById: jest.Mock;
+  readonly getPostTags: jest.Mock;
+  readonly getComments: jest.Mock;
+  readonly getPostStats: jest.Mock;
+  readonly getCommentStats: jest.Mock;
+  readonly getCategoryStats: jest.Mock;
+  readonly getTagStats: jest.Mock;
+  readonly getLinkStats: jest.Mock;
+  readonly getAllLinks: jest.Mock;
+  readonly getAdjacentPosts: jest.Mock;
 };
 
 export type NotifyCommentUsecaseMock = {
@@ -51,6 +70,25 @@ export function createBlogQueryServiceMock(): BlogQueryServiceMock {
     getPostById: jest.fn(),
     getPostBySlug: jest.fn(),
     getCommentById: jest.fn(),
+    getPosts: jest.fn(),
+    getTopPosts: jest.fn(),
+    getCommentCountByPost: jest.fn(),
+    getCommentCountByPosts: jest.fn(),
+    getAllCategories: jest.fn(),
+    getCategoryById: jest.fn(),
+    getCategoryBySlug: jest.fn(),
+    getCategoryTree: jest.fn(),
+    getAllTags: jest.fn(),
+    getTagById: jest.fn(),
+    getPostTags: jest.fn(),
+    getComments: jest.fn(),
+    getPostStats: jest.fn(),
+    getCommentStats: jest.fn(),
+    getCategoryStats: jest.fn(),
+    getTagStats: jest.fn(),
+    getLinkStats: jest.fn(),
+    getAllLinks: jest.fn(),
+    getAdjacentPosts: jest.fn(),
   };
 }
 

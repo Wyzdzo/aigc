@@ -11,7 +11,6 @@ import { CreateBlogCommentInput } from './dto/create-blog-comment.input';
 import { BlogPostsArgs } from './dto/blog-posts.args';
 import { BlogPostsResult } from './dto/blog-posts.result';
 import { BlogPostNavigationDTO } from './dto/blog-post-navigation.dto';
-import { BlogQueryService } from '@src/modules/blog/queries/blog.query.service';
 import {
   BlogUsecase,
   type CategoryResult,
@@ -29,7 +28,6 @@ type OrderDirectionType = 'ASC' | 'DESC';
 @Resolver(() => BlogPostDTO)
 export class BlogResolver {
   constructor(
-    private readonly blogQueryService: BlogQueryService,
     private readonly blogUsecase: BlogUsecase,
   ) {}
 
@@ -37,7 +35,7 @@ export class BlogResolver {
 
   @Query(() => BlogPostsResult, { description: '查询文章列表' })
   async posts(@Args() args: BlogPostsArgs): Promise<BlogPostsResult> {
-    const result = await this.blogQueryService.getPosts({
+    const result = await this.blogUsecase.getPosts({
       options: {
         page: args.page,
         pageSize: args.pageSize,
@@ -52,7 +50,7 @@ export class BlogResolver {
 
     // 批量获取评论数，避免 N+1 查询
     const postIds = result.items.map((p: any) => p.id);
-    const commentCountMap = await this.blogQueryService.getCommentCountByPosts({ postIds });
+    const commentCountMap = await this.blogUsecase.getCommentCountByPosts({ postIds });
 
     return {
       items: result.items.map((p: any) => this.toPostDTO(p, commentCountMap.get(p.id) ?? 0)),
@@ -64,25 +62,25 @@ export class BlogResolver {
 
   @Query(() => BlogPostDTO, { description: '根据 ID 查询文章', nullable: true })
   async post(@Args('id', { type: () => Int }) id: number): Promise<BlogPostDTO | null> {
-    const post = await this.blogQueryService.getPostById({ id });
+    const post = await this.blogUsecase.findPostById({ id });
     if (!post) return null;
-    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: id });
+    const commentCount = await this.blogUsecase.getCommentCountByPost({ postId: id });
     return this.toPostDTO(post, commentCount);
   }
 
   @Query(() => BlogPostDTO, { description: '根据 slug 查询文章', nullable: true })
   async postBySlug(@Args('slug') slug: string): Promise<BlogPostDTO | null> {
-    const post = await this.blogQueryService.getPostBySlug({ slug });
+    const post = await this.blogUsecase.findPostBySlug({ slug });
     if (!post) return null;
-    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: post.id });
+    const commentCount = await this.blogUsecase.getCommentCountByPost({ postId: post.id });
     return this.toPostDTO(post, commentCount);
   }
 
   @Query(() => [BlogPostDTO], { description: '查询置顶文章' })
   async topPosts(): Promise<BlogPostDTO[]> {
-    const posts = await this.blogQueryService.getTopPosts({});
+    const posts = await this.blogUsecase.getTopPosts({});
     const postIds = posts.map((p: any) => p.id);
-    const commentCountMap = await this.blogQueryService.getCommentCountByPosts({ postIds });
+    const commentCountMap = await this.blogUsecase.getCommentCountByPosts({ postIds });
     return posts.map((p: any) => this.toPostDTO(p, commentCountMap.get(p.id) ?? 0));
   }
 
@@ -99,25 +97,25 @@ export class BlogResolver {
 
   @Query(() => [BlogCategoryDTO], { description: '查询所有分类' })
   async categories(): Promise<BlogCategoryDTO[]> {
-    const categories = await this.blogQueryService.getAllCategories({});
+    const categories = await this.blogUsecase.getAllCategories({});
     return categories.map(this.toCategoryDTO);
   }
 
   @Query(() => BlogCategoryDTO, { description: '根据 ID 查询分类', nullable: true })
   async category(@Args('id', { type: () => Int }) id: number): Promise<BlogCategoryDTO | null> {
-    const category = await this.blogQueryService.getCategoryById({ id });
+    const category = await this.blogUsecase.getCategoryById({ id });
     return category ? this.toCategoryDTO(category) : null;
   }
 
   @Query(() => BlogCategoryDTO, { description: '根据 slug 查询分类', nullable: true })
   async categoryBySlug(@Args('slug') slug: string): Promise<BlogCategoryDTO | null> {
-    const category = await this.blogQueryService.getCategoryBySlug({ slug });
+    const category = await this.blogUsecase.getCategoryBySlug({ slug });
     return category ? this.toCategoryDTO(category) : null;
   }
 
   @Query(() => [BlogCategoryDTO], { description: '查询分类树' })
   async categoryTree(): Promise<BlogCategoryDTO[]> {
-    const categories = await this.blogQueryService.getCategoryTree({});
+    const categories = await this.blogUsecase.getCategoryTree({});
     return categories.map((c) => this.toCategoryDTO(c));
   }
 
@@ -125,19 +123,19 @@ export class BlogResolver {
 
   @Query(() => [BlogTagDTO], { description: '查询所有标签' })
   async tags(): Promise<BlogTagDTO[]> {
-    const tags = await this.blogQueryService.getAllTags({});
+    const tags = await this.blogUsecase.getAllTags({});
     return tags.map(this.toTagDTO);
   }
 
   @Query(() => BlogTagDTO, { description: '根据 ID 查询标签', nullable: true })
   async tag(@Args('id', { type: () => Int }) id: number): Promise<BlogTagDTO | null> {
-    const tag = await this.blogQueryService.getTagById({ id });
+    const tag = await this.blogUsecase.getTagById({ id });
     return tag ? this.toTagDTO(tag) : null;
   }
 
   @Query(() => [BlogTagDTO], { description: '查询文章标签' })
   async postTags(@Args('postId', { type: () => Int }) postId: number): Promise<BlogTagDTO[]> {
-    const tags = await this.blogQueryService.getPostTags({ postId });
+    const tags = await this.blogUsecase.getPostTags({ postId });
     return tags.map(this.toTagDTO);
   }
 
@@ -150,7 +148,7 @@ export class BlogResolver {
     @Args('page', { type: () => Int, defaultValue: 1 }) page?: number,
     @Args('pageSize', { type: () => Int, defaultValue: 20 }) pageSize?: number,
   ): Promise<BlogCommentsResult> {
-    const result = await this.blogQueryService.getComments({
+    const result = await this.blogUsecase.getComments({
       options: {
         postId,
         status,
@@ -170,40 +168,40 @@ export class BlogResolver {
 
   @Query(() => PostStatsDTO, { description: '文章统计' })
   async postStats(): Promise<PostStatsDTO> {
-    return await this.blogQueryService.getPostStats({});
+    return await this.blogUsecase.getPostStats({});
   }
 
   @Query(() => CommentStatsDTO, { description: '评论统计' })
   async commentStats(): Promise<CommentStatsDTO> {
-    return await this.blogQueryService.getCommentStats({});
+    return await this.blogUsecase.getCommentStats({});
   }
 
   @Query(() => CategoryStatsDTO, { description: '分类统计' })
   async categoryStats(): Promise<CategoryStatsDTO> {
-    return await this.blogQueryService.getCategoryStats({});
+    return await this.blogUsecase.getCategoryStats({});
   }
 
   @Query(() => TagStatsDTO, { description: '标签统计' })
   async tagStats(): Promise<TagStatsDTO> {
-    return await this.blogQueryService.getTagStats({});
+    return await this.blogUsecase.getTagStats({});
   }
 
   @Query(() => LinkStatsDTO, { description: '友链统计' })
   async linkStats(): Promise<LinkStatsDTO> {
-    return await this.blogQueryService.getLinkStats({});
+    return await this.blogUsecase.getLinkStats({});
   }
 
   // ==================== Link Queries ====================
 
   @Query(() => [BlogLinkDTO], { description: '查询所有友链' })
   async links(): Promise<BlogLinkDTO[]> {
-    const links = await this.blogQueryService.getAllLinks({});
+    const links = await this.blogUsecase.getAllLinks({});
     return links.map(this.toLinkDTO);
   }
 
   @Query(() => [BlogLinkDTO], { description: '查询活跃友链' })
   async activeLinks(): Promise<BlogLinkDTO[]> {
-    const links = await this.blogQueryService.getAllLinks({ status: LinkStatus.ACTIVE });
+    const links = await this.blogUsecase.getAllLinks({ status: LinkStatus.ACTIVE });
     return links.map(this.toLinkDTO);
   }
 
@@ -246,9 +244,9 @@ export class BlogResolver {
       },
     });
 
-    const post = await this.blogQueryService.getPostById({ id });
+    const post = await this.blogUsecase.findPostById({ id });
     if (!post) return null;
-    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: id });
+    const commentCount = await this.blogUsecase.getCommentCountByPost({ postId: id });
     return this.toPostDTO(post, commentCount);
   }
 
@@ -274,7 +272,7 @@ export class BlogResolver {
   async viewPost(@Args('id', { type: () => Int }) id: number): Promise<BlogPostDTO | null> {
     const post = await this.blogUsecase.viewPost({ id });
     if (!post) return null;
-    const commentCount = await this.blogQueryService.getCommentCountByPost({ postId: id });
+    const commentCount = await this.blogUsecase.getCommentCountByPost({ postId: id });
     return this.toPostDTO(post, commentCount);
   }
 

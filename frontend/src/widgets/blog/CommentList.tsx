@@ -1,7 +1,7 @@
 // src/widgets/blog/CommentList.tsx
 
 import { useCallback, useMemo, useState } from 'react';
-import { Avatar, Empty, List, Spin, Typography } from 'antd';
+import { Avatar, Empty, Spin, Typography } from 'antd';
 
 import type { BlogComment } from '@/entities/blog';
 
@@ -279,27 +279,24 @@ export function CommentList({ comments, loading, postId }: CommentListProps) {
 
   return (
     <div>
-      <List
-        dataSource={rootComments}
-        renderItem={(comment) => (
-          <List.Item
-            key={comment.id}
-            style={{
-              padding: '8px 0',
-              borderBottom: '1px solid var(--ant-color-border-secondary)',
-            }}
-          >
-            <div className="w-full">
-              <CommentItem
-                comment={comment}
-                postId={postId}
-                childComments={childCommentsMap}
-                depth={0}
-              />
-            </div>
-          </List.Item>
-        )}
-      />
+      {rootComments.map((comment) => (
+        <div
+          key={comment.id}
+          style={{
+            padding: '8px 0',
+            borderBottom: '1px solid var(--ant-color-border-secondary)',
+          }}
+        >
+          <div className="w-full">
+            <CommentItem
+              comment={comment}
+              postId={postId}
+              childComments={childCommentsMap}
+              depth={0}
+            />
+          </div>
+        </div>
+      ))}
       {orphanComments.length > 0 && (
         <div
           className="mt-4 pt-4"
