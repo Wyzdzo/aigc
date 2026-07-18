@@ -70,6 +70,7 @@ export default defineConfig(({ mode }) => {
       host: devServerHost,
       port: devServerPort,
       strictPort: devServerStrictPort,
+      allowedHosts: true,
       proxy: {
         '/api/graphql': {
           target: 'http://localhost:3000',
@@ -84,7 +85,6 @@ export default defineConfig(({ mode }) => {
         '/api/media': {
           target: 'http://localhost:3000',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
         },
         '/uploads': {
           target: 'http://localhost:3000',

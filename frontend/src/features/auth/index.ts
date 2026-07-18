@@ -1,5 +1,8 @@
 // src/features/auth/index.ts
 
-export { useAuth, AuthProvider } from './application/hooks/useAuth';
 export type { UserInfo } from './application/hooks/useAuth';
-export { LOGIN } from './infrastructure/graphql/mutations';
+export { AuthProvider,useAuth } from './application/hooks/useAuth';
+export type { UpdateUserInfoInput } from './application/hooks/useUpdateUserInfo';
+export { useUpdateUserInfo } from './application/hooks/useUpdateUserInfo';
+export { LOGIN, UPDATE_USER_INFO } from './infrastructure/graphql/mutations';
+export { ProfileModal } from './ui/profile-modal';

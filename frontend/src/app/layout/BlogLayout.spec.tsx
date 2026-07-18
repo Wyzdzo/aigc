@@ -1,12 +1,12 @@
 // src/app/layout/BlogLayout.spec.tsx
 
-import { render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockedProvider } from '@apollo/client/testing/react';
 
 import { ThemeProvider } from '@/app/providers';
-import { AuthProvider } from '@/features/auth';
+import { TOKEN_KEY, USER_KEY } from '@/shared/graphql/auth-constants';
 
 import { BlogLayout } from './BlogLayout';
 
@@ -42,9 +42,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <MockedProvider mocks={[]}>
-        <AuthProvider>
-          <MemoryRouter>{children}</MemoryRouter>
-        </AuthProvider>
+        <MemoryRouter>{children}</MemoryRouter>
       </MockedProvider>
     </ThemeProvider>
   );
@@ -52,6 +50,11 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 describe('BlogLayout', () => {
   const mockChildren = <div>Test Content</div>;
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+  });
 
   it('should render header with logo', () => {
     render(<BlogLayout>{mockChildren}</BlogLayout>, { wrapper });
@@ -87,8 +90,97 @@ describe('BlogLayout', () => {
   it('should render a link that navigates to home page "/"', () => {
     const { container } = render(<BlogLayout>{mockChildren}</BlogLayout>, { wrapper });
 
-    // The HomeOutlined button is inside a Link to "/"
     const homeLinks = container.querySelectorAll('a[href="/"]');
     expect(homeLinks.length).toBeGreaterThan(0);
+  });
+
+  it('should show login button when not authenticated', () => {
+    render(<BlogLayout>{mockChildren}</BlogLayout>, { wrapper });
+
+    expect(screen.getByText('登录')).toBeTruthy();
+  });
+
+  it('should show admin menu items for admin user', async () => {
+    localStorage.setItem(TOKEN_KEY, 'fake-token');
+    localStorage.setItem(USER_KEY, JSON.stringify({
+      id: 1,
+      accountId: 1,
+      nickname: 'Admin',
+      avatarUrl: null,
+      email: 'admin@test.com',
+      accessGroup: ['ADMIN'],
+    }));
+
+    // Need to re-import AuthProvider dynamically to pick up localStorage changes
+    const { AuthProvider } = await import('@/features/auth');
+    function adminWrapper({ children }: { children: React.ReactNode }) {
+      return (
+        <ThemeProvider>
+          <MockedProvider mocks={[]}>
+            <AuthProvider>
+              <MemoryRouter>{children}</MemoryRouter>
+            </AuthProvider>
+          </MockedProvider>
+        </ThemeProvider>
+      );
+    }
+
+    render(<BlogLayout>{mockChildren}</BlogLayout>, { wrapper: adminWrapper });
+
+    // Admin should see their nickname
+    await waitFor(() => {
+      expect(screen.getByText('Admin')).toBeTruthy();
+    });
+
+    // Click on avatar dropdown to open menu
+    const avatarButton = screen.getByText('Admin');
+    fireEvent.click(avatarButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('修改博主信息')).toBeTruthy();
+      expect(screen.getByText('后台管理')).toBeTruthy();
+      expect(screen.queryByText('个人资料')).toBeNull();
+    });
+  });
+
+  it('should show profile menu item for non-admin user', async () => {
+    localStorage.setItem(TOKEN_KEY, 'fake-token');
+    localStorage.setItem(USER_KEY, JSON.stringify({
+      id: 2,
+      accountId: 2,
+      nickname: 'Guest',
+      avatarUrl: null,
+      email: 'guest@test.com',
+      accessGroup: ['REGISTRANT'],
+    }));
+
+    const { AuthProvider } = await import('@/features/auth');
+    function guestWrapper({ children }: { children: React.ReactNode }) {
+      return (
+        <ThemeProvider>
+          <MockedProvider mocks={[]}>
+            <AuthProvider>
+              <MemoryRouter>{children}</MemoryRouter>
+            </AuthProvider>
+          </MockedProvider>
+        </ThemeProvider>
+      );
+    }
+
+    render(<BlogLayout>{mockChildren}</BlogLayout>, { wrapper: guestWrapper });
+
+    await waitFor(() => {
+      expect(screen.getByText('Guest')).toBeTruthy();
+    });
+
+    // Click on avatar dropdown to open menu
+    const avatarButton = screen.getByText('Guest');
+    fireEvent.click(avatarButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('个人资料')).toBeTruthy();
+      expect(screen.queryByText('修改博主信息')).toBeNull();
+      expect(screen.queryByText('后台管理')).toBeNull();
+    });
   });
 });

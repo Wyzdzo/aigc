@@ -6,6 +6,7 @@
  */
 export const TOKEN_KEY = 'admin_token';
 export const REFRESH_TOKEN_KEY = 'admin_refresh_token';
+export const USER_KEY = 'admin_user';
 
 /**
  * RefreshToken mutation 原始字符串

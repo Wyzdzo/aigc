@@ -14,10 +14,11 @@ import {
 import { Avatar, Button, Drawer, Dropdown, Segmented, Tabs, Tooltip } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 
-import { useAuth } from '@/features/auth';
-import { BloggerInfoModal, PasswordModal } from '@/features/settings';
 import { FONT_SCALE_OPTIONS, useTheme } from '@/app/providers';
 import { APP_THEME_CSS_VAR_KEY } from '@/app/theme';
+
+import { ProfileModal, useAuth } from '@/features/auth';
+import { BloggerInfoModal, PasswordModal } from '@/features/settings';
 
 const navItems = [
   { label: '首页', path: '/blog' },
@@ -38,9 +39,10 @@ export function BlogLayout({ children }: BlogLayoutProps = {}) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { fontScale, isDark, setFontScale, setIsDark } = useTheme();
-  const { isAuthenticated, user, logout, updateUser } = useAuth();
+  const { isAuthenticated, user, logout, updateUser, isAdmin } = useAuth();
 
   const [bloggerModalOpen, setBloggerModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   const navigationTabs = useMemo(
@@ -64,25 +66,36 @@ export function BlogLayout({ children }: BlogLayoutProps = {}) {
     navigate('/login');
   };
 
+  const userIsAdmin = isAdmin();
+
   const userMenuItems = [
-    {
-      key: 'blogger',
-      icon: <UserOutlined />,
-      label: '修改博主信息',
-      onClick: () => setBloggerModalOpen(true),
-    },
+    ...(userIsAdmin
+      ? [{
+          key: 'blogger',
+          icon: <UserOutlined />,
+          label: '修改博主信息',
+          onClick: () => setBloggerModalOpen(true),
+        }]
+      : [{
+          key: 'profile',
+          icon: <UserOutlined />,
+          label: '个人资料',
+          onClick: () => setProfileModalOpen(true),
+        }]),
     {
       key: 'password',
       icon: <LockOutlined />,
       label: '修改密码',
       onClick: () => setPasswordModalOpen(true),
     },
-    {
-      key: 'admin',
-      icon: <SettingOutlined />,
-      label: '后台管理',
-      onClick: () => navigate('/admin'),
-    },
+    ...(userIsAdmin
+      ? [{
+          key: 'admin',
+          icon: <SettingOutlined />,
+          label: '后台管理',
+          onClick: () => navigate('/admin'),
+        }]
+      : []),
     { type: 'divider' as const },
     {
       key: 'logout',
@@ -206,8 +219,11 @@ export function BlogLayout({ children }: BlogLayoutProps = {}) {
         </div>
       </footer>
 
-      {/* 修改博主信息弹窗 */}
+      {/* 修改博主信息弹窗（仅 admin） */}
       <BloggerInfoModal open={bloggerModalOpen} onClose={() => setBloggerModalOpen(false)} onSuccess={(values) => { if (values.avatar) updateUser({ avatarUrl: values.avatar }); if (values.nickname) updateUser({ nickname: values.nickname }); }} />
+
+      {/* 个人资料弹窗（非 admin 用户） */}
+      <ProfileModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
 
       {/* 修改密码弹窗 */}
       <PasswordModal open={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} />

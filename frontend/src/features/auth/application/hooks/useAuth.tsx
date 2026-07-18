@@ -1,12 +1,13 @@
 // src/features/auth/application/hooks/useAuth.tsx
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, type ReactNode,useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { App } from 'antd';
 
-import { LOGIN } from '../constants';
+import { REFRESH_TOKEN_KEY, TOKEN_KEY, USER_KEY } from '@/shared/graphql/auth-constants';
 import { configureGraphQLRuntime } from '@/shared/graphql/client';
-import { REFRESH_TOKEN_KEY, TOKEN_KEY } from '@/shared/graphql/auth-constants';
+
+import { LOGIN } from '../constants';
 
 interface LoginInput {
   loginName: string;
@@ -48,7 +49,6 @@ interface AuthContextValue extends AuthState {
   hasRole: (role: string) => boolean;
 }
 
-const USER_KEY = 'admin_user';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 

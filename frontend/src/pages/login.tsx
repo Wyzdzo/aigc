@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router';
 
 import { useAuth } from '@/features/auth';
 
+import { USER_KEY } from '@/shared/graphql/auth-constants';
+
 /**
  * 登录页面
  */
@@ -20,7 +22,16 @@ export function LoginPage() {
     });
 
     if (success) {
-      navigate('/admin');
+      // login 成功后 user 状态已更新，从 localStorage 读取最新值判断角色
+      let userIsAdmin = false;
+      try {
+        const stored = localStorage.getItem(USER_KEY);
+        const userInfo = stored ? JSON.parse(stored) : null;
+        userIsAdmin = userInfo?.accessGroup?.some((role: string) => role.toLowerCase() === 'admin') ?? false;
+      } catch {
+        // JSON.parse 失败时默认跳转前台
+      }
+      navigate(userIsAdmin ? '/admin' : '/blog');
     }
   };
 
