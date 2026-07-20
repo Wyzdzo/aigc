@@ -16,6 +16,7 @@ export * from './application/hooks/useDashboardStats';
 export * from './application/hooks/useDeleteCategory';
 export * from './application/hooks/useDeletePost';
 export * from './application/hooks/useDeleteTag';
+export * from './application/hooks/useLikeComment';
 export * from './application/hooks/useLikePost';
 export * from './application/hooks/useLinkMutations';
 export * from './application/hooks/useLinks';
@@ -32,5 +33,5 @@ export * from './application/hooks/useViewPost';
 
 // Infrastructure - GraphQL (for testing only)
 // Note: These are exported for testing purposes only. Production code should use hooks from application layer.
-export { CREATE_COMMENT, LIKE_POST } from './infrastructure/graphql/mutations';
+export { CREATE_COMMENT, LIKE_COMMENT, LIKE_POST } from './infrastructure/graphql/mutations';
 export { GET_ADJACENT_POSTS, GET_CATEGORIES, GET_CATEGORY_TREE, GET_COMMENT_STATS, GET_COMMENTS, GET_POST_BY_SLUG, GET_POSTS, GET_TAGS } from './infrastructure/graphql/queries';

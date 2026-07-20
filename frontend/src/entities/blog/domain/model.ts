@@ -172,5 +172,6 @@ export interface CreateCommentInput {
   parentId?: number;
   nickname: string;
   email: string;
+  avatar?: string | null;
   content: string;
 }

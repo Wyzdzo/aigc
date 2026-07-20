@@ -3,9 +3,10 @@
 import type { MockedResponse } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
 import { render, waitFor, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi, beforeAll, afterEach } from 'vitest';
+import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 
 import { CREATE_COMMENT, GET_COMMENTS } from '@/features/blog';
+import { GET_MEDIA_LIST } from '@/features/media';
 
 import { CommentForm } from './CommentForm';
 
@@ -17,6 +18,24 @@ const { mockMessageApi } = vi.hoisted(() => ({
     info: vi.fn(),
     warning: vi.fn(),
   },
+}));
+
+// Mock useAuth — 默认未登录
+const mockAuthState = vi.hoisted(() => ({
+  isAuthenticated: false,
+  user: null as unknown,
+}));
+
+vi.mock('@/features/auth', () => ({
+  useAuth: () => ({
+    isAuthenticated: mockAuthState.isAuthenticated,
+    user: mockAuthState.user,
+    login: vi.fn(),
+    logout: vi.fn(),
+    updateUser: vi.fn(),
+    isAdmin: () => false,
+    hasRole: () => false,
+  }),
 }));
 
 vi.mock('antd', async () => {
@@ -61,22 +80,36 @@ describe('CommentForm', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    // Reset auth mock to unauthenticated
+    mockAuthState.isAuthenticated = false;
+    mockAuthState.user = null;
   });
+
+  const mediaListMock: MockedResponse = {
+    request: {
+      query: GET_MEDIA_LIST,
+      variables: { page: 1, pageSize: 12, keyword: undefined },
+    },
+    result: {
+      data: {
+        mediaList: { items: [], total: 0, page: 1, pageSize: 12 },
+      },
+    },
+  };
 
   function createWrapper(mocks: MockedResponse[] = []) {
     return function Wrapper({ children }: { children: React.ReactNode }) {
-      return <MockedProvider mocks={mocks}>{children}</MockedProvider>;
+      return <MockedProvider mocks={[...mocks, mediaListMock]}>{children}</MockedProvider>;
     };
   }
 
-  describe('Happy Path', () => {
-    it('should render comment form with default props', () => {
+  describe('Unauthenticated User', () => {
+    it('should render nickname and email inputs for unauthenticated user', () => {
       const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
 
       expect(container.querySelector('input[placeholder="昵称"]')).toBeTruthy();
       expect(container.querySelector('input[placeholder="邮箱（选填）"]')).toBeTruthy();
       expect(container.querySelector('textarea[placeholder="写下你的评论..."]')).toBeTruthy();
-      expect(container.textContent).toContain('发布评论');
     });
 
     it('should render compact form when compact prop is true', () => {
@@ -96,7 +129,7 @@ describe('CommentForm', () => {
       const { container } = render(<CommentForm postId={1} showCancel />, { wrapper: createWrapper() });
 
       const buttons = container.querySelectorAll('button');
-      expect(buttons.length).toBe(2); // 应该有发布评论和取消两个按钮
+      expect(buttons.length).toBe(2);
     });
 
     it('should call onSuccess when comment is submitted successfully', async () => {
@@ -110,6 +143,7 @@ describe('CommentForm', () => {
                 postId: 1,
                 nickname: '测试用户',
                 email: 'test@example.com',
+                avatar: null,
                 content: '测试评论内容',
               },
             },
@@ -139,12 +173,7 @@ describe('CommentForm', () => {
           },
           result: {
             data: {
-              comments: {
-                items: [],
-                total: 1,
-                page: 1,
-                pageSize: 10,
-              },
+              comments: { items: [], total: 1, page: 1, pageSize: 10 },
             },
           },
         },
@@ -172,20 +201,22 @@ describe('CommentForm', () => {
 
       const { container } = render(<CommentForm postId={1} showCancel onCancel={onCancelMock} />, { wrapper: createWrapper() });
 
-      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
       const buttons = container.querySelectorAll('button');
-      const cancelButton = buttons[buttons.length - 1]; // 取消按钮应该在最后
+      const cancelButton = buttons[buttons.length - 1];
 
-      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
       fireEvent.click(cancelButton);
 
       await waitFor(() => {
         expect(onCancelMock).toHaveBeenCalled();
       });
     });
-  });
 
-  describe('Error Path', () => {
+    it('should not show image upload button for unauthenticated user', () => {
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
+
+      expect(container.textContent).not.toContain('插入图片');
+    });
+
     it('should show validation errors for empty fields', async () => {
       const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
 
@@ -231,8 +262,131 @@ describe('CommentForm', () => {
         expect(container.textContent).toContain('请输入有效的邮箱地址');
       });
     });
+  });
 
-    it('should show error message when submission fails', async () => {
+  describe('Authenticated User', () => {
+    beforeEach(() => {
+      mockAuthState.isAuthenticated = true;
+      mockAuthState.user = {
+        id: 2,
+        accountId: 2,
+        nickname: '访客用户',
+        avatarUrl: null,
+        email: 'guest@test.com',
+        accessGroup: ['REGISTRANT'],
+      };
+    });
+
+    it('should show user avatar and nickname instead of input fields', () => {
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
+
+      // Should NOT show nickname/email inputs
+      expect(container.querySelector('input[placeholder="昵称"]')).toBeNull();
+      expect(container.querySelector('input[placeholder="邮箱（选填）"]')).toBeNull();
+
+      // Should show user display
+      expect(container.textContent).toContain('访客用户');
+    });
+
+    it('should submit comment with account nickname and email', async () => {
+      const onSuccessMock = vi.fn();
+      const mocks = [
+        {
+          request: {
+            query: CREATE_COMMENT,
+            variables: {
+              input: {
+                postId: 1,
+                nickname: '访客用户',
+                email: 'guest@test.com',
+                avatar: null,
+                content: '登录用户的评论',
+              },
+            },
+          },
+          result: {
+            data: {
+              createComment: {
+                id: 2,
+                postId: 1,
+                parentId: null,
+                nickname: '访客用户',
+                email: 'guest@test.com',
+                avatar: null,
+                content: '登录用户的评论',
+                status: 'APPROVED',
+                likeCount: 0,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            },
+          },
+        },
+        {
+          request: {
+            query: GET_COMMENTS,
+            variables: { postId: 1, page: 1, pageSize: 10 },
+          },
+          result: {
+            data: {
+              comments: { items: [], total: 1, page: 1, pageSize: 10 },
+            },
+          },
+        },
+      ];
+
+      const { container } = render(<CommentForm postId={1} onSuccess={onSuccessMock} />, { wrapper: createWrapper(mocks) });
+
+      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
+      const submitButton = container.querySelector('button[type="submit"]');
+
+      fireEvent.change(contentInput, { target: { value: '登录用户的评论' } });
+      fireEvent.click(submitButton!);
+
+      await waitFor(() => {
+        expect(onSuccessMock).toHaveBeenCalled();
+        expect(mockMessageApi.success).toHaveBeenCalledWith('评论发布成功');
+      });
+    });
+
+    it('should only require content validation when authenticated', async () => {
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
+
+      const submitButton = container.querySelector('button[type="submit"]');
+      fireEvent.click(submitButton!);
+
+      // Should NOT show nickname validation error
+      await waitFor(() => {
+        expect(container.textContent).toContain('请输入评论内容');
+        expect(container.textContent).not.toContain('请输入昵称');
+      });
+    });
+
+    it('should show image picker button for authenticated user', () => {
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
+
+      expect(container.textContent).toContain('插入图片');
+    });
+
+    it('should insert markdown image syntax when media is selected from picker', async () => {
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper() });
+
+      // Click "插入图片" button to open MediaPicker
+      const imageButton = Array.from(container.querySelectorAll('button')).find(
+        (btn) => btn.textContent?.includes('插入图片'),
+      );
+      fireEvent.click(imageButton!);
+
+      // MediaPicker modal should open
+      await waitFor(() => {
+        expect(document.querySelector('.ant-modal')).toBeTruthy();
+        expect(document.querySelector('.ant-modal-title')?.textContent).toContain('从图片库选择');
+      });
+    });
+  });
+
+  describe('Error Path', () => {
+    it('should show error message when submission fails (unauthenticated)', async () => {
       const mocks = [
         {
           request: {
@@ -242,6 +396,7 @@ describe('CommentForm', () => {
                 postId: 1,
                 nickname: '测试用户',
                 email: '',
+                avatar: null,
                 content: '测试评论内容',
               },
             },
@@ -261,14 +416,11 @@ describe('CommentForm', () => {
       fireEvent.click(submitButton!);
 
       await waitFor(() => {
-        // Verify the component still renders after error (form not crashed)
         expect(container.querySelector('form')).toBeTruthy();
       });
     });
-  });
 
-  describe('Edge Cases', () => {
-    it('should handle optional email field', async () => {
+    it('should call messageApi.error when createComment returns error', async () => {
       const mocks = [
         {
           request: {
@@ -278,6 +430,85 @@ describe('CommentForm', () => {
                 postId: 1,
                 nickname: '测试用户',
                 email: '',
+                avatar: null,
+                content: '测试评论内容',
+              },
+            },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper(mocks) });
+
+      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
+      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
+      const submitButton = container.querySelector('button[type="submit"]');
+
+      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
+      fireEvent.change(contentInput, { target: { value: '测试评论内容' } });
+      fireEvent.click(submitButton!);
+
+      await waitFor(() => {
+        expect(mockMessageApi.error).toHaveBeenCalledWith('评论发布失败，请稍后重试');
+      });
+    });
+
+    it('should show error message when authenticated user submission fails', async () => {
+      mockAuthState.isAuthenticated = true;
+      mockAuthState.user = {
+        id: 2,
+        accountId: 2,
+        nickname: '访客用户',
+        avatarUrl: null,
+        email: 'guest@test.com',
+        accessGroup: ['REGISTRANT'],
+      };
+
+      const mocks = [
+        {
+          request: {
+            query: CREATE_COMMENT,
+            variables: {
+              input: {
+                postId: 1,
+                nickname: '访客用户',
+                email: 'guest@test.com',
+                avatar: null,
+                content: '登录用户失败的评论',
+              },
+            },
+          },
+          error: new Error('Network error'),
+        },
+      ];
+
+      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper(mocks) });
+
+      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
+      const submitButton = container.querySelector('button[type="submit"]');
+
+      fireEvent.change(contentInput, { target: { value: '登录用户失败的评论' } });
+      fireEvent.click(submitButton!);
+
+      await waitFor(() => {
+        expect(mockMessageApi.error).toHaveBeenCalledWith('评论发布失败，请稍后重试');
+      });
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle optional email field for unauthenticated user', async () => {
+      const mocks = [
+        {
+          request: {
+            query: CREATE_COMMENT,
+            variables: {
+              input: {
+                postId: 1,
+                nickname: '测试用户',
+                email: '',
+                avatar: null,
                 content: '测试评论内容',
               },
             },
@@ -307,12 +538,7 @@ describe('CommentForm', () => {
           },
           result: {
             data: {
-              comments: {
-                items: [],
-                total: 1,
-                page: 1,
-                pageSize: 10,
-              },
+              comments: { items: [], total: 1, page: 1, pageSize: 10 },
             },
           },
         },
@@ -329,7 +555,6 @@ describe('CommentForm', () => {
       fireEvent.click(submitButton!);
 
       await waitFor(() => {
-        // Verify the component still renders after successful submission
         expect(container.querySelector('form')).toBeTruthy();
       });
     });
@@ -351,6 +576,7 @@ describe('CommentForm', () => {
                 postId: 1,
                 nickname: '测试用户',
                 email: '',
+                avatar: null,
                 content: '测试评论内容',
               },
             },
@@ -380,12 +606,7 @@ describe('CommentForm', () => {
           },
           result: {
             data: {
-              comments: {
-                items: [],
-                total: 1,
-                page: 1,
-                pageSize: 10,
-              },
+              comments: { items: [], total: 1, page: 1, pageSize: 10 },
             },
           },
         },
@@ -403,39 +624,6 @@ describe('CommentForm', () => {
 
       await waitFor(() => {
         expect(mockMessageApi.success).toHaveBeenCalledWith('评论发布成功');
-      });
-    });
-
-    it('should call messageApi.error when createComment returns error', async () => {
-      const mocks = [
-        {
-          request: {
-            query: CREATE_COMMENT,
-            variables: {
-              input: {
-                postId: 1,
-                nickname: '测试用户',
-                email: '',
-                content: '测试评论内容',
-              },
-            },
-          },
-          error: new Error('Network error'),
-        },
-      ];
-
-      const { container } = render(<CommentForm postId={1} />, { wrapper: createWrapper(mocks) });
-
-      const nicknameInput = container.querySelector('input[placeholder="昵称"]') as HTMLInputElement;
-      const contentInput = container.querySelector('textarea[placeholder="写下你的评论..."]') as HTMLTextAreaElement;
-      const submitButton = container.querySelector('button[type="submit"]');
-
-      fireEvent.change(nicknameInput, { target: { value: '测试用户' } });
-      fireEvent.change(contentInput, { target: { value: '测试评论内容' } });
-      fireEvent.click(submitButton!);
-
-      await waitFor(() => {
-        expect(mockMessageApi.error).toHaveBeenCalledWith('评论发布失败，请稍后重试');
       });
     });
   });

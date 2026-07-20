@@ -2,8 +2,10 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Avatar, Empty, Spin, Typography } from 'antd';
+import { LikeOutlined, LikeFilled } from '@ant-design/icons';
 
 import type { BlogComment } from '@/entities/blog';
+import { useLikeComment } from '@/features/blog';
 
 import { CommentForm } from './CommentForm';
 
@@ -72,6 +74,9 @@ export function CommentItem({
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(comment.likeCount);
+  const { likeComment, loading: likeLoading } = useLikeComment();
 
   const handleReply = useCallback(() => {
     setShowReplyForm((prev) => !prev);
@@ -79,6 +84,46 @@ export function CommentItem({
 
   const handleToggleCollapse = useCallback(() => {
     setCollapsed((prev) => !prev);
+  }, []);
+
+  const handleLike = useCallback(async () => {
+    if (liked || likeLoading) return;
+    const result = await likeComment(comment.id);
+    if (result === 'success') {
+      setLiked(true);
+      setLikeCount((prev) => prev + 1);
+    }
+  }, [liked, likeLoading, likeComment, comment.id]);
+
+  // 解析评论内容中的图片 URL（Markdown 图片语法: ![alt](url)）
+  const renderContent = useCallback((content: string) => {
+    const parts: React.ReactNode[] = [];
+    const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let key = 0;
+
+    while ((match = imgRegex.exec(content)) !== null) {
+      // 图片前的文本
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+      // 图片
+      parts.push(
+        <img
+          key={key++}
+          src={match[2]}
+          alt={match[1]}
+          className="max-w-full max-h-[200px] rounded-lg mt-1 mb-1"
+        />,
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    // 剩余文本
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+    return parts.length > 0 ? parts : content;
   }, []);
 
   const isNested = depth > 0;
@@ -148,7 +193,7 @@ export function CommentItem({
                   lineHeight: 1.7,
                 }}
               >
-                {comment.content}
+                {renderContent(comment.content)}
               </Paragraph>
             </div>
 
@@ -167,6 +212,16 @@ export function CommentItem({
                 onClick={handleReply}
               >
                 {showReplyForm ? '收起回复' : '回复'}
+              </button>
+              <button
+                type="button"
+                className="bg-transparent border-none cursor-pointer p-0 text-sm transition-colors duration-200 flex items-center gap-1"
+                style={{ color: liked ? 'var(--ant-color-primary)' : 'var(--ant-color-text-tertiary)' }}
+                onClick={handleLike}
+                disabled={likeLoading}
+              >
+                {liked ? <LikeFilled /> : <LikeOutlined />}
+                {likeCount > 0 && <span>{likeCount}</span>}
               </button>
               {children.length > 0 && (
                 <button
